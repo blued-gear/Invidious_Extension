@@ -1,0 +1,51 @@
+import {VideoStackItem} from "./stack-item";
+
+export default class WatchStack {
+
+    readonly id: string;
+    name: string;
+    private readonly items: VideoStackItem[];
+
+    private constructor(id: string, name: string, items: VideoStackItem[]) {
+        this.id = id;
+        this.name = name;
+        this.items = items;
+    }
+
+    static createWithIdAndName(id: string, name: string): WatchStack {
+        return new WatchStack(id, name, []);
+    }
+
+    static createFromCopy(newId: string, original: WatchStack): WatchStack {
+        return new WatchStack(newId, original.name, [...original.items]);
+    }
+
+    length(): number {
+        return this.items.length;
+    }
+
+    push(item: VideoStackItem) {
+        this.items.push(item);
+    }
+
+    /**
+     * returns the nth item from the stack without removing it
+     * @param idx the index of the item from the top of the stack; 0-based
+     */
+    peek(idx: number = 0): VideoStackItem | null {
+        if(idx >= this.items.length)
+            return null;
+        return this.items[this.items.length - idx - 1];
+    }
+
+    /**
+     * returns the nth item from the stack and removes it an all above it
+     * @param idx the index of the item from the top of the stack; 0-based
+     */
+    pop(idx: number = 0): VideoStackItem | null {
+        if(idx >= this.items.length)
+            return null;
+
+        return this.items.splice(this.items.length - idx - 1)[0];
+    }
+}
