@@ -8,7 +8,8 @@ const counter = ref(0);
 
 <template>
   <div class="dlgCont">
-    <Button @click="counter++">Clicked {{counter}} times</Button>
+    <Button icon="pi pi-plus" @click="counter++"></Button>
+    <p>Clicked {{counter}} times</p>
   </div>
 </template>
 
