@@ -10,10 +10,7 @@ import TestContent from "./TestContent.vue";
 
 const dlg = useDialog();
 
-const btnTarget = document.evaluate(
-    "/html/body/div[1]/div[2]/div[4]/div[1]/div",
-    document
-).iterateNext();
+const btnTarget = document.querySelector("html body div div#contents div div.h-box");
 
 const vidMnu = ref<Menu>();
 const vidMnuContent = ref<MenuItem[]>([
