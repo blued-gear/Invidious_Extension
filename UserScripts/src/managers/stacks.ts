@@ -119,34 +119,38 @@ function scrapeTitle(): string | null {
 }
 
 function scrapeThumbUrl(): string | null {
-    if(playerWindow.player_data == null)
+    const posterElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled div.vjs-poster") as ElementCSSInlineStyle | null;
+    if(posterElm == null)
         return null;
-    return location.origin + playerWindow.player_data.thumbail;
+
+    const styleImg = posterElm.style.backgroundImage;//url("/vi/f1A7SdVTlok/maxres.jpg")
+    let relUrl = styleImg.substring('url("'.length, styleImg.length - '")'.length);
+
+    return location.origin + relUrl;
 }
 
 function scrapeTimeTotal(): number | null {
-    if(playerWindow.player_data == null)
-        return null;
-    return playerWindow.video_data.length_seconds;
-
-    /*
-    const timeTotalElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-fluid.player-dimensions.vjs-controls-enabled.vjs-v7.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display");
+    const timeTotalElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display");
     if(timeTotalElm == null)
         return null;
 
-    const timeParts = timeTotalElm.textContent.trim().split(':');
+    const timeParts = timeTotalElm.textContent!!.trim().split(':');
 
-    assert(timeParts.length <= 3, "more than 3 part of a time-str (hh:mm:ss) were not expected");
     return timeParts.reverse().reduce((acc, cur, idx) => {
         return acc + Number.parseInt(cur) * Math.pow(60, idx);
     }, 0);
-     */
 }
 
 function scrapeTimeCurrent(): number | null {
-    if(playerWindow.player_data == null)
+    const timeCurElm = document.querySelector("html body div#contents div#player-container.h-box div#player.on-video_player.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-current-time.vjs-time-control.vjs-control span.vjs-current-time-display");
+    if(timeCurElm == null)
         return null;
-    return playerWindow.player.cache_.currentTime;
+
+    const timeParts = timeCurElm.textContent!!.trim().split(':');
+
+    return timeParts.reverse().reduce((acc, cur, idx) => {
+        return acc + Number.parseInt(cur) * Math.pow(60, idx);
+    }, 0);
 }
 
 type PublisherInfo = {
