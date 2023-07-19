@@ -59,6 +59,23 @@ export default class WatchStack {
         return this.items.splice(this.items.length - idx - 1)[0];
     }
 
+    /**
+     * replaces an item on the stack
+     * @param newItem the new item to insert
+     * @param idx the index of the item (from the top of the stack)
+     * @return the original item on the position; null if idx >= length
+     */
+    replace(newItem: VideoStackItem, idx: number = 0): VideoStackItem | null {
+        if(idx >= this.items.length)
+            return null;
+
+        const stackIdx = this.items.length - idx - 1;
+        const old = this.items[stackIdx];
+        this.items[stackIdx] = newItem;
+
+        return old;
+    }
+
     toArray(): VideoStackItem[] {
         return [...this.items];
     }

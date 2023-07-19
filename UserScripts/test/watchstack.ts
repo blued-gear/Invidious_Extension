@@ -1,5 +1,5 @@
 import WatchStack from "../src/model/stacks/watchstack";
-import {VideoStackItem} from "../src/model/stacks/stack-item";
+import {VideoStackItem, VideoStackItemProps} from "../src/model/stacks/stack-item";
 
 describe("WatchStack", () => {
     it("has initial length 0", () => {
@@ -89,9 +89,46 @@ describe("WatchStack", () => {
         expect(stack.length()).toBe(4);
         expect(peeked).toEqual<VideoStackItem>(item2);
     });
+
+    it("can replace at idx 0", () => {
+        const stack = WatchStack.createWithIdAndName("ID", "NAME");
+        const item1 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-1"}));
+        const item2 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-2"}));
+        const item3 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-3"}));
+        const item4 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-4"}));
+
+        stack.push(item1);
+        stack.push(item2);
+        stack.push(item3);
+
+        const old = stack.replace(item4);
+
+        expect(stack.length()).toBe(3);
+        expect(old).toBe(item3);
+        expect(stack.peek()).toBe(item4);
+    });
+
+    it("can replace at idx != 0", () => {
+        const stack = WatchStack.createWithIdAndName("ID", "NAME");
+        const item1 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-1"}));
+        const item2 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-2"}));
+        const item3 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-3"}));
+        const item4 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-4"}));
+
+        stack.push(item1);
+        stack.push(item2);
+        stack.push(item3);
+
+        const old = stack.replace(item4, 1);
+
+        expect(stack.length()).toBe(3);
+        expect(old).toBe(item2);
+        expect(stack.peek()).toBe(item3);
+        expect(stack.peek(1)).toBe(item4);
+    });
 });
 
-function prepareVideoStackItem(): VideoStackItem {
+function prepareVideoStackItem(): VideoStackItemProps {
     return {
         id: "ID",
         title: "TITLE",

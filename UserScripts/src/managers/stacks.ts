@@ -78,10 +78,17 @@ function updateCurrentStack() {
     const stack = loadCurrentWatchStack();
 
     const currentVid = currentVidItem();
-    if(currentVid.equals(stack.peek()))
-        return;// prevent double pushing
 
-    stack.push(currentVid);
+    if(currentVid.equals(stack.peek(), true))
+        return;// already up-to-date
+
+    if(currentVid.equals(stack.peek())) {// compares id
+        // update current element
+        stack.replace(currentVid);
+    } else {
+        // push new element
+        stack.push(currentVid);
+    }
 
     saveCurrentWatchStack(stack);
 }
