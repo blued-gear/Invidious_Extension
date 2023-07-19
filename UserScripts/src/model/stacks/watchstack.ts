@@ -20,6 +20,16 @@ export default class WatchStack {
         return new WatchStack(newId, original.name, [...original.items]);
     }
 
+    static loadJsonObj(json: object): WatchStack {
+        const cast = json as WatchStack;
+
+        return new WatchStack(
+            cast.id,
+            cast.name,
+            cast.items.map(elm => VideoStackItem.loadJsonObj(elm))
+        );
+    }
+
     length(): number {
         return this.items.length;
     }
@@ -47,5 +57,17 @@ export default class WatchStack {
             return null;
 
         return this.items.splice(this.items.length - idx - 1)[0];
+    }
+
+    toArray(): VideoStackItem[] {
+        return [...this.items];
+    }
+
+    saveJsonObj(): object {
+        return {
+            id: this.id,
+            name: this.name,
+            items: this.items.map(elm => elm.saveJsonObj())
+        };
     }
 }

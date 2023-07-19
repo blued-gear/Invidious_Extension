@@ -8,7 +8,8 @@ import {
 } from "../model/stacks/stack-item";
 import {nodeListToArray} from "../util/utils";
 
-const STORAGE_KEY_CURRENT_STACK = STORAGE_PREFIX + "local::current_stack";
+export const CURRENT_STACK_ID = "~~watch_stack~~";
+const STORAGE_KEY_STACKS = STORAGE_PREFIX + "stacks:";
 
 const playerWindow = window as any;
 
@@ -20,8 +21,57 @@ export default function run() {
     }
 }
 
+export function loadStack(id: string): WatchStack | null {
+    if(id === CURRENT_STACK_ID)
+        return loadCurrentWatchStack();
+    else
+        return loadRegulaStack(id);
+}
+
+export function saveStack(stack: WatchStack) {
+    if(stack.id === CURRENT_STACK_ID)
+        saveCurrentWatchStack(stack);
+    else
+        saveRegularStack(stack);
+}
+
+export function deleteStack(id: string) {
+    if(id === CURRENT_STACK_ID)
+        throw new Error("current watch-stack can not be deleted manually");
+
+    localStorage.removeItem(STORAGE_KEY_STACKS + id);
+}
+
+function loadRegulaStack(id: string): WatchStack | null {
+    const storedData = localStorage.getItem(STORAGE_KEY_STACKS + id);
+    if(storedData === null)
+        return null;
+
+    return WatchStack.loadJsonObj(JSON.parse(storedData));
+}
+
+function loadCurrentWatchStack(): WatchStack {
+    const storedData = sessionStorage.getItem(STORAGE_KEY_STACKS + CURRENT_STACK_ID);
+    if(storedData === null) {
+        return WatchStack.createWithIdAndName(CURRENT_STACK_ID, "Current Stack");
+    } else {
+        const storedObject: WatchStack = JSON.parse(storedData);
+        return WatchStack.loadJsonObj(storedObject);
+    }
+}
+
+function saveRegularStack(stack: WatchStack) {
+    const data = JSON.stringify(stack.saveJsonObj());
+    localStorage.setItem(STORAGE_KEY_STACKS + CURRENT_STACK_ID, data);
+}
+
+function saveCurrentWatchStack(stack: WatchStack) {
+    const data = JSON.stringify(stack.saveJsonObj());
+    sessionStorage.setItem(STORAGE_KEY_STACKS + CURRENT_STACK_ID, data);
+}
+
 function resetCurrentStack() {
-    sessionStorage.removeItem(STORAGE_KEY_CURRENT_STACK);
+    sessionStorage.removeItem(STORAGE_KEY_STACKS + CURRENT_STACK_ID);
 }
 
 function updateCurrentStack() {
@@ -34,21 +84,6 @@ function updateCurrentStack() {
     stack.push(currentVid);
 
     saveCurrentWatchStack(stack);
-}
-
-function loadCurrentWatchStack(): WatchStack {
-    const storedData = sessionStorage.getItem(STORAGE_KEY_CURRENT_STACK);
-    if(storedData === null) {
-        return WatchStack.createWithIdAndName("~~watch_stack~~", "Current Stack");
-    } else {
-        const storedObject: WatchStack = JSON.parse(storedData);
-        return WatchStack.createFromCopy(storedObject.id, storedObject);
-    }
-}
-
-function saveCurrentWatchStack(stack: WatchStack) {
-    const data = JSON.stringify(stack);
-    sessionStorage.setItem(STORAGE_KEY_CURRENT_STACK, data);
 }
 
 function currentVidItem(): VideoStackItem {

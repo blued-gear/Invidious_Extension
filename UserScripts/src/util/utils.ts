@@ -10,3 +10,30 @@ export function nodeListToArray(list: NodeList): Node[] {
     list.forEach(elm => arr.push(elm));
     return arr;
 }
+
+export function formatTime(seconds: number){
+    const secondsPerMinute = 60;
+    const secondsPerHour = secondsPerMinute * 60;
+
+    let hours = Math.floor(seconds / secondsPerHour);
+    seconds -= hours * secondsPerHour;
+    let minutes = Math.floor(seconds / secondsPerMinute);
+    seconds -= minutes * secondsPerMinute;
+
+    let str = "";
+    if(hours > 0){
+        if(hours < 10)
+            str += '0';
+        str += hours + ':';
+    }
+
+    if(minutes < 10)
+        str += '0';
+    str += minutes + ':';
+
+    if(seconds < 10)
+        str += '0';
+    str += seconds;
+
+    return str;
+}

@@ -31,6 +31,10 @@ export class VideoStackItem implements VideoStackItemProps {
         this.extras = Object.freeze({...props.extras});
     }
 
+    static loadJsonObj(json: object): VideoStackItem {
+        return new VideoStackItem(json as VideoStackItemProps);
+    }
+
     /**
      * compares two VideoStackItem for equality
      * @param that the other instance to compare to
@@ -48,6 +52,17 @@ export class VideoStackItem implements VideoStackItemProps {
         }
 
         return true;
+    }
+
+    saveJsonObj(): object {
+        return {
+            id: this.id,
+            title: this.title,
+            thumbUrl: this.thumbUrl,
+            timeTotal: this.timeTotal,
+            timeCurrent: this.timeCurrent,
+            extras: this.extras
+        };
     }
 }
 
