@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {computed} from "vue";
-import Image from 'primevue/image';
 
 import {
   STACK_ITEM_EXTRA_PUBLISHER_CHAN_ID,
@@ -23,7 +22,7 @@ const hasTimes = computed(() => props.item.timeTotal > 0 && props.item.timeCurre
 <template>
   <div class="w-25rem grid">
     <div v-if="hasThumb" class="col-3">
-      <Image :src="props.item.thumbUrl" alt="Thumbnail error" class="w-full"></Image>
+      <img :src="props.item.thumbUrl" alt="Thumbnail error" class="w-full" />
     </div>
 
     <div class="col-9">
