@@ -11,9 +11,13 @@ import {GM_addElement} from "./monkey";
 import './style.css';
 import App from './App.vue';
 
+import runMngStacks from './managers/stacks';
+
 createApp(App)
     .use(PrimeVue).use(DialogService)
     .mount((() => {
         return GM_addElement(document.body, "div");
     })()
 );
+
+runMngStacks();

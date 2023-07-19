@@ -16,16 +16,22 @@ export function isOnChannel(): boolean {
     return location.pathname.startsWith("/channel/");
 }
 
-export function channelId(): string | null {
-    if(!isOnChannel())
-        return null;
+export function channelId(path: string | undefined = undefined): string | null {
+    if(path == undefined) {
+        if(!isOnChannel())
+            return null;
 
-    let path = location.pathname;
+        path = location.pathname;
+    }
+
     path = path.substring("/channel/".length);
 
     const slashIdx = path.indexOf('/');
     if(slashIdx !== -1)
         path = path.substring(0, slashIdx);
+    const qIdx = path.indexOf('?');
+    if(qIdx !== -1)
+        path = path.substring(0, qIdx);
 
     return path;
 }

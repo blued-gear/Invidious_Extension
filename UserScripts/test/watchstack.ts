@@ -96,7 +96,7 @@ function prepareVideoStackItem(): VideoStackItem {
         id: "ID",
         title: "TITLE",
         timeTotal: 60000,
-        timeProgress: 0.1,
+        timeCurrent: 0.1,
         thumbUrl: "THUMB",
         extras: {
             a: "A"
