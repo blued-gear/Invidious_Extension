@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import VirtualScroller from "primevue/virtualscroller";
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
-import {loadStack} from "../../managers/stacks";
+import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
 
 const props = defineProps({
@@ -9,7 +9,7 @@ const props = defineProps({
 });
 
 const stack: WatchStack = (() => {
-  const val = loadStack(props.stackId!!);
+  const val = stackMgr.loadStack(props.stackId!!);
   if(val === null)
     throw new Error("invalid id passed to Stack-Editor (stack not found)");
   return val;

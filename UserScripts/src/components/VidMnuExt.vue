@@ -9,7 +9,7 @@ import {GM_info} from '../monkey';
 
 import TestContent from "./TestContent.vue";
 import StackEditor from "./stacks/StackEditor.vue";
-import run, {CURRENT_STACK_ID} from "../managers/stacks";
+import stackMgr, {CURRENT_STACK_ID} from "../managers/stacks";
 
 const dlg = useDialog();
 
@@ -37,7 +37,7 @@ function openOverlay() {
 }
 
 function openStackEditor() {
-  run();// update current item
+  stackMgr.updateCurrentWatchStack();
   stackEditorDlgOpen.value = true;
 }
 </script>

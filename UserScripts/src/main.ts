@@ -11,7 +11,7 @@ import {GM_addElement} from "./monkey";
 import './style.css';
 import App from './App.vue';
 
-import runMngStacks from './managers/stacks';
+import stackMgr from './managers/stacks';
 
 createApp(App)
     .use(PrimeVue).use(DialogService)
@@ -20,4 +20,4 @@ createApp(App)
     })()
 );
 
-runMngStacks();
+stackMgr.updateCurrentWatchStack();
