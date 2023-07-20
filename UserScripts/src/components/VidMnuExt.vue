@@ -5,7 +5,7 @@ import Menu from "primevue/menu";
 import Dialog from 'primevue/dialog';
 import {useDialog} from 'primevue/usedialog';
 import {MenuItem} from "primevue/menuitem";
-import {GM_info} from '../monkey';
+import {GM} from '../monkey';
 
 import TestContent from "./TestContent.vue";
 import StackEditor from "./stacks/StackEditor.vue";
@@ -13,7 +13,21 @@ import stackMgr, {CURRENT_STACK_ID} from "../managers/stacks";
 
 const dlg = useDialog();
 
-const btnTarget = document.querySelector("html body div div#contents div div.h-box");
+// in the menu-bar beside the settings-button
+const btnTarget = (() => {
+  const elmId = "invExt-mainMenuHolder";
+
+  let elm = document.getElementById(elmId);
+  if(elm != null)
+    return elm;
+
+  elm = document.createElement("div");
+
+  const anchor = document.querySelector("html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog")!!.parentElement!!.parentElement!!;
+  anchor.insertAdjacentElement('beforebegin', elm);
+
+  return elm;
+})();
 
 const vidMnu = ref<Menu>();
 const vidMnuContent = ref<MenuItem[]>([
@@ -30,8 +44,8 @@ const vidMnuContent = ref<MenuItem[]>([
 const stackEditorDlgOpen = ref(false);
 
 function openOverlay() {
-  console.log(GM_info.scriptMetaStr)
-  console.log(GM_info.isIncognito)
+  console.log(GM.info.scriptMetaStr)
+  console.log(GM.info.isIncognito)
 
   dlg.open(TestContent, {})
 }
@@ -44,7 +58,9 @@ function openStackEditor() {
 
 <template>
   <Teleport :to="btnTarget">
-    <Button @click="e => vidMnu!!.toggle(e)">InvExt</Button>
+    <!-- TODO make icon-color fitting page-theme -->
+    <Button @click="e => vidMnu!!.toggle(e)" icon="pi pi-database" text rounded
+            aria-label="InvExt" v-tooltip="'InvExt'"></Button>
     <Menu ref="vidMnu" :popup="true" :model="vidMnuContent"></Menu>
   </Teleport>
 
