@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import VirtualScroller from "primevue/virtualscroller";
+import Divider from 'primevue/divider';
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
@@ -38,6 +39,7 @@ onMounted(async () => {
                        class="flex-1 surface-border h-full">
         <template v-slot:item="{ item, options }">
           <GraphicalVideoStackItem :item="item"></GraphicalVideoStackItem>
+          <Divider></Divider>
         </template>
       </VirtualScroller>
 
