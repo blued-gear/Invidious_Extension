@@ -7,6 +7,7 @@ import {
     VideoStackItem
 } from "../model/stacks/stack-item";
 import {nodeListToArray} from "../util/utils";
+import {GM} from "../monkey"
 
 export const CURRENT_STACK_ID = "~~watch_stack~~";
 const STORAGE_KEY_STACKS = STORAGE_PREFIX + "stacks:";
@@ -28,37 +29,38 @@ export class StackManager {
         }
     }
 
-    loadStack(id: string): WatchStack | null {
+    async loadStack(id: string): Promise<WatchStack | null> {
         if(id === CURRENT_STACK_ID)
             return this.loadCurrentWatchStack();
         else
             return this.loadRegulaStack(id);
     }
 
-    saveStack(stack: WatchStack) {
+    async saveStack(stack: WatchStack) {
         if(stack.id === CURRENT_STACK_ID)
             this.saveCurrentWatchStack(stack);
         else
-            this.saveRegularStack(stack);
+            await this.saveRegularStack(stack);
     }
 
-    deleteStack(id: string) {
+    async deleteStack(id: string) {
         if(id === CURRENT_STACK_ID)
             throw new Error("current watch-stack can not be deleted manually");
 
-        localStorage.removeItem(STORAGE_KEY_STACKS + id);
+        await GM.deleteValue(STORAGE_KEY_STACKS + id);
     }
 
-    private loadRegulaStack(id: string): WatchStack | null {
-        const storedData = localStorage.getItem(STORAGE_KEY_STACKS + id);
+    private async loadRegulaStack(id: string): Promise<WatchStack | null> {
+        const storedData = await GM.getValue<object | null>(STORAGE_KEY_STACKS + id, null);
         if(storedData === null)
             return null;
 
-        return WatchStack.loadJsonObj(JSON.parse(storedData));
+        return WatchStack.loadJsonObj(storedData);
     }
 
     private loadCurrentWatchStack(): WatchStack {
         const storedData = sessionStorage.getItem(STORAGE_KEY_STACKS + CURRENT_STACK_ID);
+
         if(storedData === null) {
             return WatchStack.createWithIdAndName(CURRENT_STACK_ID, "Current Stack");
         } else {
@@ -67,9 +69,9 @@ export class StackManager {
         }
     }
 
-    private saveRegularStack(stack: WatchStack) {
-        const data = JSON.stringify(stack.saveJsonObj());
-        localStorage.setItem(STORAGE_KEY_STACKS + CURRENT_STACK_ID, data);
+    private async saveRegularStack(stack: WatchStack) {
+        const data = stack.saveJsonObj();
+        await GM.setValue(STORAGE_KEY_STACKS + stack.id, data);
     }
 
     private saveCurrentWatchStack(stack: WatchStack) {
