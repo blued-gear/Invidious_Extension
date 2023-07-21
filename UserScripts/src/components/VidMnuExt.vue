@@ -5,16 +5,21 @@ import Menu from "primevue/menu";
 import TieredMenu from 'primevue/tieredmenu';
 import Dialog from 'primevue/dialog';
 import {useDialog} from 'primevue/usedialog';
+import {useToast} from "primevue/usetoast";
 import {MenuItem} from "primevue/menuitem";
+
 import {GM} from '../monkey';
 
 import TestContent from "./TestContent.vue";
 import StackEditor from "./stacks/StackEditor.vue";
 import StackSaveDlg from "./stacks/StackSaveDlg.vue";
-import stackMgr, {STACK_ID_CURRENT} from "../managers/stacks";
+import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../managers/stacks";
+import playerMgr from "../managers/player";
 import {isOnPlayer} from "../util/url-utils";
+import {TOAST_LIFE_ERROR} from "../util/constants";
 
 const dlg = useDialog();
+const toast = useToast();
 
 // in the menu-bar beside the settings-button
 const btnTarget = (() => {
@@ -81,6 +86,34 @@ function saveCurrentStack() {
   stackSaveDlgOpen.value = true;
 }
 
+function playStack(stackId: StackNameWithId) {
+  async function exec() {
+    const stack = await stackMgr.loadStack(stackId.id);
+    if(stack == null) {
+      throw new Error("stack no found");
+    }
+
+    const topItem = stack.peek();
+    if(topItem == null) {
+      throw new Error("stack is empty");
+    }
+
+    stackMgr.setActiveStack(stackId);
+    await playerMgr.openActiveStack();
+  }
+
+  exec().catch((err: Error) => {
+    console.error("error while opening stack", err);
+
+    toast.add({
+      summary: "Unable to open Stack",
+      detail: err.message,
+      severity: 'error',
+      life: TOAST_LIFE_ERROR
+    });
+  });
+}
+
 function onMenuOpen() {
   updateOpenableStacks();
 }
@@ -92,7 +125,7 @@ function updateOpenableStacks() {
     stacks.sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
       openableStacks.push({
         label: s.name,
-        command: () => {}//TODO
+        command: () => { playStack(s) }
       });
     });
   });
