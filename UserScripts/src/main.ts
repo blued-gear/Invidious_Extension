@@ -15,12 +15,14 @@ import App from './App.vue';
 
 import stackMgr from './managers/stacks';
 
+// fix Invidious sizing
+document.querySelector("html body div.pure-g")!!.classList.add('w-full');
+
 createApp(App)
     .use(PrimeVue).use(DialogService)
     .directive('tooltip', Tooltip)
     .mount((() => {
         return GM_addElement(document.body, "div");
-    })()
-);
+    })());
 
 stackMgr.updateCurrentWatchStack();
