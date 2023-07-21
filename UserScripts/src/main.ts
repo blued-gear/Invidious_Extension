@@ -15,6 +15,7 @@ import './style.css';
 import App from './App.vue';
 
 import stackMgr from './managers/stacks';
+import playerMgr from "./managers/player";
 
 // fix Invidious sizing
 document.querySelector("html body div.pure-g")!!.classList.add('w-full');
@@ -27,3 +28,4 @@ createApp(App)
     })());
 
 stackMgr.updateCurrentWatchStack();
+playerMgr.pickupState();

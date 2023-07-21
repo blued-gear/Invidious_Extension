@@ -193,7 +193,7 @@ function scrapeTitle(): string | null {
 }
 
 function scrapeThumbUrl(): string | null {
-    const posterElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled div.vjs-poster") as ElementCSSInlineStyle | null;
+    const posterElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled div.vjs-poster") as HTMLElement | null;
     if(posterElm == null)
         return null;
 
