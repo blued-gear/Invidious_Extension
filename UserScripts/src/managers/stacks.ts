@@ -130,6 +130,7 @@ export class StackManager {
 
     private resetCurrentStack() {
         sessionStorage.removeItem(STORAGE_KEY_CURRENT_STACK);
+        this.setActiveStack(null);
     }
 
     private updateCurrentStack() {
