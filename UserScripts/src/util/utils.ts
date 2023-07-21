@@ -37,3 +37,8 @@ export function formatTime(seconds: number){
 
     return str;
 }
+
+const INT_32_MAX = Math.pow(2, 32) - 1;
+export function randomInt(): number {
+    return Math.floor(Math.random() * (INT_32_MAX + 1));
+}

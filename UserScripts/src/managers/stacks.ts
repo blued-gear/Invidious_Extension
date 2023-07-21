@@ -6,7 +6,7 @@ import {
     STACK_ITEM_EXTRA_PUBLISHER_NAME,
     VideoStackItem
 } from "../model/stacks/stack-item";
-import {nodeListToArray} from "../util/utils";
+import {nodeListToArray, randomInt} from "../util/utils";
 import {GM} from "../monkey"
 
 export interface StackNameWithId {
@@ -169,7 +169,7 @@ export class StackManager {
 
         let id: string;
         do {
-            id = Math.random().toString(16).toLowerCase()
+            id = randomInt().toString(16).toLowerCase()
         } while(existingStacks.find(s => s.id === id) != undefined);
 
         return id;
