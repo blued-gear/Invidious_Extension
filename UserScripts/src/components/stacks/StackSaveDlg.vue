@@ -52,6 +52,8 @@ function onSave() {
       life: TOAST_LIFE_ERROR
     });
   }).catch((err) => {
+    console.error("StackSaveDlg: error while saving stack", err);
+
     toast.add({
       summary: "Stack save failed",
       detail: "Stack could not be saved. Reason:\n" + (err?.toString() ?? "Unknown"),

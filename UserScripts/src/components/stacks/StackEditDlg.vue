@@ -8,6 +8,10 @@ import WatchStack from "../../model/stacks/watchstack";
 import {computed, ref, watch} from "vue";
 import {VideoStackItem} from "../../model/stacks/stack-item";
 import Dialog from "primevue/dialog";
+import {TOAST_LIFE_ERROR} from "../../util/constants";
+import {useToast} from "primevue/usetoast";
+
+const toast = useToast();
 
 const dlgOpen = defineModel<boolean>({
   type: Boolean,
@@ -32,15 +36,39 @@ async function loadData() {
   const val = await stackMgr.loadStack(props.stackId!!);
   if(val === null)
     throw new Error("invalid id passed to Stack-Editor (stack not found)");
-  stack.value = val;
+
+  stack.value = WatchStack.createFromCopy(val.id, val);
 }
 
 function onCancel() {
+  //TODO confirm on unsaved changes
   dlgOpen.value = false;
 }
 
 function onSave() {
+  async function exec() {
+    try {
+      await stackMgr.saveStack(stack.value!! as WatchStack);
 
+      toast.add({
+        summary: "Changes saved",
+        severity: 'success',
+        life: TOAST_LIFE_ERROR
+      });
+
+      dlgOpen.value = false;
+    } catch(err) {
+      console.error("StackEditDlg: error while saving stack", err);
+
+      toast.add({
+        summary: "Save failed",
+        detail: "Changes could not be saved. Reason:\n" + (err?.toString() ?? "Unknown"),
+        severity: 'error',
+        life: TOAST_LIFE_ERROR
+      });
+    }
+  }
+  exec();
 }
 
 watch(dlgOpen, async () => {
@@ -49,7 +77,7 @@ watch(dlgOpen, async () => {
 </script>
 
 <template>
-  <Dialog v-model:visible="dlgOpen" modal header="Edit Stack" style="width: 75vw;">
+  <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Edit Stack" style="width: 75vw;">
     <div class="w-full" style="height: 75vh;">
       <!-- items -->
       <div class="flex w-full h-full">
@@ -77,7 +105,7 @@ watch(dlgOpen, async () => {
       </div>
 
       <!-- cancel, save -->
-      <div class="flex w-full">
+      <div class="flex w-full mt-4 mb-3">
         <Button @click="onCancel">Cancel</Button>
         <div class="flex-grow-1"></div>
         <Button @click="onSave">Save</Button>
