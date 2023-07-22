@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import VirtualScroller from "primevue/virtualscroller";
-import Divider from 'primevue/divider';
+import Listbox from "primevue/listbox";
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
@@ -12,6 +11,7 @@ const props = defineProps({
 });
 
 let stack = ref<WatchStack | undefined>(undefined);
+let selectedItem = ref<VideoStackItem | undefined>(undefined);
 
 const stackItems = computed<VideoStackItem[]>(() => {
   if(stack.value === undefined)
@@ -55,5 +55,8 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
+.itemContainer {
+  width: 100%;
+  border-bottom: 1px solid var(--gray-300);
+}
 </style>
