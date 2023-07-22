@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {reactive, ref, Teleport} from "vue";
+import {computed, reactive, ref, Teleport} from "vue";
 import Button from 'primevue/button';
 import Menu from "primevue/menu";
 import TieredMenu from 'primevue/tieredmenu';
@@ -16,7 +16,7 @@ import StackSaveDlg from "./stacks/StackSaveDlg.vue";
 import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../managers/stacks";
 import playerMgr from "../managers/player";
 import {isOnPlayer} from "../util/url-utils";
-import {TOAST_LIFE_ERROR} from "../util/constants";
+import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../util/constants";
 
 const dlg = useDialog();
 const toast = useToast();
@@ -42,10 +42,11 @@ const btnTarget = (() => {
   return elm;
 })();
 
-const openableStacks = reactive<MenuItem[]>([]);
+const openableStacks = reactive<StackNameWithId[]>([]);
+const stackToEditId = ref<string>(STACK_ID_CURRENT);
 
 const vidMnu = ref<Menu>();
-const vidMnuContent = ref<MenuItem[]>([
+const vidMnuContent = computed<MenuItem[]>(() => [
   {
     label: "Edit current Watch-Stack",
     command: () => openStackEditor(),
@@ -58,7 +59,24 @@ const vidMnuContent = ref<MenuItem[]>([
   },
   {
     label: "Open Stack",
-    items: openableStacks
+    items: openableStacks.map(s => { return {
+      label: s.name,
+      command: () => { playStack(s) }
+    }})
+  },
+  {
+    label: "Edit Stack",
+    items: openableStacks.map(s => { return {
+      label: s.name,
+      command: () => { editStack(s) }
+    }})
+  },
+  {
+    label: "Delete Stack",
+    items: openableStacks.map(s => { return {
+      label: s.name,
+      command: () => { deleteStack(s) }
+    }})
   },
   {
     label: 'Do it',
@@ -78,6 +96,7 @@ function openOverlay() {
 
 function openStackEditor() {
   stackMgr.updateCurrentWatchStack();
+  stackToEditId.value = STACK_ID_CURRENT;
   stackEditorDlgOpen.value = true;
 }
 
@@ -114,6 +133,31 @@ function playStack(stackId: StackNameWithId) {
   });
 }
 
+function editStack(stackId: StackNameWithId) {
+  stackToEditId.value = stackId.id;
+  stackEditorDlgOpen.value = true;
+}
+
+function deleteStack(stackId: StackNameWithId) {
+  stackMgr.deleteStack(stackId.id).then(() => {
+    toast.add({
+      summary: "Stack deleted",
+      detail: `Stack ${stackId.name} deleted`,
+      severity: 'success',
+      life: TOAST_LIFE_INFO
+    });
+  }).catch((err) => {
+    console.error(`error while deleting stack; name: ${stackId.name} , id: ${stackId.id}`, err);
+
+    toast.add({
+      summary: "Unable to delete Stack",
+      detail: err.message,
+      severity: 'error',
+      life: TOAST_LIFE_ERROR
+    });
+  });
+}
+
 function onMenuOpen() {
   updateOpenableStacks();
 }
@@ -121,13 +165,7 @@ function onMenuOpen() {
 function updateOpenableStacks() {
   stackMgr.listStacks().then(stacks => {
     openableStacks.splice(0);
-
-    stacks.sort((a, b) => a.name.localeCompare(b.name)).forEach(s => {
-      openableStacks.push({
-        label: s.name,
-        command: () => { playStack(s) }
-      });
-    });
+    openableStacks.push(...stacks.sort((a, b) => a.name.localeCompare(b.name)));
   });
 }
 </script>
@@ -142,7 +180,7 @@ function updateOpenableStacks() {
 
   <Dialog v-model:visible="stackEditorDlgOpen" modal header="Edit current Watch-Stack" style="width: 75vw;">
     <div class="w-full" style="height: 75vh;">
-      <StackEditor :stack-id="STACK_ID_CURRENT"></StackEditor>
+      <StackEditor :stack-id="stackToEditId"></StackEditor>
     </div>
   </Dialog>
 
