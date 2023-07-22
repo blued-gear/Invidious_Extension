@@ -8,9 +8,6 @@ import {useDialog} from 'primevue/usedialog';
 import {useToast} from "primevue/usetoast";
 import {MenuItem} from "primevue/menuitem";
 
-import {GM} from '../monkey';
-
-import TestContent from "./TestContent.vue";
 import StackEditor from "./stacks/StackEditor.vue";
 import StackSaveDlg from "./stacks/StackSaveDlg.vue";
 import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../managers/stacks";
@@ -77,22 +74,11 @@ const vidMnuContent = computed<MenuItem[]>(() => [
       label: s.name,
       command: () => { deleteStack(s) }
     }})
-  },
-  {
-    label: 'Do it',
-    command: () => openOverlay()
   }
 ]);
 
 const stackEditorDlgOpen = ref(false);
 const stackSaveDlgOpen = ref(false);
-
-function openOverlay() {
-  console.log(GM.info.scriptMetaStr)
-  console.log(GM.info.isIncognito)
-
-  dlg.open(TestContent, {})
-}
 
 function openStackEditor() {
   stackMgr.updateCurrentWatchStack();
