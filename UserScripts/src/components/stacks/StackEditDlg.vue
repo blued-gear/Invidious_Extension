@@ -1,11 +1,17 @@
 <script setup lang="ts">
+import Button from "primevue/button";
 import Listbox from "primevue/listbox";
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
 import {computed, onMounted, ref} from "vue";
 import {VideoStackItem} from "../../model/stacks/stack-item";
+import Dialog from "primevue/dialog";
 
+const dlgOpen = defineModel<boolean>({
+  type: Boolean,
+  required: true
+});
 const props = defineProps({
   stackId: {type: String, required: true}
 });
@@ -26,33 +32,49 @@ async function loadData() {
   stack.value = val;
 }
 
+function onCancel() {
+  dlgOpen.value = false;
+}
+
+function onSave() {
+
+}
+
 onMounted(async () => {
   await loadData();
 });
 </script>
 
 <template>
-  <div class="h-full w-full">
-    <!-- items -->
-    <div class="flex w-full h-full">
-      <Listbox v-model="selectedItem" :options="stackItems"
-               class="flex-1 surface-border h-full">
-        <template #option="slotProps">
-          <div class="itemContainer">
-            <GraphicalVideoStackItem :item="slotProps.option"></GraphicalVideoStackItem>
-          </div>
-        </template>
-      </Listbox>
+  <Dialog v-model:visible="dlgOpen" modal header="Edit Stack" style="width: 75vw;">
+    <div class="w-full" style="height: 75vh;">
+      <!-- items -->
+      <div class="flex w-full h-full">
+        <Listbox v-model="selectedItem" :options="stackItems"
+                 class="flex-1 surface-border h-full">
+          <template #option="slotProps">
+            <div class="itemContainer">
+              <GraphicalVideoStackItem :item="slotProps.option"></GraphicalVideoStackItem>
+            </div>
+          </template>
+        </Listbox>
 
-      .
+        .
+      </div>
+
+      <!-- add -->
+      <div>
+        .
+      </div>
+
+      <!-- cancel, save -->
+      <div class="flex w-full">
+        <Button @click="onCancel">Cancel</Button>
+        <div class="flex-grow-1"></div>
+        <Button @click="onSave">Save</Button>
+      </div>
     </div>
-
-    <!-- add -->
-    <div>
-      .
-    </div>
-  </div>
-
+  </Dialog>
 </template>
 
 <style scoped>
