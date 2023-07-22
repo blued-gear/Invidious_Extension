@@ -57,7 +57,8 @@ function onSave() {
 
 function updateExistingStacks() {
   stackMgr.listStacks().then(stacks => {
-    existingStacks.value = stacks
+    existingStacks.value = stacks;
+    onQueryNames();
   });
 
   const loadedStack = stackMgr.getActiveStack();
