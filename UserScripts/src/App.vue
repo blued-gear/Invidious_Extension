@@ -2,11 +2,11 @@
 import DynamicDialog from 'primevue/dynamicdialog';
 import Toast from 'primevue/toast';
 
-import VidMnuExt from "./components/VidMnuExt.vue";
+import MainMenu from "./components/MainMenu.vue";
 </script>
 
 <template>
-  <VidMnuExt></VidMnuExt>
+  <MainMenu></MainMenu>
 
   <DynamicDialog />
   <Toast />
