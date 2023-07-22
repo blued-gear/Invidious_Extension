@@ -35,13 +35,14 @@ onMounted(async () => {
   <div class="h-full w-full">
     <!-- items -->
     <div class="flex w-full h-full">
-      <VirtualScroller :items="stackItems" :item-size="50"
-                       class="flex-1 surface-border h-full">
-        <template v-slot:item="{ item, options }">
-          <GraphicalVideoStackItem :item="item"></GraphicalVideoStackItem>
-          <Divider></Divider>
+      <Listbox v-model="selectedItem" :options="stackItems"
+               class="flex-1 surface-border h-full">
+        <template #option="slotProps">
+          <div class="itemContainer">
+            <GraphicalVideoStackItem :item="slotProps.option"></GraphicalVideoStackItem>
+          </div>
         </template>
-      </VirtualScroller>
+      </Listbox>
 
       .
     </div>
