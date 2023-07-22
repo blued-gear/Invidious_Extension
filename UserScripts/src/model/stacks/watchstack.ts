@@ -76,8 +76,11 @@ export default class WatchStack {
         return old;
     }
 
+    /**
+     * returns the items of this stack (top item will be at index 0)
+     */
     toArray(): VideoStackItem[] {
-        return [...this.items];
+        return [...this.items].reverse();
     }
 
     saveJsonObj(): object {
