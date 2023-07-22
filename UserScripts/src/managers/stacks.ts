@@ -215,7 +215,7 @@ function scrapeTimeTotal(): number | null {
     }, 0);
 }
 
-function scrapeTimeCurrent(): number | null {
+export function scrapeTimeCurrent(): number | null {
     const timeCurElm = document.querySelector("html body div#contents div#player-container.h-box div#player.on-video_player.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-current-time.vjs-time-control.vjs-control span.vjs-current-time-display");
     if(timeCurElm == null)
         return null;

@@ -1,6 +1,6 @@
 import {isOnPlayer, videoId} from "../util/url-utils";
 import {STORAGE_PREFIX} from "../util/constants";
-import stackMgr from './stacks';
+import stackMgr, {scrapeTimeCurrent} from './stacks';
 
 const STORAGE_KEY_STATE = STORAGE_PREFIX + "player::state";
 
@@ -58,10 +58,9 @@ export class PlayerManager {
         this.state.openingPhase = OpeningPhase.OPEN_STACK;
         this.saveState();
 
-        const isReloading = await this.openVideo(topItem.id);
+        const isReloading = await this.openVideo(topItem.id, topItem.timeCurrent);
         if(isReloading)
             return;
-        await this.jumpToTime(topItem.timeCurrent);
 
         this.state.openingPhase = OpeningPhase.NONE;
         this.saveState();
@@ -69,22 +68,28 @@ export class PlayerManager {
 
     /**
      * @param id the vide-id
+     * @param time number of seconds to jump to after start (if video is already loaded it will reload with the right time);
+     *              or <code>null</code> if unspecified
      * @return if a page-reload was triggered
      */
-    async openVideo(id: string): Promise<boolean> {
+    async openVideo(id: string, time: number | null): Promise<boolean> {
         if(videoId() !== id) {
-            location.assign("/watch?v=" + id);
+            const timeParam = time != null ? `&t=${time}` : "";
+            location.assign("/watch?v=" + id + timeParam);
             return true;
         } else {
+            await this.waitForPlayerStartet();
+
+            if(time != null) {
+                const currentTime = scrapeTimeCurrent();
+                if(currentTime == null || Math.abs(currentTime - time) > 2) {// two seconds as acceptable delta
+                    location.assign(`/watch?v=${id}&t=${time}`);
+                    return true;
+                }
+            }
+
             return false;
         }
-    }
-
-    async jumpToTime(seconds: number) {
-        this.checkPlayer();
-
-        await this.waitForPlayerStartet();
-        jumpToSeconds(seconds);
     }
 
     private async pickupStateAsync() {
@@ -105,11 +110,6 @@ export class PlayerManager {
                 break;
             }
         }
-    }
-
-    private checkPlayer() {
-        if(!isOnPlayer())
-            throw new Error("player is not open");
     }
 
     private async waitForPlayerStartet(): Promise<void> {
@@ -186,8 +186,4 @@ async function startVideo() {
             }
         }, 100);
     });
-}
-
-function jumpToSeconds(seconds: number) {
-    ;
 }
