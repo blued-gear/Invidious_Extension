@@ -4,7 +4,7 @@ import Listbox from "primevue/listbox";
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
-import {computed, onMounted, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {VideoStackItem} from "../../model/stacks/stack-item";
 import Dialog from "primevue/dialog";
 
@@ -40,7 +40,7 @@ function onSave() {
 
 }
 
-onMounted(async () => {
+watch(dlgOpen, async () => {
   await loadData();
 });
 </script>
