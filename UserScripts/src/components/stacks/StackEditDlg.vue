@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Listbox from "primevue/listbox";
+import Skeleton from 'primevue/skeleton';
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
@@ -26,6 +27,8 @@ const stackItems = computed<VideoStackItem[]>(() => {
 })
 
 async function loadData() {
+  stack.value = undefined;// reset so that no old values will be shown
+
   const val = await stackMgr.loadStack(props.stackId!!);
   if(val === null)
     throw new Error("invalid id passed to Stack-Editor (stack not found)");
@@ -50,7 +53,13 @@ watch(dlgOpen, async () => {
     <div class="w-full" style="height: 75vh;">
       <!-- items -->
       <div class="flex w-full h-full">
-        <Listbox v-model="selectedItem" :options="stackItems"
+        <div v-show="stack == undefined" class="flex-1 surface-border h-full">
+          <Skeleton class="mb-2 w-2"></Skeleton>
+          <Skeleton class="mb-2 w-3"></Skeleton>
+          <Skeleton class="mb-2 w-4"></Skeleton>
+          <Skeleton class="mb-2 w-5"></Skeleton>
+        </div>
+        <Listbox v-model="selectedItem" :options="stackItems" v-show="stack != undefined"
                  class="flex-1 surface-border h-full">
           <template #option="slotProps">
             <div class="itemContainer">
