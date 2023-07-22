@@ -90,16 +90,6 @@ function saveCurrentStack() {
 
 function playStack(stackId: StackNameWithId) {
   async function exec() {
-    const stack = await stackMgr.loadStack(stackId.id);
-    if(stack == null) {
-      throw new Error("stack no found");
-    }
-
-    const topItem = stack.peek();
-    if(topItem == null) {
-      throw new Error("stack is empty");
-    }
-
     stackMgr.setActiveStack(stackId);
     await playerMgr.openActiveStack();
   }
