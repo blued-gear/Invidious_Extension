@@ -45,6 +45,12 @@ function onSave() {
 
   stackMgr.saveStack(toSave).then(() => {
     dlgOpen.value = false;
+
+    toast.add({
+      summary: "Stack saved",
+      severity: 'success',
+      life: TOAST_LIFE_ERROR
+    });
   }).catch((err) => {
     toast.add({
       summary: "Stack save failed",
