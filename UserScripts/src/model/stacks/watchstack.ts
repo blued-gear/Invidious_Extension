@@ -59,6 +59,25 @@ export default class WatchStack {
         return this.items.splice(this.items.length - idx - 1)[0];
     }
 
+    add(item: VideoStackItem, idx: number) {
+        if(idx >= this.items.length)
+            idx = this.items.length;
+
+        this.items.splice(this.items.length - idx, 0, item);
+    }
+
+    remove(idx: number): VideoStackItem | null {
+        if(idx >= this.items.length)
+            return null;
+
+        const removed = this.items.splice(this.items.length - idx - 1, 1);
+
+        if(removed.length === 1)
+            return removed[0];
+        else
+            return null;
+    }
+
     /**
      * replaces an item on the stack
      * @param newItem the new item to insert

@@ -42,3 +42,13 @@ const INT_32_MAX = Math.pow(2, 32) - 1;
 export function randomInt(): number {
     return Math.floor(Math.random() * (INT_32_MAX + 1));
 }
+
+/**
+ * checks if the given array contains the item by using stricht equality (===) comparison
+ * @param arr the array
+ * @param item the item to search for
+ * @return <code>true</code> if the item exists in the array, <code>false</code> otherwise
+ */
+export function arrayContains<T>(arr: T[], item: T): boolean {
+    return arr.find(elm => elm === item) !== undefined;
+}
