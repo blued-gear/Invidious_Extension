@@ -8,5 +8,8 @@ const config: Config.InitialOptions = {
     transform: {
         "^.+\\.tsx?$": "ts-jest",
     },
+    setupFilesAfterEnv: [
+        "jest-expect-message"
+    ]
 };
 export default config;

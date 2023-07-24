@@ -126,6 +126,43 @@ describe("WatchStack", () => {
         expect(stack.peek()).toBe(item3);
         expect(stack.peek(1)).toBe(item4);
     });
+
+    it("can add at idx", () => {
+        const stack = WatchStack.createWithIdAndName("ID", "NAME");
+        const item1 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-1"}));
+        const item2 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-2"}));
+        const item3 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-3"}));
+        const item4 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-4"}));
+
+        stack.push(item1);
+        stack.push(item2);
+        stack.push(item3);
+
+        stack.add(item4, 1);
+
+        expect(stack.length()).toBe(4);
+        expect(stack.peek()).toBe(item3);
+        expect(stack.toArray()).toEqual([item3, item4, item2, item1]);
+    });
+
+    it("can remove at idx", () => {
+        const stack = WatchStack.createWithIdAndName("ID", "NAME");
+        const item1 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-1"}));
+        const item2 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-2"}));
+        const item3 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-3"}));
+        const item4 = new VideoStackItem(Object.assign({}, prepareVideoStackItem(), {id: "V_ID-4"}));
+
+        stack.push(item1);
+        stack.push(item2);
+        stack.push(item3);
+        stack.push(item4);
+
+        const removed = stack.remove(1);
+
+        expect(stack.length()).toBe(3);
+        expect(removed).toBe(item3);
+        expect(stack.toArray()).toEqual([item4, item2, item1]);
+    });
 });
 
 function prepareVideoStackItem(): VideoStackItemProps {
