@@ -14,15 +14,15 @@ const props = defineProps({
   allowedExtras: {type: Array<string>, default() {return []}}
 });
 
-const hasThumb = computed(() => props.item.thumbUrl !== "");
+const hasThumb = computed(() => props.item.thumbUrl !== null);
 const hasPublisher = computed(() => props.item.extras[STACK_ITEM_EXTRA_PUBLISHER_NAME] != null);
-const hasTimes = computed(() => props.item.timeTotal > 0 && props.item.timeCurrent > 0);
+const hasTimes = computed(() => props.item.timeTotal !== null && props.item.timeCurrent !== null);
 </script>
 
 <template>
   <div class="w-25rem grid">
     <div v-if="hasThumb" class="col-3">
-      <img :src="props.item.thumbUrl" alt="Thumbnail error" class="w-full" />
+      <img :src="props.item.thumbUrl!!" alt="Thumbnail error" class="w-full" />
     </div>
 
     <div class="col-9">
@@ -34,7 +34,7 @@ const hasTimes = computed(() => props.item.timeTotal > 0 && props.item.timeCurre
       </a>
 
       <div v-if="hasTimes" class="text-xm font-light">
-        Watch-Time: {{formatTime(props.item.timeCurrent)}} of {{formatTime(props.item.timeTotal)}}
+        Watch-Time: {{formatTime(props.item.timeCurrent!!)}} of {{formatTime(props.item.timeTotal!!)}}
       </div>
     </div>
   </div>

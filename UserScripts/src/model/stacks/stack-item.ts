@@ -3,11 +3,11 @@ import deepEqual from "fast-deep-equal/es6";
 export interface VideoStackItemProps {
     readonly id: string
     readonly title: string
-    readonly thumbUrl: string
+    readonly thumbUrl: string | null
     /** length of video; in s */
-    readonly timeTotal: number
+    readonly timeTotal: number | null
     /** watched seconds */
-    readonly timeCurrent: number
+    readonly timeCurrent: number | null
     /** collection of extra information (like channel-name) */
     readonly extras: Record<string, any>
 }
@@ -16,9 +16,9 @@ export class VideoStackItem implements VideoStackItemProps {
 
     readonly id: string
     readonly title: string
-    readonly thumbUrl: string
-    readonly timeTotal: number
-    readonly timeCurrent: number
+    readonly thumbUrl: string | null
+    readonly timeTotal: number | null
+    readonly timeCurrent: number | null
     readonly extras: Record<string, any>
     //TODO impl playlists
 

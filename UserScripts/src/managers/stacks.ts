@@ -156,9 +156,9 @@ export class StackManager {
         return new VideoStackItem({
             id: videoId()!!,
             title: scrapeTitle() ?? "~~unable to get title~~",
-            thumbUrl: scrapeThumbUrl() ?? "",
-            timeTotal: scrapeTimeTotal() ?? -1,
-            timeCurrent: scrapeTimeCurrent() ?? -1,
+            thumbUrl: scrapeThumbUrl(),
+            timeTotal: scrapeTimeTotal(),
+            timeCurrent: scrapeTimeCurrent(),
             extras: Object.assign({},
                 scrapePublisher()
             )
