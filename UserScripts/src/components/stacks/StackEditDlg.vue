@@ -24,6 +24,9 @@ const props = defineProps({
 });
 
 const stack = ref<WatchStack | undefined>(undefined);
+const addVidId = ref("");
+const addPlId = ref("");
+const lastSelected = ref<VideoStackItem | null>(null);
 
 const stackItems = computed<VideoStackItem[]>(() => {
   if(stack.value === undefined)
@@ -55,12 +58,42 @@ async function loadData() {
 }
 
 function onSelectionChanged(sel: VideoStackItem[]) {
-  //TODO fill in id of vid (and pl) to add form
-  //  (if it is empty)
+  if(sel.length === 0)
+    return;
+
+  const selected = sel[sel.length - 1];
+  if(addVidId.value === "" || (lastSelected.value !== null && addVidId.value === lastSelected.value.id)) {
+    addVidId.value = selected.id;
+  }
+  //TODO fill pl-id
+
+  lastSelected.value = selected;
 }
 
 function onItemsMoved(move: MoveAction<VideoStackItem>) {
   moveItemsStack(stack.value as WatchStack, move);
+}
+
+function onAdd() {
+  let idx = 0;
+  if(lastSelected.value !== null) {
+    idx = stack.value!!.toArray().indexOf(lastSelected.value);
+    if(idx === -1)
+      idx = 0;
+  }
+
+  const item = new VideoStackItem({
+    extras: {},
+    id: addVidId.value,
+    title: "~~ to be fetched ~~",//TODO find a better source
+    thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
+    timeCurrent: null,
+    timeTotal: null,
+  });
+
+  //TODO pl
+
+  stack.value!!.add(item, idx);
 }
 
 function onCancel() {
@@ -101,13 +134,14 @@ watch(dlgOpen, async () => {
 <template>
   <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Edit Stack" style="width: 75vw;">
     <div class="w-full" style="height: 75vh;">
-      <!-- name -->
+      <!-- region name -->
       <div class="flex flex-column gap-2">
         <label for="stack_edit_dlg-stack_name">Stack Name</label>
         <InputText id="stack_edit_dlg-stack_name" v-model="stackName" />
       </div>
+      <!-- endregion name -->
 
-      <!-- items -->
+      <!-- region items -->
       <div class="flex w-full h-full mt-3">
         <div v-show="stack == undefined" class="flex-1 surface-border h-full">
           <Skeleton class="mb-2 w-2"></Skeleton>
@@ -125,18 +159,30 @@ watch(dlgOpen, async () => {
           </template>
         </OrderList>
       </div>
+      <!-- endregion items -->
 
-      <!-- add -->
-      <div class="mt-3">
-        .
+      <!-- region add -->
+      <div class="w-max mt-2 p-4 pl-1 flex flex-column gap-4 border-1 border-300">
+        <span class="p-float-label">
+          <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" />
+          <label for="stack_edit_dlg-add-vid">Video-ID</label>
+        </span>
+        <span class="p-float-label">
+          <InputText id="stack_edit_dlg-add-pl" v-model="addPlId" />
+          <label for="stack_edit_dlg-add-pl">Playlist-ID</label>
+        </span>
+
+        <Button @click="onAdd" :disabled="stack !== undefined && addVidId === ''" class="w-max">Add</Button>
       </div>
+      <!-- endregion add -->
 
-      <!-- cancel, save -->
+      <!-- region cancel, save -->
       <div class="flex w-full mt-4 mb-3">
         <Button @click="onCancel">Cancel</Button>
         <div class="flex-grow-1"></div>
         <Button @click="onSave">Save</Button>
       </div>
+      <!-- endregion cancel, save -->
     </div>
   </Dialog>
 </template>
