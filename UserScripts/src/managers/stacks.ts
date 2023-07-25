@@ -31,11 +31,17 @@ export class StackManager {
     private constructor() {}
 
     updateCurrentWatchStack() {
-        if(isOnPlayer()) {
-            this.updateCurrentStack();
-        } else {
-            this.resetCurrentStack();
+        const exec = async () => {
+            if(isOnPlayer()) {
+                await this.updateCurrentStack();
+            } else {
+                this.resetCurrentStack(true);
+            }
         }
+
+        exec().catch((err) => {
+            console.error("error in updateCurrentWatchStack()", err);
+        });
     }
 
     async loadStack(id: string): Promise<WatchStack | null> {
@@ -92,13 +98,31 @@ export class StackManager {
     setActiveStack(stack: StackNameWithId | null) {
         const data = JSON.stringify(stack);
         sessionStorage.setItem(STORAGE_KEY_ACTIVE_STACK, data);
+
+        if(stack !== null)
+            this.resetCurrentStack(false);// so that it is reloaded with the new active_stack on the next loadCurrentWatchStack() call
     }
 
-    loadCurrentWatchStack(): WatchStack {
+    async loadCurrentWatchStack(): Promise<WatchStack> {
         const storedData = sessionStorage.getItem(STORAGE_KEY_CURRENT_STACK);
 
         if(storedData === null) {
-            return WatchStack.createWithIdAndName(STACK_ID_CURRENT, "Current Stack");
+            const stack = WatchStack.createWithIdAndName(STACK_ID_CURRENT, "Current Stack");
+
+            const activeStackId = this.getActiveStack();
+            if(activeStackId !== null) {
+                const activeStack = await this.loadStack(activeStackId.id);
+                if(activeStack === null)
+                    throw new Error("active stack not loadable");
+
+                // prefill with items of active_stack
+                activeStack.toArray().reverse().forEach(vid => {
+                    stack.push(vid);
+                });
+            }
+
+            this.saveCurrentWatchStack(stack);
+            return stack;
         } else {
             const storedObject: WatchStack = JSON.parse(storedData);
             return WatchStack.loadJsonObj(storedObject);
@@ -128,13 +152,15 @@ export class StackManager {
         sessionStorage.setItem(STORAGE_KEY_CURRENT_STACK, data);
     }
 
-    private resetCurrentStack() {
+    private resetCurrentStack(alsoActiveStack: boolean) {
         sessionStorage.removeItem(STORAGE_KEY_CURRENT_STACK);
-        this.setActiveStack(null);
+
+        if(alsoActiveStack)
+            this.setActiveStack(null);
     }
 
-    private updateCurrentStack() {
-        const stack = this.loadCurrentWatchStack();
+    private async updateCurrentStack() {
+        const stack = await this.loadCurrentWatchStack();
 
         const currentVid = this.currentVidItem();
 

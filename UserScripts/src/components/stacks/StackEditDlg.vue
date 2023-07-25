@@ -85,7 +85,7 @@ function onAdd() {
   const item = new VideoStackItem({
     extras: {},
     id: addVidId.value,
-    title: "~~ to be fetched ~~",//TODO find a better source
+    title: "~~to be fetched~~",//TODO find a better source
     thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
     timeCurrent: null,
     timeTotal: null,
@@ -101,7 +101,7 @@ function onCancel() {
 }
 
 function onSave() {
-  async function exec() {
+  const exec = async () => {
     try {
       await stackMgr.saveStack(stack.value!! as WatchStack);
 

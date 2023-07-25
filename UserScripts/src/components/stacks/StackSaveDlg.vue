@@ -32,35 +32,39 @@ function onSave() {
   if(!nameValid.value)
     return;
 
-  const stack = stackMgr.loadCurrentWatchStack();
-  const toOverride = existingStacks.value.find(s => s.name === selectedName.value);
-  let toSave: WatchStack;
-  if(toOverride != undefined) {
-    toSave = WatchStack.createFromCopy(toOverride.id, stack);
-    toSave.name = toOverride.name;
-  } else {
-    toSave = WatchStack.createFromCopy(STACK_ID_TO_BE_SET, stack);
-    toSave.name = selectedName.value!!;
+  const exec = async () => {
+    const stack = await stackMgr.loadCurrentWatchStack();
+    const toOverride = existingStacks.value.find(s => s.name === selectedName.value);
+
+    let toSave: WatchStack;
+    if(toOverride != undefined) {
+      toSave = WatchStack.createFromCopy(toOverride.id, stack);
+      toSave.name = toOverride.name;
+    } else {
+      toSave = WatchStack.createFromCopy(STACK_ID_TO_BE_SET, stack);
+      toSave.name = selectedName.value!!;
+    }
+
+    stackMgr.saveStack(toSave).then(() => {
+      dlgOpen.value = false;
+
+      toast.add({
+        summary: "Stack saved",
+        severity: 'success',
+        life: TOAST_LIFE_ERROR
+      });
+    }).catch((err) => {
+      console.error("StackSaveDlg: error while saving stack", err);
+
+      toast.add({
+        summary: "Stack save failed",
+        detail: "Stack could not be saved. Reason:\n" + (err?.toString() ?? "Unknown"),
+        severity: 'error',
+        life: TOAST_LIFE_ERROR
+      });
+    });
   }
-
-  stackMgr.saveStack(toSave).then(() => {
-    dlgOpen.value = false;
-
-    toast.add({
-      summary: "Stack saved",
-      severity: 'success',
-      life: TOAST_LIFE_ERROR
-    });
-  }).catch((err) => {
-    console.error("StackSaveDlg: error while saving stack", err);
-
-    toast.add({
-      summary: "Stack save failed",
-      detail: "Stack could not be saved. Reason:\n" + (err?.toString() ?? "Unknown"),
-      severity: 'error',
-      life: TOAST_LIFE_ERROR
-    });
-  });
+  exec();
 }
 
 function updateExistingStacks() {

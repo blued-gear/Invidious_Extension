@@ -89,7 +89,7 @@ function saveCurrentStack() {
 }
 
 function playStack(stackId: StackNameWithId) {
-  async function exec() {
+  const exec = async () => {
     stackMgr.setActiveStack(stackId);
     await playerMgr.openActiveStack();
   }
