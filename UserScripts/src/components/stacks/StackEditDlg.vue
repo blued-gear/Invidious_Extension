@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import InputText from "primevue/inputtext";
-import Listbox from "primevue/listbox";
 import Skeleton from 'primevue/skeleton';
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
+import OrderList from "../misc/OrderList.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
 import {computed, ref, watch} from "vue";
@@ -11,6 +11,7 @@ import {VideoStackItem} from "../../model/stacks/stack-item";
 import Dialog from "primevue/dialog";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
 import {useToast} from "primevue/usetoast";
+import {MoveAction, moveItemsStack} from "../../util/coll-item-move";
 
 const toast = useToast();
 
@@ -23,8 +24,6 @@ const props = defineProps({
 });
 
 const stack = ref<WatchStack | undefined>(undefined);
-const selectedItem = ref<VideoStackItem | undefined>(undefined);
-const changed = ref<boolean>(false);
 
 const stackItems = computed<VideoStackItem[]>(() => {
   if(stack.value === undefined)
@@ -41,7 +40,6 @@ const stackName = computed<string>({
     if(stack.value === undefined)
       return;
 
-    changed.value = true;
     stack.value.name = newVal;
   }
 });
@@ -56,8 +54,16 @@ async function loadData() {
   stack.value = WatchStack.createFromCopy(val.id, val);
 }
 
+function onSelectionChanged(sel: VideoStackItem[]) {
+  //TODO fill in id of vid (and pl) to add form
+  //  (if it is empty)
+}
+
+function onItemsMoved(move: MoveAction<VideoStackItem>) {
+  moveItemsStack(stack.value as WatchStack, move);
+}
+
 function onCancel() {
-  //TODO confirm on unsaved changes
   dlgOpen.value = false;
 }
 
@@ -109,16 +115,15 @@ watch(dlgOpen, async () => {
           <Skeleton class="mb-2 w-4"></Skeleton>
           <Skeleton class="mb-2 w-5"></Skeleton>
         </div>
-        <Listbox v-model="selectedItem" :options="stackItems" v-show="stack != undefined"
-                 class="flex-1 surface-border h-full">
-          <template #option="slotProps">
+        <OrderList :model-value="stackItems" :emit-items-update="false" :multiple="true" v-show="stack != undefined"
+                   @changed:selected="onSelectionChanged" @move="onItemsMoved"
+                   class="flex-1 surface-border h-full">
+          <template v-slot="slotProps">
             <div class="itemContainer">
-              <GraphicalVideoStackItem :item="slotProps.option"></GraphicalVideoStackItem>
+              <GraphicalVideoStackItem :item="slotProps.item"></GraphicalVideoStackItem>
             </div>
           </template>
-        </Listbox>
-
-        .
+        </OrderList>
       </div>
 
       <!-- add -->
