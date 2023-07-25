@@ -20,12 +20,12 @@ const hasTimes = computed(() => props.item.timeTotal !== null && props.item.time
 </script>
 
 <template>
-  <div class="w-25rem grid">
-    <div v-if="hasThumb" class="col-3">
+  <div class="w-full grid">
+    <div v-if="hasThumb" class="col-2" style="min-width: 10rem;">
       <img :src="props.item.thumbUrl!!" alt="Thumbnail error" class="w-full" />
     </div>
 
-    <div class="col-9">
+    <div class="col-10">
       <div class="text-lg">{{props.item.title}}</div>
 
       <a v-if="hasPublisher" class="font-light"
