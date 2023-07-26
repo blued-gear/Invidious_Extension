@@ -39,8 +39,16 @@ const btnTarget = (() => {
 const openableStacks = reactive<StackNameWithId[]>([]);
 const stackToEditId = ref<string>(STACK_ID_CURRENT);
 
+const watchStackPopable = ref<boolean>(false);
+
 const vidMnu = ref<Menu>();
 const vidMnuContent = computed<MenuItem[]>(() => [
+  {
+    label: "Last Video (from Stack)",
+    command: () => popWatchStack(),
+    visible: () => isOnPlayer(),
+    disabled: !watchStackPopable.value
+  },
   {
     label: "Edit current Watch-Stack",
     command: () => openStackEditor(),
@@ -76,6 +84,28 @@ const vidMnuContent = computed<MenuItem[]>(() => [
 
 const stackEditorDlgOpen = ref(false);
 const stackSaveDlgOpen = ref(false);
+
+function popWatchStack() {
+  const exec = async () => {
+    const stack = await stackMgr.loadCurrentWatchStack();
+    stack.pop();
+    await stackMgr.saveStack(stack);
+
+    const vid = stack.peek()!!;
+    await playerMgr.openVideo(vid.id, vid.timeCurrent);
+  }
+
+  exec().catch((err) => {
+    console.error("error in popWatchStack()", err);
+
+    toast.add({
+      summary: "Unable to load last video",
+      detail: err.message,
+      severity: 'error',
+      life: TOAST_LIFE_ERROR
+    });
+  });
+}
 
 function openStackEditor() {
   stackMgr.updateCurrentWatchStack();
@@ -133,12 +163,26 @@ function deleteStack(stackId: StackNameWithId) {
 
 function onMenuOpen() {
   updateOpenableStacks();
+  updateWatchStackPopable();
 }
 
 function updateOpenableStacks() {
   stackMgr.listStacks().then(stacks => {
     openableStacks.splice(0);
     openableStacks.push(...stacks.sort((a, b) => a.name.localeCompare(b.name)));
+  });
+}
+
+function updateWatchStackPopable() {
+  const exec = async () => {
+    const stack = await stackMgr.loadCurrentWatchStack();
+    watchStackPopable.value = stack.length() > 1;
+  };
+
+  exec().catch((err) => {
+    console.error("error in updateWatchStackPopable()", err);
+
+    watchStackPopable.value = false;
   });
 }
 </script>
