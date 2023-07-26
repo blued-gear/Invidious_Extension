@@ -34,10 +34,28 @@ export class PlayerManager {
 
     private constructor() {}
 
-    pickupState() {
-        this.pickupStateAsync().catch((err) => {
-            console.error("unable to restore player-state", err);
-        });
+    async pickupState() {
+        this.state = this.loadState();
+
+        if(!this.state.active)
+            return;
+
+        if(!isOnPlayer()) {
+            this.state.active = false;
+            this.saveState();
+            return;
+        }
+
+        switch(this.state.openingPhase) {
+            case OpeningPhase.OPEN_STACK: {
+                await this.stateContOpenStack();
+                break;
+            }
+            case OpeningPhase.NONE: {
+                await this.stateContNone();
+                break;
+            }
+        }
     }
 
     async openActiveStack() {
@@ -92,24 +110,32 @@ export class PlayerManager {
         }
     }
 
-    private async pickupStateAsync() {
-        this.state = this.loadState();
+    /**
+     * use this to manually activate player-management
+     * (for example when it should ensure currentTime after stack was popped)
+     */
+    setActive() {
+        this.state.active = true;
+        this.saveState();
+    }
 
-        if(!this.state.active)
+    private async stateContOpenStack() {
+        await this.openActiveStack();
+    }
+
+    private async stateContNone() {
+        // history may be popped -> restore time
+        const watchStack = await stackMgr.loadCurrentWatchStack();
+        const vid = watchStack.peek();
+
+        if(vid === null)
+            return;
+        if(vid.id !== videoId())
+            return;
+        if(vid.timeCurrent === null)
             return;
 
-        if(!isOnPlayer()) {
-            this.state.active = false;
-            this.saveState();
-            return;
-        }
-
-        switch(this.state.openingPhase) {
-            case OpeningPhase.OPEN_STACK: {
-                await this.openActiveStack()
-                break;
-            }
-        }
+        await this.openVideo(vid.id, vid.timeCurrent);
     }
 
     private async waitForPlayerStartet(): Promise<void> {

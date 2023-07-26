@@ -6,6 +6,7 @@ import {
     STACK_ITEM_EXTRA_PUBLISHER_NAME,
     VideoStackItem
 } from "../model/stacks/stack-item";
+import playerMng from "./player";
 import {nodeListToArray, randomInt} from "../util/utils";
 import {GM} from "../monkey"
 
@@ -42,18 +43,12 @@ export class StackManager {
         }, false);
     }
 
-    updateCurrentWatchStack() {
-        const exec = async () => {
-            if(isOnPlayer()) {
-                await this.updateCurrentStack();
-            } else {
-                this.resetCurrentStack(true);
-            }
+    async updateCurrentWatchStack() {
+        if(isOnPlayer()) {
+            await this.updateCurrentStack();
+        } else {
+            this.resetCurrentStack(true);
         }
-
-        exec().catch((err) => {
-            console.error("error in updateCurrentWatchStack()", err);
-        });
     }
 
     async loadStack(id: string): Promise<WatchStack | null> {
@@ -174,19 +169,21 @@ export class StackManager {
     private async updateCurrentStack() {
         const stack = await this.loadCurrentWatchStack();
 
-        this.updateStackPopped(stack);
+        const popped = this.updateStackPopped(stack);
 
-        const currentVid = this.currentVidItem();
+        if(!popped) {
+            const currentVid = this.currentVidItem();
 
-        if(currentVid.equals(stack.peek(), true))
-            return;// already up-to-date
+            if (currentVid.equals(stack.peek(), true))
+                return;// already up-to-date
 
-        if(currentVid.equals(stack.peek())) {// compares id
-            // update current element
-            stack.replace(currentVid);
-        } else {
-            // push new element
-            stack.push(currentVid);
+            if (currentVid.equals(stack.peek())) {// compares id
+                // update current element
+                stack.replace(currentVid);
+            } else {
+                // push new element
+                stack.push(currentVid);
+            }
         }
 
         this.saveCurrentWatchStack(stack);
@@ -194,10 +191,11 @@ export class StackManager {
 
     /**
      * checks if the user went back one item in the watch-history and pops the stack if it's the case
+     * @return <code>true</code> if popped, <code>false</code> otherwise
      */
-    private updateStackPopped(stack: WatchStack) {
+    private updateStackPopped(stack: WatchStack): boolean {
         if(stack.length() < 2)
-            return;
+            return false;
 
         const currVidId = videoId()!!;
         if(currVidId !== stack.peek()!!.id// prevent false-positive if the same video is at idx 0 and 1 and this function is called more than once
@@ -205,7 +203,13 @@ export class StackManager {
             //XXX this also matches if the user opened the previous video again (e.g. from rels),
             //      but there is nothing (yet) I can do to detect that
             stack.pop();
+
+            playerMng.setActive();
+
+            return true;
         }
+
+        return false;
     }
 
     private currentVidItem(): VideoStackItem {

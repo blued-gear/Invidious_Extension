@@ -27,5 +27,9 @@ createApp(App)
         return GM_addElement(document.body, "div");
     })());
 
-stackMgr.updateCurrentWatchStack();
-playerMgr.pickupState();
+(async () => {
+    await stackMgr.updateCurrentWatchStack();
+    await playerMgr.pickupState();
+})().catch((err) => {
+    console.error("error while running state-updaters and -restorers", err);
+});
