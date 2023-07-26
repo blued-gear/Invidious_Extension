@@ -28,7 +28,19 @@ export class StackManager {
         return StackManager._INSTANCE;
     }
 
-    private constructor() {}
+    private constructor() {
+        window.addEventListener('beforeunload', () => {
+            if(isOnPlayer()) {
+                const exec = async () => {
+                    await this.updateCurrentStack();
+                };
+
+                exec().catch((err) => {
+                    console.error("error in updating watch_stack on pagehide", err);
+                });
+            }
+        }, false);
+    }
 
     updateCurrentWatchStack() {
         const exec = async () => {
@@ -188,7 +200,8 @@ export class StackManager {
             return;
 
         const currVidId = videoId()!!;
-        if(currVidId === stack.peek(1)!!.id) {
+        if(currVidId !== stack.peek()!!.id// prevent false-positive if the same video is at idx 0 and 1 and this function is called more than once
+            && currVidId === stack.peek(1)!!.id) {
             //XXX this also matches if the user opened the previous video again (e.g. from rels),
             //      but there is nothing (yet) I can do to detect that
             stack.pop();
