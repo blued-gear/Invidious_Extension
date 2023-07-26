@@ -114,7 +114,10 @@ watch(() => props.selected, (newVal) => {
   <div class="w-full h-full flex">
     <Listbox :options="items" :model-value="selected" :multiple="props.multiple" metaKeySelection
              @update:model-value="onSelectionChanged"
-             class="flex-grow-1">
+             class="flex-grow-1"
+             :pt="{
+               wrapper: { style: 'height: 100%;' }
+             }">
       <template #option="slotProps">
         <slot :item="slotProps.option"></slot>
       </template>

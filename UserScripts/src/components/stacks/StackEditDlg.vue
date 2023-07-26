@@ -132,8 +132,9 @@ watch(dlgOpen, async () => {
 </script>
 
 <template>
-  <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Edit Stack" style="width: 75vw;">
-    <div class="w-full" style="height: 75vh;">
+  <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Edit Stack"
+          style="width: 75vw; height: 80vh;">
+    <div class="w-full flex flex-column" style="height: 100%;">
       <!-- region name -->
       <div class="flex flex-column gap-2">
         <label for="stack_edit_dlg-stack_name">Stack Name</label>
@@ -142,7 +143,7 @@ watch(dlgOpen, async () => {
       <!-- endregion name -->
 
       <!-- region items -->
-      <div class="flex w-full h-full mt-3">
+      <div class="flex mt-3" style="min-height: 15rem;">
         <div v-show="stack == undefined" class="flex-1 surface-border h-full">
           <Skeleton class="mb-2 w-2"></Skeleton>
           <Skeleton class="mb-2 w-3"></Skeleton>
@@ -162,7 +163,7 @@ watch(dlgOpen, async () => {
       <!-- endregion items -->
 
       <!-- region add -->
-      <div class="w-max mt-2 p-4 pl-1 flex flex-column gap-4 border-1 border-300">
+      <div class="w-max mt-2 p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300">
         <span class="p-float-label">
           <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" />
           <label for="stack_edit_dlg-add-vid">Video-ID</label>
@@ -177,7 +178,7 @@ watch(dlgOpen, async () => {
       <!-- endregion add -->
 
       <!-- region cancel, save -->
-      <div class="flex w-full mt-4 mb-3">
+      <div class="flex mt-4">
         <Button @click="onCancel">Cancel</Button>
         <div class="flex-grow-1"></div>
         <Button @click="onSave">Save</Button>
