@@ -162,6 +162,8 @@ export class StackManager {
     private async updateCurrentStack() {
         const stack = await this.loadCurrentWatchStack();
 
+        this.updateStackPopped(stack);
+
         const currentVid = this.currentVidItem();
 
         if(currentVid.equals(stack.peek(), true))
@@ -176,6 +178,21 @@ export class StackManager {
         }
 
         this.saveCurrentWatchStack(stack);
+    }
+
+    /**
+     * checks if the user went back one item in the watch-history and pops the stack if it's the case
+     */
+    private updateStackPopped(stack: WatchStack) {
+        if(stack.length() < 2)
+            return;
+
+        const currVidId = videoId()!!;
+        if(currVidId === stack.peek(1)!!.id) {
+            //XXX this also matches if the user opened the previous video again (e.g. from rels),
+            //      but there is nothing (yet) I can do to detect that
+            stack.pop();
+        }
     }
 
     private currentVidItem(): VideoStackItem {
