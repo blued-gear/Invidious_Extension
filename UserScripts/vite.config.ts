@@ -18,7 +18,9 @@ export default defineConfig({
         namespace: 'apps.chocolatecakecodes.invidious_ext',
         match: [
             'https://yewtu.be/*',
-            'https://invidious.tiekoetter.com/*'
+            'https://invidious.tiekoetter.com/*',
+            'https://invidious.projectsegfau.lt/*',
+            'https://invidious.no-logs.com/*'
         ],
         "run-at": "document-idle",
         sandbox: "DOM",
