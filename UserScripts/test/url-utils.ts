@@ -1,4 +1,4 @@
-import {channelId} from "../src/util/url-utils";
+import {channelId, playlistId} from "../src/util/url-utils";
 
 describe("url-utils", () => {
     describe("channelId", () => {
@@ -24,6 +24,25 @@ describe("url-utils", () => {
             const expectedId = "ABCD";
             const id = channelId(`/channel/${expectedId}/playlists?a=b`);
             expect(id).toBe(expectedId);
+        });
+    });
+
+    describe("playlistId", () => {
+        it("should extract id from watch path", () => {
+            const expectedId = "ABCD";
+            const id = playlistId(`/watch?v=vid_id&list=${expectedId}`);
+            expect(id).toBe(expectedId);
+        });
+
+        it("should extract id from playlist path", () => {
+            const expectedId = "ABCD";
+            const id = playlistId(`/playlist?list=${expectedId}`);
+            expect(id).toBe(expectedId);
+        });
+
+        it("should return null on unrelated path", () => {
+            const id = playlistId("/path?v=vid_id&list=ABCD");
+            expect(id).toBeNull();
         });
     });
 });
