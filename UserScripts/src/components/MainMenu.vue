@@ -10,7 +10,7 @@ import StackEditDlg from "./stacks/StackEditDlg.vue";
 import StackSaveDlg from "./stacks/StackSaveDlg.vue";
 import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../managers/stacks";
 import playerMgr from "../managers/player";
-import {isOnPlayer} from "../util/url-utils";
+import {channelId, isOnChannel, isOnPlayer} from "../util/url-utils";
 import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../util/constants";
 
 const toast = useToast();
@@ -43,6 +43,7 @@ const watchStackPopable = ref<boolean>(false);
 
 const vidMnu = ref<Menu>();
 const vidMnuContent = computed<MenuItem[]>(() => [
+  // player
   {
     label: "Last Video (from Stack)",
     command: () => popWatchStack(),
@@ -59,6 +60,15 @@ const vidMnuContent = computed<MenuItem[]>(() => [
     command: () => saveCurrentStack(),
     visible: () => isOnPlayer()
   },
+
+  // channel
+  {
+    label: "Open Uploads-Playlist",
+    command: () => openChannelUploadsPl(),
+    visible: () => isOnChannel()
+  },
+
+  // general
   {
     label: "Open Stack",
     items: openableStacks.map(s => { return {
@@ -159,6 +169,13 @@ function deleteStack(stackId: StackNameWithId) {
       life: TOAST_LIFE_ERROR
     });
   });
+}
+
+function openChannelUploadsPl() {
+  const chanId = channelId()!!;
+  const plId = 'UUr_' + chanId.substring(chanId.indexOf('_') + 1);
+
+  window.location.assign(`/playlist?list=${plId}`);
 }
 
 function onMenuOpen() {
