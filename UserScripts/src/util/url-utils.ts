@@ -9,6 +9,17 @@ export function videoId(): string | null {
 
     return new URLSearchParams(location.search).get("v");
 }
+
+export function isPlayingPlaylist(): boolean {
+    return playlistId() !== null;
+}
+
+export function playlistId(): string | null {
+    if(!isOnPlayer())
+        return null;
+
+    return new URLSearchParams(location.search).get("list");
+}
 //endregion
 
 //region channel
@@ -22,6 +33,9 @@ export function channelId(path: string | undefined = undefined): string | null {
             return null;
 
         path = location.pathname;
+    } else {
+        if(!path.startsWith("/channel/"))
+            return null;
     }
 
     path = path.substring("/channel/".length);
@@ -37,4 +51,8 @@ export function channelId(path: string | undefined = undefined): string | null {
 }
 //endregion
 
-
+//region playlists
+export function isOnPlaylists(): boolean {
+    return location.pathname === "/feed/playlists";
+}
+//endregion

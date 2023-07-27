@@ -23,11 +23,12 @@ const btnTarget = (() => {
   if(elm != null)
     return elm;
 
-  elm = document.createElement("div");
+  elm = document.createElement('div');
+  elm.id = elmId;
 
-  let anchor = document.querySelector("html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog")?.parentElement?.parentElement;
+  let anchor = document.querySelector('html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
   if(anchor == null)
-    anchor = document.querySelector("html body div div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog")?.parentElement?.parentElement;
+    anchor = document.querySelector('html body div div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
   if(anchor == null)
     throw new Error("unable to find menu-bar to insert button");
 
