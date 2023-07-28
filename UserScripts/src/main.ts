@@ -7,7 +7,7 @@ import Tooltip from 'primevue/tooltip';
 
 import 'primevue/resources/themes/saga-blue/theme.css';
 import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.css';
+import 'primeflex/primeflex.min.css';
 
 import {GM_addElement} from "./monkey";
 
