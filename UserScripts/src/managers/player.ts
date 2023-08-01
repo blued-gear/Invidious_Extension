@@ -1,6 +1,7 @@
-import {isOnPlayer, videoId} from "../util/url-utils";
+import {isOnPlayer, playlistId, playlistIndex, videoId} from "../util/url-utils";
 import {STORAGE_PREFIX} from "../util/constants";
 import stackMgr, {scrapeTimeCurrent} from './stacks';
+import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 
 const STORAGE_KEY_STATE = STORAGE_PREFIX + "player::state";
 
@@ -76,7 +77,7 @@ export class PlayerManager {
         this.state.openingPhase = OpeningPhase.OPEN_STACK;
         this.saveState();
 
-        const isReloading = await this.openVideo(topItem.id, topItem.timeCurrent);
+        const isReloading = await this.openStackItem(topItem);
         if(isReloading)
             return;
 
@@ -85,7 +86,19 @@ export class PlayerManager {
     }
 
     /**
-     * @param id the vide-id
+     * @param item the video or playlist to load
+     * @return if a page-reload was triggered
+     */
+    async openStackItem(item: VideoStackItem): Promise<boolean> {
+        if(item instanceof PlaylistVideoStackItem) {
+            return this.openPlaylist(item.playlistId, item.playlistIdx, item.id, item.timeCurrent);
+        } else {
+            return this.openVideo(item.id, item.timeCurrent);
+        }
+    }
+
+    /**
+     * @param id the video-id
      * @param time number of seconds to jump to after start (if video is already loaded it will reload with the right time);
      *              or <code>null</code> if unspecified
      * @return if a page-reload was triggered
@@ -108,6 +121,25 @@ export class PlayerManager {
 
             return false;
         }
+    }
+
+    /**
+     * @param plId the playlist-id
+     * @param plIdx the video-index in the playlist
+     * @param vidId the video-id
+     * @param vidTime number of seconds to jump to after start (if video is already loaded it will reload with the right time);
+     *              or <code>null</code> if unspecified
+     * @return if a page-reload was triggered
+     */
+    async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null): Promise<boolean> {
+        if(playlistId() === plId && videoId() === vidId && playlistIndex() === plIdx) {
+            // set time if necessary
+            return this.openVideo(vidId, vidTime);
+        }
+
+        const timeParam = vidTime != null ? `&t=${vidTime}` : "";
+        location.assign(`/watch?v=${vidId}&list=${plId}&index=${plIdx}${timeParam}`);
+        return true;
     }
 
     /**

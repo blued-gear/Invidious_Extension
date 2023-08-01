@@ -103,7 +103,7 @@ function popWatchStack() {
     await stackMgr.saveStack(stack);
 
     const vid = stack.peek()!!;
-    await playerMgr.openVideo(vid.id, vid.timeCurrent);
+    await playerMgr.openStackItem(vid);
   }
 
   exec().catch((err) => {
