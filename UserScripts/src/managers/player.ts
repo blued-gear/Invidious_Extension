@@ -1,7 +1,8 @@
 import {isOnPlayer, playlistId, playlistIndex, videoId} from "../util/url-utils";
 import {STORAGE_PREFIX} from "../util/constants";
-import stackMgr, {scrapeTimeCurrent} from './stacks';
+import stackMgr from './stacks';
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
+import {scrapeTimeCurrent} from "../util/video-info-scrapers";
 
 const STORAGE_KEY_STATE = STORAGE_PREFIX + "player::state";
 
