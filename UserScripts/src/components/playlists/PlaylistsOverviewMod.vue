@@ -26,7 +26,7 @@ interface PlaylistContainers {
 
 const toast = useToast();
 
-const targetElmId = "invExt-playlistsMod";
+const targetElmId = "invExt-playlistsOverviewMod";
 const uiTarget = (() => {
   let elm = document.getElementById(targetElmId);
   if(elm != null)
@@ -37,7 +37,7 @@ const uiTarget = (() => {
 
   let anchor = document.querySelector('html body div.w-full div#contents div.h-box div h3')?.parentElement?.parentElement;
   if(anchor == null)
-    throw new Error("unable to find div to insert playlists_mod");
+    throw new Error("unable to find div to insert playlistsOverview_mod");
 
   anchor.insertAdjacentElement('afterend', elm);
 

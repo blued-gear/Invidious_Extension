@@ -55,7 +55,7 @@ export function isOnPlaylistDetails(): boolean {
 
 export function playlistId(path: string | undefined = undefined): string | null {
     if(path == undefined) {
-        if(!isOnPlayer())
+        if(!isOnPlayer() && !isOnPlaylistDetails())
             return null;
 
         path = location.search;
