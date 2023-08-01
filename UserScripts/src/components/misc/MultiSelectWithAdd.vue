@@ -50,8 +50,9 @@ function onInputEnter() {
 }
 
 function onSelectionChanged(optionName: string, newVal: boolean) {
-  const override: OptionsType = {};
-  override[optionName] = newVal;
+  const override: OptionsType = {
+    [optionName]: newVal
+  };
 
   emit('update', Object.assign({}, props.model, override));
 }
