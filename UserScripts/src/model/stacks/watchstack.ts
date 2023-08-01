@@ -1,4 +1,4 @@
-import {VideoStackItem} from "./stack-item";
+import {PlaylistVideoStackItem, PlaylistVideoStackItemProps, VideoStackItem, VideoStackItemProps} from "./stack-item";
 
 export default class WatchStack {
 
@@ -23,10 +23,18 @@ export default class WatchStack {
     static loadJsonObj(json: object): WatchStack {
         const cast = json as WatchStack;
 
+        const items = cast.items.map((elm: VideoStackItemProps | PlaylistVideoStackItemProps) => {
+            if('playlistId' in elm) {
+                return PlaylistVideoStackItem.loadJsonObj(elm);
+            } else {
+                return VideoStackItem.loadJsonObj(elm);
+            }
+        });
+
         return new WatchStack(
             cast.id,
             cast.name,
-            cast.items.map(elm => VideoStackItem.loadJsonObj(elm))
+            items
         );
     }
 
