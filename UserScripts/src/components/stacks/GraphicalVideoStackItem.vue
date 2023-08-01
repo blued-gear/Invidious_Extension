@@ -2,6 +2,8 @@
 import {computed} from "vue";
 
 import {
+  PlaylistVideoStackItem,
+  STACK_ITEM_EXTRA_PLAYLIST_NAME,
   STACK_ITEM_EXTRA_PUBLISHER_CHAN_ID,
   STACK_ITEM_EXTRA_PUBLISHER_NAME,
   VideoStackItem
@@ -17,6 +19,8 @@ const props = defineProps({
 const hasThumb = computed(() => props.item.thumbUrl !== null);
 const hasPublisher = computed(() => props.item.extras[STACK_ITEM_EXTRA_PUBLISHER_NAME] != null);
 const hasTimes = computed(() => props.item.timeTotal !== null && props.item.timeCurrent !== null);
+const hasPl = computed(() => props.item instanceof PlaylistVideoStackItem);
+const hasPlName = computed(() => hasPl.value && (STACK_ITEM_EXTRA_PLAYLIST_NAME in props.item!!.extras));
 </script>
 
 <template>
@@ -35,6 +39,17 @@ const hasTimes = computed(() => props.item.timeTotal !== null && props.item.time
 
       <div v-if="hasTimes" class="text-xm font-light">
         Watch-Time: {{formatTime(props.item.timeCurrent!!)}} of {{formatTime(props.item.timeTotal!!)}}
+      </div>
+
+      <div v-if="hasPl">
+        Playlist-Index: {{(props.item as PlaylistVideoStackItem).playlistIdx}}
+
+        <span v-if="hasPlName">
+          &nbsp;@&nbsp;
+          <a :href="'/playlist?list=' + (props.item as PlaylistVideoStackItem).playlistId">
+            {{props.item.extras[STACK_ITEM_EXTRA_PLAYLIST_NAME]}}
+          </a>
+        </span>
       </div>
     </div>
   </div>
