@@ -82,7 +82,7 @@ export class StackManager {
         const ret: StackNameWithId[] = [];
         const storedKeys = await GM.listValues();
 
-        for (const k of storedKeys.filter(k => k.startsWith(STORAGE_PREFIX))) {
+        for (const k of storedKeys.filter(k => k.startsWith(STORAGE_KEY_STACKS_PREFIX))) {
             const s = (await GM.getValue(k, null))!! as WatchStack;
             ret.push({
                 id: s.id,
