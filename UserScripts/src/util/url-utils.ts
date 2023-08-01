@@ -13,6 +13,20 @@ export function videoId(): string | null {
 export function isPlayingPlaylist(): boolean {
     return isOnPlayer() && playlistId() !== null;
 }
+
+export function playlistIndex(): number | null {
+    if(!isPlayingPlaylist())
+        return null;
+
+    const idxStr = new URLSearchParams(location.search).get('index');
+    if(idxStr === null)
+        return null;
+    const idx = Number.parseInt(idxStr);
+    if(Number.isNaN(idx))
+        return null;
+
+    return idx;
+}
 //endregion
 
 //region channel

@@ -1,10 +1,13 @@
-import {channelId, isOnPlayer, videoId} from "../util/url-utils";
+import {channelId, isOnPlayer, isPlayingPlaylist, playlistId, playlistIndex, videoId} from "../util/url-utils";
 import {STORAGE_PREFIX} from "../util/constants";
 import WatchStack from "../model/stacks/watchstack";
 import {
+    PlaylistVideoStackItem,
+    STACK_ITEM_EXTRA_PLAYLIST_NAME,
     STACK_ITEM_EXTRA_PUBLISHER_CHAN_ID,
     STACK_ITEM_EXTRA_PUBLISHER_NAME,
-    VideoStackItem
+    VideoStackItem,
+    VideoStackItemProps
 } from "../model/stacks/stack-item";
 import playerMng from "./player";
 import {generateUniqueId, nodeListToArray} from "../util/utils";
@@ -181,8 +184,14 @@ export class StackManager {
                 // update current element
                 stack.replace(currentVid);
             } else {
-                // push new element
-                stack.push(currentVid);
+                if(this.checkSamePlaylist(stack, currentVid)) {
+                    // replace top item
+                    stack.pop();
+                    stack.push(currentVid);
+                } else {
+                    // push new element
+                    stack.push(currentVid);
+                }
             }
         }
 
@@ -212,17 +221,54 @@ export class StackManager {
         return false;
     }
 
+    /**
+     * checks if the top video of the stack is in the same playlist as the given video
+     * @param stack the stack to check
+     * @param vid the current video
+     * @return <code>true</code> if the top video and the given video are form the same playlist
+     */
+    private checkSamePlaylist(stack: WatchStack, vid: VideoStackItem): boolean {
+        if(!(vid instanceof PlaylistVideoStackItem))
+            return false;
+
+        const lastVid = stack.peek();
+        if(lastVid === null)
+            return false;
+
+        if(!(lastVid instanceof PlaylistVideoStackItem))
+            return false;
+
+        return vid.playlistId === lastVid.playlistId;
+    }
+
+    //TODO move this and the scrapers to own file
     private currentVidItem(): VideoStackItem {
-        return new VideoStackItem({
+        const vidProps: VideoStackItemProps = {
             id: videoId()!!,
             title: scrapeTitle() ?? "~~unable to get title~~",
             thumbUrl: scrapeThumbUrl(),
             timeTotal: scrapeTimeTotal(),
             timeCurrent: scrapeTimeCurrent(),
-            extras: Object.assign({},
-                scrapePublisher()
-            )
-        });
+            extras: {
+                ...scrapePublisher(),
+                ...scapePlaylistName()
+            }
+        }
+
+        if(isPlayingPlaylist()) {
+            const plId = playlistId();
+            const plIdx = playlistIndex();
+            if(plId == null || plIdx == null)
+                throw new Error("unable to extract playlist-id or playlist-idx even if playing playlist");
+
+            return new PlaylistVideoStackItem({
+                ...vidProps,
+                playlistId: plId,
+                playlistIdx: plIdx
+            });
+        } else {
+            return new VideoStackItem(vidProps);
+        }
     }
 
     private async generateStackId(): Promise<string> {
@@ -235,7 +281,7 @@ const stackManagerInstance = StackManager.INSTANCE;
 export default stackManagerInstance;
 
 function scrapeTitle(): string | null {
-    const titleElm = document.querySelector("html body div div#contents div.h-box h1");
+    const titleElm = document.querySelector('html body div div#contents div.h-box h1');
     if(titleElm == null)
         return null;
 
@@ -247,7 +293,7 @@ function scrapeTitle(): string | null {
 }
 
 function scrapeThumbUrl(): string | null {
-    const posterElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled div.vjs-poster") as HTMLElement | null;
+    const posterElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled div.vjs-poster') as HTMLElement | null;
     if(posterElm == null)
         return null;
 
@@ -258,7 +304,7 @@ function scrapeThumbUrl(): string | null {
 }
 
 function scrapeTimeTotal(): number | null {
-    const timeTotalElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display");
+    const timeTotalElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display');
     if(timeTotalElm == null)
         return null;
 
@@ -270,7 +316,7 @@ function scrapeTimeTotal(): number | null {
 }
 
 export function scrapeTimeCurrent(): number | null {
-    const timeCurElm = document.querySelector("html body div#contents div#player-container.h-box div#player.on-video_player.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-current-time.vjs-time-control.vjs-control span.vjs-current-time-display");
+    const timeCurElm = document.querySelector('html body div#contents div#player-container.h-box div#player.on-video_player.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-current-time.vjs-time-control.vjs-control span.vjs-current-time-display');
     if(timeCurElm == null)
         return null;
 
@@ -287,18 +333,35 @@ type PublisherInfo = {
 }
 function scrapePublisher(): PublisherInfo | null {
     let chanName = "~~unable to get channel-name~~";
-    const chanNameEl = document.getElementById("channel-name");
+    const chanNameEl = document.getElementById('channel-name');
     if(chanNameEl != null)
         chanName = chanNameEl.textContent!!;
 
     let chanId = "";
-    const chanUrlEl = document.querySelector("html body div div#contents div div.pure-u-lg-3-5 div.h-box a");
+    const chanUrlEl = document.querySelector('html body div div#contents div div.pure-u-lg-3-5 div.h-box a');
     if(chanUrlEl != null) {
-        chanId = channelId(chanUrlEl.getAttribute("href")!!)!!;
+        chanId = channelId(chanUrlEl.getAttribute('href')!!)!!;
     }
 
     return {
         [STACK_ITEM_EXTRA_PUBLISHER_CHAN_ID]: chanId,
         [STACK_ITEM_EXTRA_PUBLISHER_NAME]: chanName
+    };
+}
+
+type PlaylistName = {
+    [STACK_ITEM_EXTRA_PLAYLIST_NAME]: string
+}
+function scapePlaylistName(): PlaylistName | null {
+    const plNameElm = document.querySelector('html body div.pure-g div#contents div div div#playlist.h-box h3 a');
+    if(plNameElm === null)
+        return null;
+
+    const plName = plNameElm.textContent?.trim();
+    if(plName == null)
+        return null;
+
+    return {
+        [STACK_ITEM_EXTRA_PLAYLIST_NAME]: plName
     };
 }
