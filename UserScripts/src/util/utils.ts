@@ -50,5 +50,25 @@ export function randomInt(): number {
  * @return <code>true</code> if the item exists in the array, <code>false</code> otherwise
  */
 export function arrayContains<T>(arr: T[], item: T): boolean {
-    return arr.find(elm => elm === item) !== undefined;
+    return arr.some(elm => elm === item);
+}
+
+export function arrayFold<T, R>(arr: T[], initialItem: R, callback: (lastItem: R, item: T) => R): R {
+    let ret = initialItem;
+    for (let item of arr) {
+        ret = callback(ret, item);
+    }
+    return ret;
+}
+
+export function generateUniqueId(existingIds: string[]): string {
+    let id: string;
+
+    do {
+        id = "";
+        for(let bits = 0; bits < 256; bits += 32)
+            id += randomInt().toString(16).toLowerCase().padStart(8, '0');
+    } while(existingIds.includes(id));
+
+    return id;
 }

@@ -7,7 +7,7 @@ import {
     VideoStackItem
 } from "../model/stacks/stack-item";
 import playerMng from "./player";
-import {nodeListToArray, randomInt} from "../util/utils";
+import {generateUniqueId, nodeListToArray} from "../util/utils";
 import {GM} from "../monkey"
 
 export interface StackNameWithId {
@@ -227,13 +227,7 @@ export class StackManager {
 
     private async generateStackId(): Promise<string> {
         const existingStacks = await this.listStacks();
-
-        let id: string;
-        do {
-            id = randomInt().toString(16).toLowerCase()
-        } while(existingStacks.find(s => s.id === id) != undefined);
-
-        return id;
+        return generateUniqueId(existingStacks.map(stack => stack.id));
     }
 }
 
