@@ -1,4 +1,4 @@
-package apps.chocolatecakecodes.invidious_ext.service.exception
+package apps.chocolatecakecodes.invidious_ext.sync.service.exception
 
 import io.micronaut.security.authentication.AuthenticationException
 import io.micronaut.security.authentication.AuthenticationFailureReason

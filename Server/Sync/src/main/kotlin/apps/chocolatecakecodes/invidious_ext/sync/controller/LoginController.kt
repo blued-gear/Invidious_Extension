@@ -1,7 +1,7 @@
-package apps.chocolatecakecodes.invidious_ext.controller
+package apps.chocolatecakecodes.invidious_ext.sync.controller
 
-import apps.chocolatecakecodes.invidious_ext.dto.RegistrationPayload
-import apps.chocolatecakecodes.invidious_ext.service.UserService
+import apps.chocolatecakecodes.invidious_ext.sync.dto.RegistrationPayload
+import apps.chocolatecakecodes.invidious_ext.sync.service.UserService
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller

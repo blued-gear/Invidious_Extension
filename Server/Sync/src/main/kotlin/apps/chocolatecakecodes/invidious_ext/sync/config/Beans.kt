@@ -1,4 +1,4 @@
-package apps.chocolatecakecodes.invidious_ext.config
+package apps.chocolatecakecodes.invidious_ext.sync.config
 
 import apps.chocolatecakecodes.invidious_ext.util.crypto.Argon2PasswordEncoder
 import apps.chocolatecakecodes.invidious_ext.util.crypto.PasswordEncoder

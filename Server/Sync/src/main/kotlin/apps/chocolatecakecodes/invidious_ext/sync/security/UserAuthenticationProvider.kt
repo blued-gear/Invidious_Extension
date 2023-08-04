@@ -1,7 +1,7 @@
-package apps.chocolatecakecodes.invidious_ext.security
+package apps.chocolatecakecodes.invidious_ext.sync.security
 
-import apps.chocolatecakecodes.invidious_ext.constants.UserRoles
-import apps.chocolatecakecodes.invidious_ext.service.UserService
+import apps.chocolatecakecodes.invidious_ext.sync.constants.UserRoles
+import apps.chocolatecakecodes.invidious_ext.sync.service.UserService
 import apps.chocolatecakecodes.invidious_ext.util.crypto.PasswordEncoder
 import io.micronaut.http.HttpRequest
 import io.micronaut.security.authentication.AuthenticationFailureReason

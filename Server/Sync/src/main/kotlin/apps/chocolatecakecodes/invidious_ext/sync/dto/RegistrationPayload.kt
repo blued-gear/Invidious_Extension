@@ -1,4 +1,4 @@
-package apps.chocolatecakecodes.invidious_ext.dto
+package apps.chocolatecakecodes.invidious_ext.sync.dto
 
 import io.micronaut.serde.annotation.Serdeable
 import jakarta.validation.constraints.Pattern

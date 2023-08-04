@@ -1,4 +1,4 @@
-package apps.chocolatecakecodes.invidious_ext.entity
+package apps.chocolatecakecodes.invidious_ext.sync.entity
 
 import jakarta.persistence.*
 import jakarta.validation.constraints.NotNull

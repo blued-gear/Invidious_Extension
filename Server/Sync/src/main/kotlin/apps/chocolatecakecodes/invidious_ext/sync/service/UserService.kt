@@ -1,9 +1,9 @@
-package apps.chocolatecakecodes.invidious_ext.service
+package apps.chocolatecakecodes.invidious_ext.sync.service
 
-import apps.chocolatecakecodes.invidious_ext.entity.User
-import apps.chocolatecakecodes.invidious_ext.repo.UserRepo
-import apps.chocolatecakecodes.invidious_ext.service.exception.UserAlreadyExistsException
-import apps.chocolatecakecodes.invidious_ext.service.exception.UsernameNotFoundException
+import apps.chocolatecakecodes.invidious_ext.sync.entity.User
+import apps.chocolatecakecodes.invidious_ext.sync.repo.UserRepo
+import apps.chocolatecakecodes.invidious_ext.sync.service.exception.UserAlreadyExistsException
+import apps.chocolatecakecodes.invidious_ext.sync.service.exception.UsernameNotFoundException
 import apps.chocolatecakecodes.invidious_ext.util.crypto.PasswordEncoder
 import jakarta.inject.Inject
 import jakarta.inject.Singleton

@@ -1,4 +1,4 @@
-package apps.chocolatecakecodes.invidious_ext.controller
+package apps.chocolatecakecodes.invidious_ext.sync.controller
 
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
