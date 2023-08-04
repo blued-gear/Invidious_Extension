@@ -1,8 +1,0 @@
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/InvidiousExtension
-    username: invidious_extension
-    password: )|)4[*.y=5(=T5yx2V
-
-server:
-  port: 8080

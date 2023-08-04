@@ -1,51 +1,116 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    war
-    kotlin("jvm") version "1.8.22"
-    id("org.springframework.boot") version "3.1.1"
-    id("io.spring.dependency-management") version "1.1.0"
-    kotlin("plugin.spring") version "1.8.22"
-    kotlin("plugin.jpa") version "1.8.22"
+    val kotlinVersion = "1.9.0"
+    val micronautVersion = "4.0.2"
+
+    id("org.jetbrains.kotlin.jvm") version kotlinVersion
+    id("org.jetbrains.kotlin.kapt") version kotlinVersion
+    id("org.jetbrains.kotlin.plugin.allopen") version kotlinVersion
+    id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
+
+    id("io.micronaut.application") version micronautVersion
+    id("io.micronaut.test-resources") version micronautVersion
+    id("io.micronaut.aot") version micronautVersion
+
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"
-version = "0.0.1-SNAPSHOT"
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
+version = "0.1"
 
 repositories {
+    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+        mavenContent { snapshotsOnly() }
+    }
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-quartz")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.session:spring-session-core")
+    val kotlinVersion = project.properties["kotlinVersion"]
+
+    implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
+    implementation("io.micronaut.kotlin:micronaut-kotlin-extension-functions")
+    implementation("io.micronaut.kotlin:micronaut-kotlin-runtime")
+    implementation("io.micronaut:micronaut-jackson-databind")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut.problem:micronaut-problem-json")
+    implementation("io.micronaut.security:micronaut-security")
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    implementation("io.micronaut.validation:micronaut-validation")
+    implementation("jakarta.validation:jakarta.validation-api")
+    implementation("io.micronaut.reactor:micronaut-reactor")
 
     implementation("org.bouncycastle:bcprov-jdk18on:1.76")
 
-    runtimeOnly("org.postgresql:postgresql")
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    kapt("io.micronaut.security:micronaut-security-annotations")
+    kapt("io.micronaut.serde:micronaut-serde-processor")
+    kapt("io.micronaut.validation:micronaut-validation-processor")
+    kapt("io.micronaut.data:micronaut-data-processor")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.springframework.security:spring-security-test")
+    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.slf4j:slf4j-simple")
+
+    testImplementation("io.micronaut:micronaut-http-client")
+    testRuntimeOnly("com.h2database:h2")
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xjsr305=strict"
-        jvmTarget = "17"
+application {
+    mainClass.set("apps.chocolatecakecodes.invidious_ext.ApplicationKt")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("17")
+}
+
+graalvmNative.toolchainDetection.set(false)
+
+tasks {
+    compileKotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+    compileTestKotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform()
+micronaut {
+    runtime("netty")
+    testRuntime("kotest5")
+
+    processing {
+        incremental(true)
+        annotations("apps.chocolatecakecodes.invidious_ext.*")
+    }
+
+    testResources {
+        additionalModules.add("jdbc-postgresql")
+    }
+
+    aot {
+        // Please review carefully the optimizations enabled below
+        // Check https://micronaut-projects.github.io/micronaut-aot/latest/guide/ for more details
+        optimizeServiceLoading.set(false)
+        convertYamlToJava.set(false)
+        precomputeOperations.set(true)
+        cacheEnvironment.set(true)
+        optimizeClassLoading.set(true)
+        deduceEnvironment.set(true)
+        optimizeNetty.set(true)
+    }
+}
+
+allOpen {
+    annotations(
+        "jakarta.inject.Singleton",
+        "io.micronaut.http.annotation.Controller",
+        "io.micronaut.context.annotation.Factory",
+        "io.micronaut.serde.annotation.Serdeable",
+        "io.micronaut.core.annotation.Introspected"
+    )
 }
