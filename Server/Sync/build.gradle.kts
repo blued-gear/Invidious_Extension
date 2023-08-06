@@ -45,9 +45,6 @@ dependencies {
     kapt("io.micronaut.serde:micronaut-serde-processor")
     kapt("io.micronaut.validation:micronaut-validation-processor")
     kapt("io.micronaut.data:micronaut-data-processor")
-
-    testImplementation("io.micronaut:micronaut-http-client")
-    testRuntimeOnly("com.h2database:h2")
 }
 
 java {

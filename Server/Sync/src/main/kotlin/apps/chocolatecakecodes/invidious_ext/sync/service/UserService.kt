@@ -34,14 +34,15 @@ class UserService(
     }
 
     @Transactional
-    fun addNewUser(name: String, password: String) {
+    fun addNewUser(name: String, password: String): User {
         if(userRepo.existsByName(name)) {
             throw UserAlreadyExistsException("username '$name' is already taken")
         }
 
         val passwordDigest = passwordEncoder.encode(password)
         val user = User(0, name, passwordDigest, Instant.now())
-        userRepo.save(user)
+
+        return userRepo.save(user)
     }
 
     @Transactional
