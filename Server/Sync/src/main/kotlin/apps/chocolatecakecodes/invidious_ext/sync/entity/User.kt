@@ -10,10 +10,13 @@ data class User(
     @Id
     @GeneratedValue
     val id: Long,
+
     @Column(unique = true, nullable = false)
     var name: String,
+
     @NotNull
     var password: String,
+
     @NotNull
     var lastOnline: Instant
 )
