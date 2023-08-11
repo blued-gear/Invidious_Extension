@@ -244,6 +244,7 @@ class ExtensionDataSyncControllerTest(
             http.exchange(
                 HttpRequest.PUT("/entry/$key/data", DataPutDto(
                     keyWithTime[key]!!,
+                    false,
                     newData
                 )).apply { basicAuth(username, password) },
                 Argument.of(SyncTimeDto::class.java)
@@ -282,6 +283,7 @@ class ExtensionDataSyncControllerTest(
                 http.retrieve(
                     HttpRequest.PUT("/entry/$key/data", DataPutDto(
                         expectedLastSync,
+                        false,
                         newData
                     )).apply { basicAuth(username, password) },
                     Argument.of(SyncTimeDto::class.java)
@@ -297,6 +299,45 @@ class ExtensionDataSyncControllerTest(
             ).let { resp ->
                 resp.status shouldBe HttpStatus.OK
                 resp.body() shouldBe keysWithData[key]
+            }
+        }
+    }
+
+    @Test
+    fun canForceUpdateOnConflict() {
+        val keyWithTime = addTestEntries().associate { it.key to it.syncTime }
+
+        val key = keysWithData.keys.random()
+        val newData = "changed"
+        val expectedLastSync = keyWithTime[key]!! - 1000
+
+        val startTime = Instant.now().toEpochMilli()
+        testEndpoint(http) { http ->
+            http.exchange(
+                HttpRequest.PUT("/entry/$key/data", DataPutDto(
+                    expectedLastSync,
+                    true,
+                    newData
+                )).apply { basicAuth(username, password) },
+                Argument.of(SyncTimeDto::class.java)
+            ).let { resp ->
+                resp.status shouldBe HttpStatus.OK
+
+                val respVal = resp.body()
+                respVal shouldNotBe null
+
+                val endTime = Instant.now().toEpochMilli()
+                respVal.time shouldBeGreaterThan  startTime
+                respVal.time shouldBeLessThan endTime
+            }
+
+            // check that written
+            http.exchange(
+                HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
+                Argument.STRING
+            ).let { resp ->
+                resp.status shouldBe HttpStatus.OK
+                resp.body() shouldBe newData
             }
         }
     }
