@@ -3,6 +3,7 @@ package apps.chocolatecakecodes.invidious_ext.sync.controller
 import apps.chocolatecakecodes.invidious_ext.sync.dto.KeyWithSyncTimeDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.RegistrationPayload
 import apps.chocolatecakecodes.invidious_ext.sync.repo.UserRepo
+import apps.chocolatecakecodes.invidious_ext.sync.service.UserService
 import apps.chocolatecakecodes.invidious_ext.testEndpoint
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.Spec
@@ -28,6 +29,7 @@ import kotlinx.coroutines.withContext
 )
 class LoginControllerTest(
     @Client("/") private val http: HttpClient,
+    @Inject private val userService: UserService,
     @Inject private val userRepo: UserRepo
 ) : AnnotationSpec() {
 
@@ -112,6 +114,48 @@ class LoginControllerTest(
                 )
             }.let { err ->
                 err.status shouldBe HttpStatus.CONFLICT
+            }
+        }
+    }
+
+    @Test
+    fun testLoginNoLogin() {
+        testEndpoint(http) { http ->
+            shouldThrow<HttpClientResponseException> {
+                http.retrieve("/user/testLogin")
+            }.let { err ->
+                err.status shouldBe HttpStatus.UNAUTHORIZED
+            }
+        }
+    }
+
+    @Test
+    fun testLoginInvalidLogin() {
+        val name = "user-1"
+        val pass = "6fc buertzu6765rdc7"
+
+        testEndpoint(http) { http ->
+            shouldThrow<HttpClientResponseException> {
+                http.retrieve(HttpRequest.GET<Void>("/user/testLogin").apply { basicAuth(name, pass) })
+            }.let { err ->
+                err.status shouldBe HttpStatus.UNAUTHORIZED
+            }
+        }
+    }
+
+    @Test
+    fun testLoginWithLogin() {
+        val name = "user-1"
+        val pass = "6fc buertzu6765rdc7"
+
+        userService.addNewUser(name, pass)
+
+        testEndpoint(http) { http ->
+            http.exchange(
+                HttpRequest.GET<Void>("/user/testLogin").apply { basicAuth(name, pass) },
+                Argument.VOID
+            ).let { resp ->
+                resp.status shouldBe HttpStatus.NO_CONTENT
             }
         }
     }

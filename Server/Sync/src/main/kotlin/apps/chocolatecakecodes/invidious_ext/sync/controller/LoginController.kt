@@ -3,10 +3,7 @@ package apps.chocolatecakecodes.invidious_ext.sync.controller
 import apps.chocolatecakecodes.invidious_ext.sync.dto.RegistrationPayload
 import apps.chocolatecakecodes.invidious_ext.sync.service.UserService
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.annotation.Body
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.Status
+import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.validation.Validated
@@ -26,5 +23,10 @@ class LoginController(
     fun register(@Body @Valid payload: RegistrationPayload) {
         userService.addNewUser(payload.username, payload.password)
     }
+
+    // used to test login-credentials (either it returns 204 or a security-error)
+    @Get("testLogin")
+    @Status(HttpStatus.NO_CONTENT)
+    fun testLogin(){}
 }
 
