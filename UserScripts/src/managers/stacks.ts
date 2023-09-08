@@ -4,8 +4,8 @@ import WatchStack from "../model/stacks/watchstack";
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerMng from "./player";
 import {generateUniqueId} from "../util/utils";
-import {GM} from "../monkey"
 import currentVideoItem from "../util/video-info-scrapers";
+import extensionDataSync from "../sync/extension-data";
 
 export interface StackNameWithId {
     id: string,
@@ -15,7 +15,7 @@ export interface StackNameWithId {
 export const STACK_ID_CURRENT = "~~watch_stack~~";
 export const STACK_ID_TO_BE_SET = "~~undefined~~";
 
-const STORAGE_KEY_STACKS_PREFIX = STORAGE_PREFIX + "stacks::";
+export const STORAGE_KEY_STACKS_PREFIX = "stacks::";
 const STORAGE_KEY_ACTIVE_STACK = STORAGE_PREFIX + "stack::active";
 const STORAGE_KEY_CURRENT_STACK = STORAGE_PREFIX + "stack::watch_stack";
 
@@ -48,7 +48,7 @@ export class StackManager {
         }
     }
 
-    async loadStack(id: string): Promise<WatchStack | null> {
+    async loadStack(id: string): Promise<WatchStack> {
         if(id === STACK_ID_CURRENT)
             return this.loadCurrentWatchStack();
         else
@@ -66,25 +66,21 @@ export class StackManager {
         if(id === STACK_ID_CURRENT)
             throw new Error("current watch-stack can not be deleted manually");
 
-        await GM.deleteValue(STORAGE_KEY_STACKS_PREFIX + id);
+        await extensionDataSync.deleteEntry(STORAGE_KEY_STACKS_PREFIX + id);
     }
 
     /**
      * @return list of saved stacks (excluding watch-stack)
      */
     async listStacks(): Promise<StackNameWithId[]> {
-        const ret: StackNameWithId[] = [];
-        const storedKeys = await GM.listValues();
-
-        for (const k of storedKeys.filter(k => k.startsWith(STORAGE_KEY_STACKS_PREFIX))) {
-            const s = (await GM.getValue(k, null))!! as WatchStack;
-            ret.push({
+        const storedKeys = await extensionDataSync.getKeys(STORAGE_KEY_STACKS_PREFIX);
+        return await Promise.all(storedKeys.map(async (k) => {
+            const s = (await extensionDataSync.getEntry(k))!! as WatchStack;
+            return {
                 id: s.id,
                 name: s.name
-            });
-        }
-
-        return ret;
+            };
+        }));
     }
 
     /**
@@ -133,11 +129,8 @@ export class StackManager {
         }
     }
 
-    private async loadRegulaStack(id: string): Promise<WatchStack | null> {
-        const storedData = await GM.getValue<object | null>(STORAGE_KEY_STACKS_PREFIX + id, null);
-        if(storedData === null)
-            return null;
-
+    private async loadRegulaStack(id: string): Promise<WatchStack> {
+        const storedData = await extensionDataSync.getEntry<object>(STORAGE_KEY_STACKS_PREFIX + id);
         return WatchStack.loadJsonObj(storedData);
     }
 
@@ -148,7 +141,7 @@ export class StackManager {
         }
 
         const data = stack.saveJsonObj();
-        await GM.setValue(STORAGE_KEY_STACKS_PREFIX + stack.id, data);
+        await extensionDataSync.setEntry(STORAGE_KEY_STACKS_PREFIX + stack.id, data);
     }
 
     private saveCurrentWatchStack(stack: WatchStack) {

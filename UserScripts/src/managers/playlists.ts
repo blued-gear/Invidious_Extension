@@ -1,9 +1,8 @@
-import {STORAGE_PREFIX} from "../util/constants";
 import PlaylistsGroup from "../model/PlaylistsGroup";
-import {GM} from "../monkey";
 import {generateUniqueId} from "../util/utils";
+import extensionDataSync from "../sync/extension-data";
 
-const STORAGE_KEY_GROUPS_PREFIX = STORAGE_PREFIX + "playlists::groups::";
+export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 
 export class PlaylistsManager {
 
@@ -15,22 +14,12 @@ export class PlaylistsManager {
     private constructor() {}
 
     async loadGroups(): Promise<PlaylistsGroup[]> {
-        const storedGroups = await GM.listValues();
-        const loading = storedGroups.filter(key => key.startsWith(STORAGE_KEY_GROUPS_PREFIX))
-            .map(key => GM.getValue<PlaylistsGroup | null>(key, null));
-        const loaded = await Promise.all(loading);
-        return loaded.filter((group) => {
-            if(group !== null) {
-                return true;
-            } else {
-                console.warn("a Playlist-Group could not be loaded form store even if its key exists");
-                return false;
-            }
-        }) as PlaylistsGroup[];
+        const storedGroups = await extensionDataSync.getKeys(STORAGE_KEY_GROUPS_PREFIX);
+        return await Promise.all(storedGroups.map(key => extensionDataSync.getEntry<PlaylistsGroup>(key)));
     }
 
-    async loadGroup(id: string): Promise<PlaylistsGroup | null> {
-        return GM.getValue(STORAGE_KEY_GROUPS_PREFIX + id, null);
+    async loadGroup(id: string): Promise<PlaylistsGroup> {
+        return extensionDataSync.getEntry(STORAGE_KEY_GROUPS_PREFIX + id);
     }
 
     async loadGroupsForPlaylist(plId: string): Promise<PlaylistsGroup[]> {
@@ -62,7 +51,7 @@ export class PlaylistsManager {
     }
 
     async removeGroup(id: string) {
-        await GM.deleteValue(STORAGE_KEY_GROUPS_PREFIX + id);
+        await extensionDataSync.deleteEntry(STORAGE_KEY_GROUPS_PREFIX + id);
     }
 
     async setPlaylistGroups(plId: string, groups: PlaylistsGroup[]) {
@@ -96,7 +85,7 @@ export class PlaylistsManager {
     }
 
     private async saveGroup(group: PlaylistsGroup) {
-        await GM.setValue(STORAGE_KEY_GROUPS_PREFIX + group.id, group);
+        await extensionDataSync.setEntry(STORAGE_KEY_GROUPS_PREFIX + group.id, group);
     }
 
     private async generateGroupId(existingGroups: PlaylistsGroup[]): Promise<string> {

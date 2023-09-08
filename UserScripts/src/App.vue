@@ -11,6 +11,7 @@ import SyncConflictDlg from "./components/sync-conflict/SyncConflictDlg.vue";
 <template>
   <MainMenu></MainMenu>
   <PlaylistsUiMod></PlaylistsUiMod>
+  <SyncConflictDlg></SyncConflictDlg>
 
   <DynamicDialog />
   <ConfirmDialog></ConfirmDialog>
