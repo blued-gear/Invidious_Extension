@@ -12,8 +12,14 @@ import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../managers/stacks";
 import playerMgr from "../managers/player";
 import {channelId, isOnChannel, isOnPlayer} from "../util/url-utils";
 import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../util/constants";
+import LoginDlg from "./login/LoginDlg.vue";
+import {extensionDataSyncInstance as extensionDataSync} from "../sync/extension-data";
+import sharedStates from "../util/shared-states";
+import {useConfirm} from "primevue/useconfirm";
+import {setLoginWhereNeeded, storeLogin} from "../sync/login";
 
 const toast = useToast();
+const confirm = useConfirm();
 
 // in the menu-bar beside the settings-button
 const btnTarget = (() => {
@@ -42,6 +48,8 @@ const stackToEditId = ref<string>(STACK_ID_CURRENT);
 
 const watchStackPopable = ref<boolean>(false);
 
+//TODO split items with their functions into separate files
+//  (files contains default export with array of items, which are integrated into here via spread-operator)
 const vidMnu = ref<Menu>();
 const vidMnuContent = computed<MenuItem[]>(() => [
   // player
@@ -90,11 +98,23 @@ const vidMnuContent = computed<MenuItem[]>(() => [
       label: s.name,
       command: () => { deleteStack(s) }
     }})
+  },
+
+  {
+    label: "Login",
+    command: () => openLoginDlg(),
+    visible: !sharedStates.loggedIn.value
+  },
+  {
+    label: "Logout",
+    command: () => logout(),
+    visible: sharedStates.loggedIn.value
   }
 ]);
 
 const stackEditorDlgOpen = ref(false);
 const stackSaveDlgOpen = ref(false);
+const loginDlgOpen = ref(false);
 
 function popWatchStack() {
   const exec = async () => {
@@ -179,6 +199,44 @@ function openChannelUploadsPl() {
   window.location.assign(`/playlist?list=${plId}`);
 }
 
+function openLoginDlg() {
+  loginDlgOpen.value = true;
+}
+
+function logout() {
+  const exec = async () => {
+    const rmDataConfirm = new Promise<boolean>((resolve) => {
+      confirm.require({
+        header: "Clear Data?",
+        message: "Do you want to clear the stored data?",
+        accept: () => {
+          resolve(true);
+        },
+        reject: () => {
+          resolve(false);
+        }
+      });
+    });
+
+    const rmData = await rmDataConfirm;
+    await extensionDataSync.setLogin(null, rmData);
+
+    await storeLogin(null);
+    await setLoginWhereNeeded(null, true);//TODO ask with confirmation-dlg
+  };
+
+  exec().catch((err: Error) => {
+    console.error("error while logout", err);
+
+    toast.add({
+      summary: "Logout failed (partially)",
+      detail: err.message,
+      severity: 'error',
+      life: TOAST_LIFE_ERROR
+    });
+  });
+}
+
 function onMenuOpen() {
   updateOpenableStacks();
   updateWatchStackPopable();
@@ -215,6 +273,7 @@ function updateWatchStackPopable() {
 
   <StackEditDlg v-model="stackEditorDlgOpen" :stack-id="stackToEditId"></StackEditDlg>
   <StackSaveDlg v-model="stackSaveDlgOpen"></StackSaveDlg>
+  <LoginDlg v-model="loginDlgOpen"></LoginDlg>
 </template>
 
 <style scoped>

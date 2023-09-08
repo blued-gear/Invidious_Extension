@@ -61,14 +61,64 @@ export function arrayFold<T, R>(arr: T[], initialItem: R, callback: (lastItem: R
     return ret;
 }
 
+export function arrayBufferToHex(data: ArrayBuffer): string {
+    const bytes = new Uint8Array(data);
+    let ret = "";
+
+    for(let byte of bytes) {
+        ret += byte.toString(16).padStart(2, '0');
+    }
+
+    return ret;
+}
+
 export function generateUniqueId(existingIds: string[]): string {
     let id: string;
+    const buf = new ArrayBuffer(256 / 8);
+    const buf32 = new Uint32Array(buf);
 
     do {
         id = "";
-        for(let bits = 0; bits < 256; bits += 32)
-            id += randomInt().toString(16).toLowerCase().padStart(8, '0');
+        for(let byte = 0; byte < 256 / 8; byte += 32 / 8)
+            buf32[byte / (32 / 8)] = randomInt();
+        id = arrayBufferToHex(buf).toLowerCase();
     } while(existingIds.includes(id));
 
     return id;
+}
+
+export function initArray<T>(length: number, initialValue: T): T[] {
+    return Array(length).fill(initialValue);
+}
+
+export function isString(v: any): boolean {
+    return typeof v === 'string' || v instanceof String;
+}
+
+export function logException(e: Error, message: string) {
+    if(message === "")
+        console.error(e);
+    else
+        console.error(message, e);
+
+    console.log("stacktrace:\n", e.stack);
+
+    if(e.cause != null) {
+        console.group("cause:");
+        if(e.cause instanceof Error)
+            logException(e.cause, "");
+        else
+            console.log(e.cause);
+        console.groupEnd();
+    }
+
+    if(e instanceof AggregateError) {
+        console.group("aggregated exceptions:");
+        e.errors.forEach((err, idx) => {
+            console.groupCollapsed(idx);
+            logException(err, "")
+            console.groupEnd();
+        });
+        console.groupEnd();
+    }
 }
