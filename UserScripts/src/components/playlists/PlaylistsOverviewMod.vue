@@ -46,6 +46,7 @@ const uiTarget = (() => {
 
 const playlistElements = ref<PlaylistUiElm[]>([]);
 const groupedPlaylists = ref<PlGroup[]>([]);
+const expandedGroups = ref<number[]>([]);
 
 function collectPlaylists() {
   const playlists: PlaylistUiElm[] = [];
@@ -147,6 +148,12 @@ function groupPlaylists() {
     });
 
     groupedPlaylists.value = grouped;
+
+    // 'Ungrouped' should be initially expanded
+    if(ungroupedPls.length > 0)
+      expandedGroups.value = [grouped.length - 1];
+    else
+      expandedGroups.value = [];
   };
 
   exec().catch((err) => {
@@ -189,7 +196,7 @@ onBeforeMount(() => {
 
 <template>
   <Teleport :to="uiTarget">
-    <Accordion>
+    <Accordion :multiple="true" :active-index="expandedGroups">
       <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id" :header="group.group.name">
         <!-- TODO adjust layout on narrow width (mobile) -->
 
