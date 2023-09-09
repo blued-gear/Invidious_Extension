@@ -123,19 +123,7 @@ function groupPlaylists() {
 
     const ungroupedPls = playlistElements.value.filter(pl => !groupedPls.has(pl.plId));
     if(ungroupedPls.length !== 0) {
-      const createdPls = ungroupedPls.filter(pl => pl.category === 'created');
-      const savedPls = ungroupedPls.filter(pl => pl.category === 'saved');
-
-      const ungroupedGroup: PlGroup = {
-        group: {
-          id: ID_UNGROUPED,
-          name: "Ungrouped",
-          playlists: ungroupedPls.map(pl => pl.plId)
-        },
-        createdPlaylists: createdPls,
-        savedPlaylists: savedPls
-      };
-      grouped.push(ungroupedGroup);
+      grouped.push(createUngroupedGroup(ungroupedPls));
     }
 
     grouped.sort((a, b) => {
@@ -187,18 +175,72 @@ function findPlaylistContainers(): PlaylistContainers {
   };
 }
 
+function onDeleteGroup(group: PlGroup) {
+  const exec = async () => {
+    const groups = groupedPlaylists.value;
+
+    await playlistsMng.removeGroup(group.group.id);
+
+    groups.splice(groups.indexOf(group), 1);
+
+    // create 'Ungrouped' group, if some playlists end up without any group
+    const ungroupedPls: PlaylistUiElm[] = [
+        ...group.createdPlaylists.filter(pl => !groups.some(g => g.createdPlaylists.some(gPl => gPl.plId === pl.plId))),
+        ...group.savedPlaylists.filter(pl => !groups.some(g => g.savedPlaylists.some(gPl => gPl.plId === pl.plId))),
+    ];
+    if(ungroupedPls.length !== 0) {
+      groups.push(createUngroupedGroup(ungroupedPls));
+    }
+  };
+
+  exec().catch((err) => {
+    console.error("error in onDeleteGroup()", err);
+
+    toast.add({
+      summary: "Unable to remove group",
+      detail: err.message,
+      severity: 'error',
+      life: TOAST_LIFE_ERROR
+    });
+  });
+}
+
 onBeforeMount(() => {
   collectPlaylists();
   clearUi();
   groupPlaylists();
 });
+
+function createUngroupedGroup(playlists: PlaylistUiElm[]): PlGroup {
+  const createdPls = playlists.filter(pl => pl.category === 'created');
+  const savedPls = playlists.filter(pl => pl.category === 'saved');
+
+  return {
+    group: {
+      id: ID_UNGROUPED,
+      name: "Ungrouped",
+      playlists: playlists.map(pl => pl.plId)
+    },
+    createdPlaylists: createdPls,
+    savedPlaylists: savedPls
+  };
+}
 </script>
 
 <template>
   <Teleport :to="uiTarget">
     <Accordion :multiple="true" :active-index="expandedGroups">
-      <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id" :header="group.group.name">
+      <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id">
         <!-- TODO adjust layout on narrow width (mobile) -->
+
+        <template #header>
+          <div class="flex align-items-center w-full">
+            <div class="flex-grow-1">{{group.group.name}}</div>
+            <div v-if="group.group.id !== ID_UNGROUPED"
+                class="flex-none pi pi-trash"
+                @click.stop="onDeleteGroup(group)"></div>
+          </div>
+        </template>
 
         <h4>Created Playlists</h4>
         <div class="flex flex-wrap">
