@@ -137,6 +137,15 @@ function groupPlaylists() {
       grouped.push(ungroupedGroup);
     }
 
+    grouped.sort((a, b) => {
+      if(a.group.id === ID_UNGROUPED)
+        return 1;
+      if(b.group.id === ID_UNGROUPED)
+        return -1;
+
+      return a.group.name.localeCompare(b.group.name);
+    });
+
     groupedPlaylists.value = grouped;
   };
 
