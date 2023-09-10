@@ -1,6 +1,5 @@
 import {ref} from "vue";
 import {TOAST_LIFE_ERROR} from "../../../util/constants";
-import {extensionDataSyncInstance as extensionDataSync} from "../../../sync/extension-data";
 import sharedStates from "../../../util/shared-states";
 import {setLoginWhereNeeded, storeLogin} from "../../../sync/login";
 import toast from "../../../workarounds/toast";
@@ -14,7 +13,7 @@ function openLoginDlg() {
 
 function logout() {
     const exec = async () => {
-        const rmDataConfirm = new Promise<boolean>((resolve) => {
+        const rmData = await new Promise<boolean>((resolve) => {
             confirm.require({
                 header: "Clear Data?",
                 message: "Do you want to clear the stored data?",
@@ -27,11 +26,8 @@ function logout() {
             });
         });
 
-        const rmData = await rmDataConfirm;
-        await extensionDataSync.setLogin(null, rmData);
-
         await storeLogin(null);
-        await setLoginWhereNeeded(null, true);//TODO ask with confirmation-dlg
+        await setLoginWhereNeeded(null, rmData);
     };
 
     exec().catch((err: Error) => {
