@@ -1,10 +1,28 @@
 import {channelId, isOnChannel} from "../../../util/url-utils";
+import toast from "../../../workarounds/toast";
+import {TOAST_LIFE_INFO} from "../../../util/constants";
 
 function openChannelUploadsPl() {
     const chanId = channelId()!!;
-    const plId = 'UUr_' + chanId.substring(chanId.indexOf('_') + 1);
 
-    window.location.assign(`/playlist?list=${plId}`);
+    let plId: string | null = null;
+    if(chanId.startsWith('UC')) {
+        plId = chanId.replace('C', 'U');
+    } else if(chanId.startsWith('UCL')) {
+        plId = chanId.replace('UCL', 'UULFL');
+    }
+    //TODO there may be more patterns
+
+    if(plId !== null) {
+        window.location.assign(`/playlist?list=${plId}`);
+    } else {
+        toast.add({
+            summary: "Unable to detect the uploads-playlist",
+            detail: "unfortunately, the uploads-list can not be detected for some channels",
+            severity: 'warn',
+            life: TOAST_LIFE_INFO
+        });
+    }
 }
 
 export function updateMenu() {}
