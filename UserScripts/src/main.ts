@@ -20,6 +20,8 @@ import playerMgr from "./managers/player";
 import {restoreLogin, setLoginWhereNeeded} from "./sync/login";
 import {logException} from "./util/utils";
 import useSyncConflictService from "./components/sync-conflict/sync-conflict-service";
+import {TOAST_LIFE_ERROR} from "./util/constants";
+import toast from "./workarounds/toast";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -55,19 +57,43 @@ async function main() {
     try {
         await runRestoreLogin();
     } catch(e) {
-        console.error("error while restoring login", e);
+        const err = e as Error;
+        logException(err, "error while restoring login");
+
+        toast.add({
+            summary: "Failed to restore login",
+            detail: err.message,
+            severity: 'error',
+            life: TOAST_LIFE_ERROR
+        });
     }
 
     try {
         await setupUi();
     } catch(e) {
-        console.error("error while setting up UI", e);
+        const err = e as Error;
+        logException(err, "error while setting up UI");
+
+        toast.add({
+            summary: "Failed to setup UI-extension",
+            detail: err.message,
+            severity: 'error',
+            life: TOAST_LIFE_ERROR
+        });
     }
 
     try {
         await runStartupHooks();
     } catch(e) {
-        logException(e as Error, "error in one or more startup-hook");
+        const err = e as Error;
+        logException(err, "error in one or more startup-hook");
+
+        toast.add({
+            summary: "Failed to run some startup-hooks\n(Data may be inconsistent)",
+            detail: err.message,
+            severity: 'error',
+            life: TOAST_LIFE_ERROR
+        });
     }
 }
 
