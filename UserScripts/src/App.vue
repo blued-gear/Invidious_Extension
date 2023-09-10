@@ -3,7 +3,7 @@ import DynamicDialog from 'primevue/dynamicdialog';
 import ConfirmDialog from 'primevue/confirmdialog';
 import Toast from 'primevue/toast';
 
-import MainMenu from "./components/MainMenu.vue";
+import MainMenu from "./components/main-menu/MainMenu.vue";
 import PlaylistsUiMod from "./components/playlists/PlaylistsUiMod.vue";
 import SyncConflictDlg from "./components/sync-conflict/SyncConflictDlg.vue";
 </script>
