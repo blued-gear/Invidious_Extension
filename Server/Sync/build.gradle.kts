@@ -45,6 +45,14 @@ dependencies {
     kapt("io.micronaut.serde:micronaut-serde-processor")
     kapt("io.micronaut.validation:micronaut-validation-processor")
     kapt("io.micronaut.data:micronaut-data-processor")
+
+    runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.slf4j:slf4j-simple")
+
+    testImplementation("io.micronaut:micronaut-http-client")
+    testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("io.micronaut:micronaut-http-server-netty")
 }
 
 java {
