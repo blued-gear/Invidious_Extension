@@ -13,9 +13,9 @@ import SyncConflictException from "./exception/sync-conflict-exception";
 import Lock from "../util/lock";
 import {setDifference, setIntersection, setUnion} from "../util/set-utils";
 
-const STORAGE_KEY_ENTRY_PREFIX = STORAGE_PREFIX + "sync::entry::";
-const STORAGE_KEY_ENTRY_UNSYNCED_PREFIX = STORAGE_PREFIX + "sync::entry-unsynced::";
-const STORAGE_KEY_DELETED_ENTRIES = STORAGE_PREFIX + "sync::deleted_entries";
+const STORAGE_KEY_ENTRY_PREFIX = STORAGE_PREFIX + "sync-extension::entry::";
+const STORAGE_KEY_ENTRY_UNSYNCED_PREFIX = STORAGE_PREFIX + "sync-extension::entry-unsynced::";
+const STORAGE_KEY_DELETED_ENTRIES = STORAGE_PREFIX + "sync-extension::deleted_entries";
 
 const HASH_TAG_KEY = "ExtensionDataSync-key--";
 const HASH_TAG_CIPHER = "ExtensionDataSync-cipher--";
@@ -39,6 +39,8 @@ export class ExtensionDataSync {
     static get INSTANCE() {
         return ExtensionDataSync._INSTANCE;
     }
+
+    private constructor() {}
 
     private login: Login | null = null;
     private readonly syncLock = new Lock();
