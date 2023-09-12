@@ -276,13 +276,13 @@ class ExtensionDataSyncControllerTest(
 
         val key = keysWithData.keys.random()
         val newData = "changed"
-        val expectedLastSync = keyWithTime[key]!! - 1000
+        val expectedLastSync = keyWithTime[key]!!
 
         testEndpoint(http) { http ->
             shouldThrow<HttpClientResponseException> {
                 http.retrieve(
                     HttpRequest.PUT("/entry/$key/data", DataPutDto(
-                        expectedLastSync,
+                        expectedLastSync - 1000,
                         false,
                         newData
                     )).apply { basicAuth(username, password) },
@@ -309,13 +309,13 @@ class ExtensionDataSyncControllerTest(
 
         val key = keysWithData.keys.random()
         val newData = "changed"
-        val expectedLastSync = keyWithTime[key]!! - 1000
+        val expectedLastSync = keyWithTime[key]!!
 
         val startTime = Instant.now().toEpochMilli()
         testEndpoint(http) { http ->
             http.exchange(
                 HttpRequest.PUT("/entry/$key/data", DataPutDto(
-                    expectedLastSync,
+                    expectedLastSync - 1000,
                     true,
                     newData
                 )).apply { basicAuth(username, password) },

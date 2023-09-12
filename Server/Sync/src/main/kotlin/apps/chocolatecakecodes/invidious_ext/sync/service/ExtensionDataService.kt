@@ -69,7 +69,7 @@ class ExtensionDataService(
             if (entry.lastSync > data.expectedLastSync) {
                 throw EntryOutOfSyncException("stored entry '$key' is newer than supplied expectedLastSync")
             } else if (entry.lastSync < data.expectedLastSync) {
-                logger.warn("expectedLastSync was in the past for entry user: '${user.name}', key: $key")
+                logger.warn("expectedLastSync was in the past for entry: user = '${user.name}', key = $key")
                 throw EntryOutOfSyncException("stored entry '$key' does not meet supplied expectedLastSync")
             }
         }
