@@ -35,7 +35,7 @@ class InvidiousDataService(
     @Transactional
     fun updateData(user: User, data: InvDataUpdateDto): SyncTimeDto {
         val entry = repo.findByOwner(user).getOrElse {
-            InvidiousDataEntry(0, user, -1, "", "")
+            InvidiousDataEntry(0, user, data.expectedLastSync, "", "")
         }
 
         if (entry.lastSync > data.expectedLastSync) {
