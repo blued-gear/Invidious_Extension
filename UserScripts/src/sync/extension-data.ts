@@ -398,7 +398,9 @@ export class ExtensionDataSync {
     private async clearStorage() {
         const allKeys = await GM.listValues();
         for(let key of allKeys) {
-            if(key.startsWith(STORAGE_KEY_ENTRY_PREFIX) || key.startsWith(STORAGE_KEY_ENTRY_UNSYNCED_PREFIX))
+            if(key.startsWith(STORAGE_KEY_ENTRY_PREFIX)
+                || key.startsWith(STORAGE_KEY_ENTRY_UNSYNCED_PREFIX)
+                || key == STORAGE_KEY_DELETED_ENTRIES)
                 await GM.deleteValue(key);
         }
     }
