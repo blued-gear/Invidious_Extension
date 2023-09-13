@@ -20,6 +20,8 @@ export default defineConfig({
             'https://yewtu.be/*',
             'https://invidious.tiekoetter.com/*',
             'https://invidious.projectsegfau.lt/*',
+            'https://inv.us.projectsegfau.lt/*',
+            'https://inv.bp.projectsegfau.lt/*',
             'https://invidious.no-logs.com/*'
         ],
         "run-at": "document-idle",
