@@ -97,5 +97,4 @@ async function main() {
     }
 }
 
-// noinspection JSIgnoredPromiseFromCall
-main();
+main().catch(e => logException(e, "uncaught error in main"));
