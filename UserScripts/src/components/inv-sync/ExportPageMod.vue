@@ -2,6 +2,7 @@
 import {computed, onBeforeMount, ref, Teleport} from "vue";
 import Button from "primevue/button";
 import Checkbox from 'primevue/checkbox';
+import ProgressSpinner from "primevue/progressspinner";
 import {useToast} from "primevue/usetoast";
 import invidiousDataSync, {SyncResult} from "../../sync/invidious-data";
 import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../util/constants";
@@ -31,11 +32,14 @@ const uiTarget = (() => {
 })();
 
 const backgroundSyncEnabled = ref(false);
+const syncRunning = ref(false);
 const syncPossible = computed(() => {
   return sharedStates.loggedIn.value;
 });
 
 function onImport() {
+  syncRunning.value = true;
+
   const exec = async () => {
     const res = await invidiousDataSync.importData();
     switch(res) {
@@ -57,6 +61,8 @@ function onImport() {
       case SyncResult.EXPORTED:
         throw new AssertionError("unreachable");
     }
+
+    syncRunning.value = false;
   };
 
   exec().catch(err => {
@@ -68,10 +74,14 @@ function onImport() {
       severity: 'error',
       life: TOAST_LIFE_ERROR
     });
+
+    syncRunning.value = false;
   });
 }
 
 function onExport() {
+  syncRunning.value = true;
+
   const exec = async () => {
     const res = await invidiousDataSync.exportData();
     switch(res) {
@@ -94,6 +104,8 @@ function onExport() {
       case SyncResult.IMPORTED:
         throw new AssertionError("unreachable");
     }
+
+    syncRunning.value = false;
   };
 
   exec().catch(err => {
@@ -114,6 +126,8 @@ function onExport() {
         life: TOAST_LIFE_ERROR
       });
     }
+
+    syncRunning.value = false;
   });
 }
 
@@ -145,11 +159,13 @@ onBeforeMount(async () => {
     <div class="border-1 border-primary p-1">
       <h3 class="m-2">Invidious-Extension Settings Sync</h3>
 
-      <div class="flex gap-3 ml-2 w-fit">
+      <div class="flex gap-3 ml-2 w-fit h-3rem">
         <Button label="Import from Remote" :disabled="!syncPossible"
                 @click="onImport"></Button>
         <Button label="Export to Remote" :disabled="!syncPossible"
                 @click="onExport"></Button>
+
+        <ProgressSpinner v-show="syncRunning" class="-ml-3 h-full" />
       </div>
 
       <div class="flex align-items-center m-2">
