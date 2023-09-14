@@ -36,9 +36,8 @@ dependencies {
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("io.micronaut.validation:micronaut-validation")
     implementation("jakarta.validation:jakarta.validation-api")
-    implementation("io.micronaut.reactor:micronaut-reactor")
 
-    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
+    implementation("com.mpatric:mp3agic:0.9.1")
 
     kapt("io.micronaut.security:micronaut-security-annotations")
     kapt("io.micronaut.serde:micronaut-serde-processor")
