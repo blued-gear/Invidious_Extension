@@ -5,6 +5,7 @@ import {HttpAuth} from "../util/fetch-utils";
 import {GM} from "../monkey";
 import sharedStates from "../util/shared-states";
 import extensionDataSync from "./extension-data";
+import invidiousDataSync from "./invidious-data";
 
 const STORAGE_KEY_LOGIN = STORAGE_PREFIX + "sync::login";
 const HASH_TAG_API_PASSWORD = "Login-api_password";
@@ -80,4 +81,5 @@ export async function storeLogin(login: Login | null) {
 export async function setLoginWhereNeeded(login: Login | null, resetData: boolean) {
     sharedStates.login.value = login;
     await extensionDataSync.setLogin(login, resetData);
+    await invidiousDataSync.setLogin(login, resetData);
 }

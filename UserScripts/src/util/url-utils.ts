@@ -87,3 +87,9 @@ export function playlistId(path: string | undefined = undefined): string | null 
     return new URLSearchParams(query).get('list');
 }
 //endregion
+
+//region other
+export function isOnExportPage() {
+    return location.pathname === '/data_control';
+}
+//endregion

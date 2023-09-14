@@ -20,8 +20,10 @@ import playerMgr from "./managers/player";
 import {restoreLogin, setLoginWhereNeeded} from "./sync/login";
 import {logException} from "./util/utils";
 import useSyncConflictService from "./components/sync-conflict/sync-conflict-service";
-import {TOAST_LIFE_ERROR} from "./util/constants";
+import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
 import toast from "./workarounds/toast";
+import sharedStates from "./util/shared-states";
+import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -32,13 +34,29 @@ async function runStartupHooks() {
     const results = await Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
         playerMgr.pickupState(),
-        useSyncConflictService().sync().then(() => console.info("sync after startup finished"))
+        useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
+        syncInvidiousData()
     ]);
 
     const errs = results.filter(r => r.status === 'rejected')
         .map(r => (r as PromiseRejectedResult).reason as Error);
     if(errs.length !== 0)
         throw new AggregateError(errs, "at least one startup-hook has failed");
+}
+
+async function syncInvidiousData() {
+    if(sharedStates.loggedIn.value && await invidiousDataSync.isBackgroundSyncEnabled()) {
+        const res = await invidiousDataSync.sync(false);
+        console.info("Invidious-Settings sync after startup finished");
+
+        if(res === SyncResult.IMPORTED) {
+            toast.add({
+                summary: "Invidious-Settings were updated by background-sync",
+                severity: 'info',
+                life: TOAST_LIFE_INFO
+            });
+        }
+    }
 }
 
 async function setupUi() {
