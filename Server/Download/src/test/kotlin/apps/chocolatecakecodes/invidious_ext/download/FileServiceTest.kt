@@ -96,24 +96,22 @@ class FileServiceTest(
     }
 
     @Test
-    fun canCleanOldFiles() {
+    fun canDeleteFile() {
         val bean = appCtx.createBean<FileService>()
 
         try {
             val file1 = bean.newFile()
             val file2 = bean.newFile()
 
-            val newCreateTime = Instant.now()
-                .minus(1, ChronoUnit.HOURS)
-                .minus(1, ChronoUnit.SECONDS)
-            repo.merge(file1.copy(created = newCreateTime))
+            Files.list(dir).count() shouldBe 2
+            Files.exists(Path.of(file1.path)) shouldBe true
+            Files.exists(Path.of(file2.path)) shouldBe true
 
-            repo.count() shouldBe 2
-            bean.cleanOldFiles()
-            repo.count() shouldBe 1
+            bean.deleteFile(file1.publicId)
+
             Files.list(dir).count() shouldBe 1
-            Files.list(dir).findFirst().get().absolutePathString() shouldBeEqual file2.path
-
+            Files.exists(Path.of(file1.path)) shouldBe false
+            Files.exists(Path.of(file2.path)) shouldBe true
         } finally {
             appCtx.destroyBean(bean)
         }

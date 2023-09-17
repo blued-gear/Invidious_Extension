@@ -27,7 +27,6 @@ class FileService(
 
     companion object {
         const val PUBLIC_ID_BITS = 256
-        private const val MAX_FILE_AGE_HOURS = 1
 
         private val PUBLIC_ID_FORMATTER = HexFormat.of()
     }
@@ -54,15 +53,12 @@ class FileService(
         return Files.newInputStream(Path.of(entry.path))
     }
 
-    @Scheduled(fixedDelay = "${MAX_FILE_AGE_HOURS}h", initialDelay = "${MAX_FILE_AGE_HOURS}h")
-    fun cleanOldFiles() {
-        val minCreationTime = Instant.now().minus(MAX_FILE_AGE_HOURS.toLong(), ChronoUnit.HOURS)
-        repo.findAll().filter {
-            it.created.isBefore(minCreationTime)
-        }.forEach {
-            Files.deleteIfExists(Path.of(it.path))
-            repo.delete(it)
+    fun deleteFile(publicId: String) {
+        val entry = repo.findByPublicId(publicId).orElseThrow {
+            FileNotFoundException(publicId)
         }
+
+        deleteFile(entry)
     }
 
     @PostConstruct
@@ -86,6 +82,11 @@ class FileService(
     }
 
     private fun allocFile(): Pair<Path, String> {
+    private fun deleteFile(entity: SavedFile) {
+        Files.deleteIfExists(Path.of(entity.path))
+        repo.delete(entity)
+    }
+
         val idBytes = ByteArray(PUBLIC_ID_BITS / 8)
 
         while(true) {
