@@ -1,5 +1,6 @@
 package apps.chocolatecakecodes.invidious_ext.download.service
 
+import apps.chocolatecakecodes.invidious_ext.download.dto.StoredFileDto
 import apps.chocolatecakecodes.invidious_ext.download.entity.SavedFile
 import apps.chocolatecakecodes.invidious_ext.download.repo.SavedFileRepo
 import apps.chocolatecakecodes.invidious_ext.download.service.exception.FileNotFoundException
@@ -35,8 +36,6 @@ class FileService(
     private val idRng = Random()
 
     @Transactional
-    fun newFile(): SavedFile {
-        val fileWithId = allocFile()
     fun newFile(subdir: String? = null): StoredFileDto {
         val fileWithId = allocFile(subdir)
 
@@ -48,6 +47,13 @@ class FileService(
         ))
 
         return StoredFileDto(entity.publicId, entity.path)
+    }
+
+    fun getPath(publicId: String): String {
+        val entry = repo.findByPublicId(publicId).orElseThrow {
+            FileNotFoundException(publicId)
+        }
+        return entry.path
     }
 
     fun getContent(publicId: String): InputStream {
