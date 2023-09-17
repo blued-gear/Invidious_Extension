@@ -3,6 +3,7 @@ package apps.chocolatecakecodes.invidious_ext.download.service
 import apps.chocolatecakecodes.invidious_ext.download.entity.SavedFile
 import apps.chocolatecakecodes.invidious_ext.download.repo.SavedFileRepo
 import apps.chocolatecakecodes.invidious_ext.download.service.exception.FileNotFoundException
+import apps.chocolatecakecodes.invidious_ext.download.util.PathUtils
 import io.micronaut.context.annotation.Value
 import io.micronaut.scheduling.annotation.Scheduled
 import jakarta.annotation.PostConstruct
@@ -17,7 +18,7 @@ import java.nio.file.Path
 import java.time.Instant
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.io.path.pathString
+import kotlin.io.path.absolutePathString
 
 @Singleton
 class FileService(
@@ -71,14 +72,7 @@ class FileService(
     @Transactional
     private fun clearFiles() {
         repo.deleteAll()
-
-        if(Files.exists(dir)) {
-            Files.list(dir).forEach {
-                Files.delete(it)
-            }
-
-            Files.delete(dir)
-        }
+        PathUtils.deleteFileTree(dir, true)
     }
 
     private fun allocFile(): Pair<Path, String> {
