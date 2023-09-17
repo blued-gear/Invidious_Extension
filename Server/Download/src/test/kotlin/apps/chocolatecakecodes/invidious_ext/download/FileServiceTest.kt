@@ -6,6 +6,7 @@ import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldStartWith
 import io.micronaut.context.annotation.Value
 import io.micronaut.kotlin.context.createBean
 import io.micronaut.runtime.EmbeddedApplication
@@ -13,8 +14,6 @@ import io.micronaut.test.extensions.kotest5.annotation.MicronautTest
 import jakarta.inject.Inject
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.Instant
-import java.time.temporal.ChronoUnit
 import kotlin.io.path.absolutePathString
 
 @MicronautTest(
@@ -66,12 +65,32 @@ class FileServiceTest(
     }
 
     @Test
+    fun canCreateFileInSubdir() {
+        val subdir = "sub_1"
+
+        Files.exists(dir) shouldBe false
+
+        val bean = appCtx.createBean<FileService>()
+
+        try {
+            val file = bean.newFile(subdir)
+
+            file.path shouldStartWith dir.resolve(subdir).absolutePathString()
+            Files.list(dir).count() shouldBe 1
+            Files.exists(Path.of(file.path)) shouldBe true
+        } finally {
+            appCtx.destroyBean(bean)
+        }
+    }
+
+    @Test
     fun canDeinit() {
         val bean = appCtx.createBean<FileService>()
 
         try {
             bean.newFile()
-            Files.list(dir).count() shouldBe 1
+            bean.newFile("sub")
+            Files.list(dir).count() shouldBe 2
         } finally {
             appCtx.destroyBean(bean)
 
