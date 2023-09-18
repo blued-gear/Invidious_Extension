@@ -38,7 +38,7 @@ class YoutubeDlpServiceTest(
 ) : AnnotationSpec() {
 
     companion object {
-        private const val VIDEO_ID = "4TlyzKBm5yw"
+        const val VIDEO_ID = "4TlyzKBm5yw"
     }
 
     private val downloadDir = Path.of(dirPath, "running").absolute()

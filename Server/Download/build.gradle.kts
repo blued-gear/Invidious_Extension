@@ -51,6 +51,7 @@ dependencies {
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("io.mockk:mockk:1.13.5")
     testImplementation("io.micronaut:micronaut-http-server-netty")
+    testImplementation("io.micronaut.reactor:micronaut-reactor")
 }
 
 java {
