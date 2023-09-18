@@ -1,6 +1,6 @@
 package apps.chocolatecakecodes.invidious_ext.download
 
-import apps.chocolatecakecodes.invidious_ext.download.repo.SavedFileRepo
+import apps.chocolatecakecodes.invidious_ext.download.repo.StoredFileRepo
 import apps.chocolatecakecodes.invidious_ext.download.service.FileService
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.AnnotationSpec
@@ -22,7 +22,7 @@ import kotlin.io.path.absolutePathString
 )
 class FileServiceTest(
     @Inject private val app: EmbeddedApplication<*>,
-    @Inject private val repo: SavedFileRepo,
+    @Inject private val repo: StoredFileRepo,
     @Value("\${inv-ext.download.dir}") private val dirPath: String
 ) : AnnotationSpec() {
 

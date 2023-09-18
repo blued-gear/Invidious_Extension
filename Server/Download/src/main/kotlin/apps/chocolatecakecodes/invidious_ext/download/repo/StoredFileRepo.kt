@@ -1,12 +1,12 @@
 package apps.chocolatecakecodes.invidious_ext.download.repo
 
-import apps.chocolatecakecodes.invidious_ext.download.entity.SavedFile
+import apps.chocolatecakecodes.invidious_ext.download.entity.StoredFile
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.jpa.repository.JpaRepository
 import java.util.*
 
 @Repository
-interface SavedFileRepo : JpaRepository<SavedFile, Long> {
+interface StoredFileRepo : JpaRepository<StoredFile, Long> {
 
-    fun findByPublicId(publicId: String): Optional<SavedFile>
+    fun findByPublicId(publicId: String): Optional<StoredFile>
 }

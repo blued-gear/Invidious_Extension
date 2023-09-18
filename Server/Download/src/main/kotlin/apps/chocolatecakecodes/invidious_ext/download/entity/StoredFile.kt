@@ -6,8 +6,8 @@ import jakarta.validation.constraints.NotNull
 import java.time.Instant
 
 @Entity
-@Table(name = "saved_file")
-data class SavedFile(
+@Table(name = "stored_file")
+data class StoredFile(
     @Id
     @GeneratedValue
     val id: Long,

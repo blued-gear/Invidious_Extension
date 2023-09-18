@@ -1,8 +1,8 @@
 package apps.chocolatecakecodes.invidious_ext.download.service
 
 import apps.chocolatecakecodes.invidious_ext.download.dto.StoredFileDto
-import apps.chocolatecakecodes.invidious_ext.download.entity.SavedFile
-import apps.chocolatecakecodes.invidious_ext.download.repo.SavedFileRepo
+import apps.chocolatecakecodes.invidious_ext.download.entity.StoredFile
+import apps.chocolatecakecodes.invidious_ext.download.repo.StoredFileRepo
 import apps.chocolatecakecodes.invidious_ext.download.service.exception.FileNotFoundException
 import apps.chocolatecakecodes.invidious_ext.download.util.PathUtils
 import io.micronaut.context.annotation.Value
@@ -22,7 +22,7 @@ import kotlin.io.path.absolutePathString
 
 @Singleton
 class FileService(
-    @Inject private val repo: SavedFileRepo,
+    @Inject private val repo: StoredFileRepo,
     @Value("\${inv-ext.download.dir}") private val dirPath: String
 ) {
 
@@ -39,7 +39,7 @@ class FileService(
     fun newFile(subdir: String? = null): StoredFileDto {
         val fileWithId = allocFile(subdir)
 
-        val entity = repo.save(SavedFile(
+        val entity = repo.save(StoredFile(
             0,
             fileWithId.second,
             Instant.now(),
@@ -84,7 +84,7 @@ class FileService(
         PathUtils.deleteFileTree(dir, true)
     }
 
-    private fun deleteFile(entity: SavedFile) {
+    private fun deleteFile(entity: StoredFile) {
         Files.deleteIfExists(Path.of(entity.path))
         repo.delete(entity)
     }
