@@ -125,6 +125,7 @@ class YoutubeDlpServiceTest(
             done.await()
             delay(200)// give the service a bit time to clean up
 
+            errInListener shouldBe false
             shouldThrow<JobNotFoundException> {
                 service.cancelJob(jobId)
             }
