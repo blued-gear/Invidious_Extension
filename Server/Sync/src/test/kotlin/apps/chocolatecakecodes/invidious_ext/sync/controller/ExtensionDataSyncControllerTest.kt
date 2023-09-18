@@ -109,7 +109,6 @@ class ExtensionDataSyncControllerTest(
         testEndpoint(http) { http ->
             val resp = http.exchange(
                 HttpRequest.GET<Void>("/allKeys").apply { basicAuth(username, password) },
-                //Argument.STRING
                 Argument.listOf(KeyWithSyncTimeDto::class.java)
             )
 
