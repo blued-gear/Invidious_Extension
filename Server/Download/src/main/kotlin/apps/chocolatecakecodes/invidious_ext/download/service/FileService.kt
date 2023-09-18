@@ -32,7 +32,7 @@ class FileService(
         private val PUBLIC_ID_FORMATTER = HexFormat.of()
     }
 
-    private val dir = Path.of(dirPath)
+    private val dir = Path.of(dirPath, "files")
     private val idRng = Random()
 
     @Transactional
