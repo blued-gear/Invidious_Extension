@@ -2,6 +2,7 @@ package apps.chocolatecakecodes.invidious_ext.download
 
 import apps.chocolatecakecodes.invidious_ext.download.repo.StoredFileRepo
 import apps.chocolatecakecodes.invidious_ext.download.service.FileService
+import apps.chocolatecakecodes.invidious_ext.download.util.PathUtils
 import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.equals.shouldBeEqual
@@ -27,11 +28,16 @@ class FileServiceTest(
 ) : AnnotationSpec() {
 
     private val appCtx = app.applicationContext
-    private val dir = Path.of(dirPath)
+    private val dir = Path.of(dirPath, "files")
 
     @ExperimentalKotest
     override fun concurrency(): Int? {
         return 1
+    }
+
+    @BeforeEach
+    fun delDir() {
+        PathUtils.deleteFileTree(dir, true)
     }
 
     @Test
