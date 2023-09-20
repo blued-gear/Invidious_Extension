@@ -26,18 +26,3 @@ export function setDifference<T>(a: Set<T> | Array<T>, b: Set<T> | Array<T>): Se
     }
     return difference;
 }
-
-export function arrayUnique<T, K>(arr: T[], keyExtractor: (itm: T) => K): T[] {
-    const usedKeys = new Set<K>();
-    const ret: T[] = [];
-
-    for(let itm of arr) {
-        const k = keyExtractor(itm);
-        if(!usedKeys.has(k)) {
-            ret.push(itm);
-            usedKeys.add(k);
-        }
-    }
-
-    return ret;
-}

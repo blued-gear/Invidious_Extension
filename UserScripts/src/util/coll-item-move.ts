@@ -1,10 +1,9 @@
 /*
  * methods used to move items in a collection in a specific direction
  */
-
-import {arrayContains} from "./utils";
 import WatchStack from "../model/stacks/watchstack";
 import {VideoStackItem} from "../model/stacks/stack-item";
+import {arrayContains} from "./array-utils";
 
 //region API
 export interface MoveAction<T> {

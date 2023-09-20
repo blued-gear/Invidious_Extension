@@ -43,24 +43,6 @@ export function randomInt(): number {
     return Math.floor(Math.random() * (INT_32_MAX + 1));
 }
 
-/**
- * checks if the given array contains the item by using stricht equality (===) comparison
- * @param arr the array
- * @param item the item to search for
- * @return <code>true</code> if the item exists in the array, <code>false</code> otherwise
- */
-export function arrayContains<T>(arr: T[], item: T): boolean {
-    return arr.some(elm => elm === item);
-}
-
-export function arrayFold<T, R>(arr: T[], initialItem: R, callback: (lastItem: R, item: T) => R): R {
-    let ret = initialItem;
-    for (let item of arr) {
-        ret = callback(ret, item);
-    }
-    return ret;
-}
-
 export function arrayBufferToHex(data: ArrayBuffer): string {
     const bytes = new Uint8Array(data);
     let ret = "";
@@ -85,10 +67,6 @@ export function generateUniqueId(existingIds: string[]): string {
     } while(existingIds.includes(id));
 
     return id;
-}
-
-export function initArray<T>(length: number, initialValue: T): T[] {
-    return Array(length).fill(initialValue);
 }
 
 export function isString(v: any): boolean {

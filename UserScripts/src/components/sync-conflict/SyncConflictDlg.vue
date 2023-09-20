@@ -7,7 +7,7 @@ import {useToast} from "primevue/usetoast";
 import useSyncConflictService, {ConflictException} from "./sync-conflict-service";
 import extensionDataSync from "../../sync/extension-data";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
-import {arrayUnique} from "../../util/set-utils";
+import {arrayDistinct} from "../../util/array-utils";
 
 enum ConflictResolution {
   KEEP_LOCAL,
@@ -100,7 +100,7 @@ async function onConflicts(errs: ConflictException[]): Promise<number[]> {
       });
     }
 
-    conflicts.value = arrayUnique([...conflicts.value, ...conflictsDetail], c => c.key);
+    conflicts.value = arrayDistinct([...conflicts.value, ...conflictsDetail], c => c.key);
     dlgOpen.value = true;
 
     const ret = await new Promise<number[]>((resolve) => resolvePromise = resolve);

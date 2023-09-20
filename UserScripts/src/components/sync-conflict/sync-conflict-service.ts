@@ -1,6 +1,7 @@
 import SyncConflictException from "../../sync/exception/sync-conflict-exception";
 import extensionDataSyncInstance, {ExtensionDataSync} from "../../sync/extension-data";
-import {arrayFold, generateUniqueId, initArray, isString} from "../../util/utils";
+import {generateUniqueId, isString} from "../../util/utils";
+import {arrayFold, initArray} from "../../util/array-utils";
 import {STORAGE_KEY_GROUPS_PREFIX as KEY_PREFIX_PL_GROUPS} from "../../managers/playlists";
 import {STORAGE_KEY_STACKS_PREFIX as KEY_PREFIX_STACKS} from "../../managers/stacks";
 

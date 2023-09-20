@@ -7,7 +7,7 @@ import {useToast} from "primevue/usetoast";
 
 import playlistsMgr from "../../managers/playlists";
 import PlaylistsGroup from "../../model/PlaylistsGroup";
-import {arrayFold} from "../../util/utils";
+import {arrayFold} from "../../util/array-utils";
 import {playlistId} from "../../util/url-utils";
 
 const targetElmId = "invExt-playlistDetailsMod";
