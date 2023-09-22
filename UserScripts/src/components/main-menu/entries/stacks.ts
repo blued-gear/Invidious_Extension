@@ -4,6 +4,8 @@ import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../../../managers/sta
 import playerMgr from "../../../managers/player";
 import {isOnPlayer} from "../../../util/url-utils";
 import toast from "../../../workarounds/toast";
+import {MenuItem} from "primevue/menuitem";
+import {logException} from "../../../util/utils";
 
 export const stackToEditId = ref<string>(STACK_ID_CURRENT);
 export const stackEditorDlgOpen = ref(false);
@@ -110,7 +112,7 @@ export function updateMenu() {
     updateWatchStackPopable();
 }
 
-export default () => [
+export default () => <MenuItem[]>[
     {
         label: "Last Video (from Stack)",
         command: () => popWatchStack(),

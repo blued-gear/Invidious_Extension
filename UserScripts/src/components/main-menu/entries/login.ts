@@ -4,6 +4,7 @@ import sharedStates from "../../../util/shared-states";
 import {setLoginWhereNeeded, storeLogin} from "../../../sync/login";
 import toast from "../../../workarounds/toast";
 import confirm from "../../../workarounds/confirm";
+import {MenuItem} from "primevue/menuitem";
 
 export const loginDlgOpen = ref(false);
 
@@ -44,7 +45,7 @@ function logout() {
 
 export function updateMenu() {}
 
-export default () => [
+export default () => <MenuItem[]>[
     {
         label: "Login",
         command: () => openLoginDlg(),

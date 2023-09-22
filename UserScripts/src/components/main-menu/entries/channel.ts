@@ -1,6 +1,7 @@
 import {channelId, isOnChannel} from "../../../util/url-utils";
 import toast from "../../../workarounds/toast";
 import {TOAST_LIFE_INFO} from "../../../util/constants";
+import {MenuItem} from "primevue/menuitem";
 
 function openChannelUploadsPl() {
     const chanId = channelId()!!;
@@ -27,7 +28,7 @@ function openChannelUploadsPl() {
 
 export function updateMenu() {}
 
-export default () => [
+export default () => <MenuItem[]>[
     {
         label: "Open Uploads-Playlist",
         command: () => openChannelUploadsPl(),
