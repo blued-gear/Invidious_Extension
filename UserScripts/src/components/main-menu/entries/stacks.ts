@@ -24,8 +24,8 @@ function popWatchStack() {
         await playerMgr.openStackItem(vid);
     }
 
-    exec().catch((err) => {
-        console.error("error in popWatchStack()", err);
+    exec().catch((err: Error) => {
+        logException(err, "error in popWatchStack()");
 
         toast.add({
             summary: "Unable to load last video",
@@ -37,14 +37,41 @@ function popWatchStack() {
 }
 
 function openStackEditor() {
-    stackMgr.updateCurrentWatchStack();
-    stackToEditId.value = STACK_ID_CURRENT;
-    stackEditorDlgOpen.value = true;
+    const exec = async () => {
+        await stackMgr.updateCurrentWatchStack();
+
+        stackToEditId.value = STACK_ID_CURRENT;
+        stackEditorDlgOpen.value = true;
+    }
+
+    exec().catch((err: Error) => {
+        logException(err, "stackMgr.updateCurrentWatchStack() failed when opening StackEditor")
+
+        toast.add({
+            summary: "Error while updating current stack. Editor will not open.",
+            detail: err.message,
+            severity: 'error',
+            life: TOAST_LIFE_ERROR
+        });
+    });
 }
 
 function saveCurrentStack() {
-    stackMgr.updateCurrentWatchStack();
-    stackSaveDlgOpen.value = true;
+    const exec = async () => {
+        await stackMgr.updateCurrentWatchStack();
+        stackSaveDlgOpen.value = true;
+    }
+
+    exec().catch((err: Error) => {
+        logException(err, "stackMgr.updateCurrentWatchStack() failed when opening StackSaveDlg")
+
+        toast.add({
+            summary: "Error while updating current stack. Will not save.",
+            detail: err.message,
+            severity: 'error',
+            life: TOAST_LIFE_ERROR
+        });
+    });
 }
 
 function playStack(stackId: StackNameWithId) {
