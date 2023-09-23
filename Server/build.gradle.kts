@@ -30,6 +30,7 @@ dependencies {
     val kotlinVersion = project.properties["kotlinVersion"]
 
     implementation(project("Sync"))
+    implementation(project("Download"))
 
     implementation("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
