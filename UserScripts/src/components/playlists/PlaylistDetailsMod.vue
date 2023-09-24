@@ -9,6 +9,7 @@ import playlistsMgr from "../../managers/playlists";
 import PlaylistsGroup from "../../model/PlaylistsGroup";
 import {arrayFold} from "../../util/array-utils";
 import {playlistId} from "../../util/url-utils";
+import {logException} from "../../util/utils";
 
 const targetElmId = "invExt-playlistDetailsMod";
 const uiTarget = (() => {
@@ -89,7 +90,7 @@ function loadGroups() {
 }
 
 function showError(err: Error, where: string, failedAction: string) {
-  console.error("error in " + where, err);
+  logException(err, "error in " + where);
 
   toast.add({
     summary: "Unable to " + failedAction,

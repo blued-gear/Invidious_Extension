@@ -8,6 +8,7 @@ import {MenuItem} from "primevue/menuitem";
 import StackEditDlg from "../stacks/StackEditDlg.vue";
 import StackSaveDlg from "../stacks/StackSaveDlg.vue";
 import LoginDlg from "../login/LoginDlg.vue";
+import DownloadDlg from "../download/DownloadDlg.vue";
 
 import mnuStacks, {
   stackEditorDlgOpen,
@@ -17,6 +18,7 @@ import mnuStacks, {
 } from "./entries/stacks";
 import mnuChannel, {updateMenu as updateChannelMenu} from "./entries/channel";
 import mnuLogin, {loginDlgOpen, updateMenu as updateLoginMenu} from "./entries/login";
+import mnuDownload from "./entries/download";
 
 // in the menu-bar beside the settings-button
 const btnTarget = (() => {
@@ -40,8 +42,11 @@ const btnTarget = (() => {
   return elm;
 })();
 
+const downloadDlgRef = ref<typeof DownloadDlg>();
+
 const vidMnu = ref<Menu>();
 const vidMnuContent = computed<MenuItem[]>(() => [
+    ...mnuDownload({ downloadDlgRef: downloadDlgRef }),
     ...mnuStacks(),
     ...mnuChannel(),
     ...mnuLogin()
@@ -65,6 +70,7 @@ function onMenuOpen() {
   <StackEditDlg v-model="stackEditorDlgOpen" :stack-id="stackToEditId"></StackEditDlg>
   <StackSaveDlg v-model="stackSaveDlgOpen"></StackSaveDlg>
   <LoginDlg v-model="loginDlgOpen"></LoginDlg>
+  <DownloadDlg ref="downloadDlgRef"></DownloadDlg>
 </template>
 
 <style scoped>
