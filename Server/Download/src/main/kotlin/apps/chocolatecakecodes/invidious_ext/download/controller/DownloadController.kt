@@ -37,6 +37,7 @@ class DownloadController(
     }
 
     @Get("/file")
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     fun downloadFile(@QueryValue id: String): InputStream {
         return downloadService.downloadFile(id)
