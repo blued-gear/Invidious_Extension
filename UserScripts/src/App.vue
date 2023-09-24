@@ -9,6 +9,7 @@ import SyncConflictDlg from "./components/sync-conflict/SyncConflictDlg.vue";
 import ExportPageMod from "./components/inv-sync/ExportPageMod.vue";
 
 import {isOnExportPage} from "./util/url-utils";
+import DownloadProgressIndicator from "./components/download/DownloadProgressIndicator.vue";
 </script>
 
 <template>
@@ -16,6 +17,7 @@ import {isOnExportPage} from "./util/url-utils";
   <PlaylistsUiMod></PlaylistsUiMod>
   <ExportPageMod v-if="isOnExportPage()"></ExportPageMod>
   <SyncConflictDlg></SyncConflictDlg>
+  <DownloadProgressIndicator></DownloadProgressIndicator>
 
   <DynamicDialog />
   <ConfirmDialog></ConfirmDialog>

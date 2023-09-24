@@ -100,3 +100,8 @@ export function logException(e: Error, message: string) {
         console.groupEnd();
     }
 }
+
+export function roundToDecimal(num: number, decimals: number): number {
+    const scale = Math.pow(10.0, decimals);
+    return Math.round(num * scale) / scale;
+}
