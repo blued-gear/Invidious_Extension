@@ -1,8 +1,6 @@
 package apps.chocolatecakecodes.invidious_ext.download
 
-import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadProgressDto
-import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadRequestDto
-import apps.chocolatecakecodes.invidious_ext.download.dto.TagValueDto
+import apps.chocolatecakecodes.invidious_ext.download.dto.*
 import apps.chocolatecakecodes.invidious_ext.download.enums.DownloadJobState
 import apps.chocolatecakecodes.invidious_ext.download.enums.FileType
 import apps.chocolatecakecodes.invidious_ext.download.enums.TagField
@@ -11,6 +9,7 @@ import io.kotest.assertions.fail
 import io.kotest.core.spec.style.AnnotationSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.micronaut.core.type.Argument
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
@@ -52,19 +51,21 @@ class DownloadControllerTest(
                     FileType.VIDEO,
                     null
                 )),
-                Argument.STRING
+                Argument.of(DownloadIdDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.ACCEPTED
 
                 val jobId = resp.body()
-                jobId.isNullOrBlank() shouldBe false
+                jobId shouldNotBe null
+                jobId.id.isBlank() shouldBe false
 
-                waitForJobDone(jobId, http)
+                waitForJobDone(jobId.id, http)
 
-                val extension = http.retrieve("/extension?id=$jobId")
-                extension.isNullOrBlank() shouldBe false
+                val extension = http.retrieve("/extension?id=${jobId.id}", FileExtensionDto::class.java)
+                extension shouldNotBe null
+                extension.extension.isNullOrBlank() shouldBe false
 
-                val file = http.retrieve("/file?id=$jobId", ByteArray::class.java)
+                val file = http.retrieve("/file?id=${jobId.id}", ByteArray::class.java)
                 file.size shouldBeGreaterThan 1024
             }
         }
@@ -79,19 +80,21 @@ class DownloadControllerTest(
                     FileType.MP3,
                     arrayOf(TagValueDto(TagField.TITLE, "title"))
                 )),
-                Argument.STRING
+                Argument.of(DownloadIdDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.ACCEPTED
 
                 val jobId = resp.body()
-                jobId.isNullOrBlank() shouldBe false
+                jobId shouldNotBe null
+                jobId.id.isBlank() shouldBe false
 
-                waitForJobDone(jobId, http)
+                waitForJobDone(jobId.id, http)
 
-                val extension = http.retrieve("/extension?id=$jobId")
-                extension shouldBe "mp3"
+                val extension = http.retrieve("/extension?id=${jobId.id}", FileExtensionDto::class.java)
+                extension shouldNotBe null
+                extension.extension shouldBe "mp3"
 
-                val file = http.retrieve("/file?id=$jobId", ByteArray::class.java)
+                val file = http.retrieve("/file?id=${jobId.id}", ByteArray::class.java)
                 file.size shouldBeGreaterThan 1024
             }
         }
