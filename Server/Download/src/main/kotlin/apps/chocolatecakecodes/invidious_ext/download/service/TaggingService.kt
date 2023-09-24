@@ -32,12 +32,33 @@ class TaggingService {
 
     private fun prepareTag(file: Mp3File): ID3v2 {
         if(file.hasId3v2Tag()) {
-            return file.id3v2Tag
+            val tag = file.id3v2Tag
+
+            val version = tag.version?.substring(0, 1)?.toIntOrNull()
+            if (version == null || version < 4)
+                return upgradeV2Tag(tag)
+
+            return tag
         } else {
             val tag = ID3v24Tag()
             file.id3v2Tag = tag
             return tag
         }
+    }
+
+    private fun upgradeV2Tag(tag: ID3v2): ID3v24Tag {
+        val newTag = ID3v24Tag()
+
+        //TODO maybe copy more fields
+        newTag.encoder = tag.encoder
+
+        val thumbMime = tag.albumImageMimeType
+        val thumbData = tag.albumImage
+        if(thumbMime != null && thumbData != null) {
+            newTag.setAlbumImage(thumbData, thumbMime)
+        }
+
+        return newTag
     }
 
     private fun setField(tag: ID3v2, field: TagValueDto) {
