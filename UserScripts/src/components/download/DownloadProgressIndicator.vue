@@ -51,14 +51,14 @@ const indicatorProgress = computed(() => {
 
   return (progSum / runningProgs.length) * 100;
 });
-const indicatorColor = computed(() => {//TODO use theme variables
+const indicatorColor = computed(() => {
   if(jobs.value.some(job => job.state === 'FAILED'))
-    return "red";
+    return "var(--red-600)";
   if(jobs.value.every(job => job.state === 'DONE'))
-    return "green";
+    return "var(--green-500)";
   if(jobs.value.every(job => job.state === 'CANCELLED'))
-    return "yellow";
-  return "blue";
+    return "var(--yellow-400)";
+  return "var(--blue-500)";
 });
 
 function onIndicatorClick(event: Event) {
@@ -133,13 +133,13 @@ function jobProgressColor(job: DownloadJobEx): string {
   switch(job.state) {
     case 'INIT':
     case 'STARTED':
-      return "blue";
+      return "var(--blue-500)";
     case 'DONE':
-      return "green";
+      return "var(--green-500)";
     case 'FAILED':
-      return "red";
+      return "var(--red-600)";
     case 'CANCELLED':
-      return "yellow";
+      return "var(--yellow-400)";
   }
 }
 
