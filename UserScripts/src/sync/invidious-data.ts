@@ -10,6 +10,7 @@ import SyncTimeDto from "./dto/sync-time-dto";
 import AssertionError from "../util/AssertionError";
 import {StatusCodes} from "http-status-codes";
 import SyncTimeWithHashDto from "./dto/synctime-with-hash-dto";
+import {base64FromArrayBuffer} from "../workarounds/base64";
 
 const STORAGE_KEY_LAST_SYNC_TIME = STORAGE_PREFIX + "sync-invidious::lastSyncTime";
 const STORAGE_KEY_DO_BACKGROUND_SYNC = STORAGE_PREFIX + "sync-invidious::doBackgroundSync";
@@ -134,8 +135,8 @@ export class InvidiousDataSync {
             STR_ENCODER.encode(data)
         );
 
-        const ivStr = Base64.fromUint8Array(encryptionIv);
-        const encryptedDataStr = Base64.fromUint8Array(new Uint8Array(encryptedData));
+        const ivStr = base64FromArrayBuffer(encryptionIv);
+        const encryptedDataStr = base64FromArrayBuffer(encryptedData);
 
         return `${ivStr}$${encryptedDataStr}`;
     }

@@ -1,5 +1,6 @@
 import {Base64} from "js-base64";
 import {STR_DECODER, STR_ENCODER} from "../util/constants";
+import {base64FromArrayBuffer} from "../workarounds/base64";
 
 //region constants
 //NOTE never change this
@@ -106,7 +107,7 @@ export default class PasswordDigest {
      * exports the internal key to use it for <code>fromExportedDigest()</code>
      */
     async exportBaseKey(): Promise<string> {
-        return Base64.fromUint8Array(new Uint8Array(this.rawBaseKey));
+        return base64FromArrayBuffer(this.rawBaseKey);
     }
 
     /**
@@ -156,7 +157,7 @@ export default class PasswordDigest {
      */
     async deriveSubString(input: string, bits: number): Promise<string> {
         const data = await this.deriveSubBytes(input, bits);
-        return Base64.fromUint8Array(new Uint8Array(data));
+        return base64FromArrayBuffer(data);
     }
 
     /**
@@ -177,7 +178,7 @@ export default class PasswordDigest {
             STR_ENCODER.encode(str)
         );
 
-        return Base64.fromUint8Array(new Uint8Array(encrypted));
+        return base64FromArrayBuffer(encrypted);
     }
 
     /**

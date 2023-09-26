@@ -1,11 +1,11 @@
 import PasswordDigest, {KdfParams} from "../crypto/password-digest";
 import {STORAGE_PREFIX, STR_ENCODER} from "../util/constants";
-import {Base64} from "js-base64";
 import {HttpAuth} from "../util/fetch-utils";
 import {GM} from "../monkey";
 import sharedStates from "../util/shared-states";
 import extensionDataSync from "./extension-data";
 import invidiousDataSync from "./invidious-data";
+import {base64FromArrayBuffer} from "../workarounds/base64";
 
 const STORAGE_KEY_LOGIN = STORAGE_PREFIX + "sync::login";
 const HASH_TAG_API_PASSWORD = "Login-api_password";
@@ -32,7 +32,7 @@ export default class Login {
 
     static async createFromCredentials(username: string, password: string, hashParams: KdfParams | undefined = undefined): Promise<Login> {
         const pwdSalt = await crypto.subtle.digest('SHA-512', STR_ENCODER.encode(username));
-        const pwdSaltStr = Base64.fromUint8Array(new Uint8Array(pwdSalt));
+        const pwdSaltStr = base64FromArrayBuffer(pwdSalt);
 
         const pwdDigest = await PasswordDigest.fromPassword(password, pwdSaltStr, hashParams);
 

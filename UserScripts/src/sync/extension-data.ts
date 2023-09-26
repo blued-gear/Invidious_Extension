@@ -12,6 +12,7 @@ import {StatusCodes} from "http-status-codes";
 import SyncConflictException from "./exception/sync-conflict-exception";
 import Lock from "../util/lock";
 import {setDifference, setIntersection, setUnion} from "../util/set-utils";
+import {base64FromArrayBuffer} from "../workarounds/base64";
 
 const STORAGE_KEY_ENTRY_PREFIX = STORAGE_PREFIX + "sync-extension::entry::";
 const STORAGE_KEY_ENTRY_UNSYNCED_PREFIX = STORAGE_PREFIX + "sync-extension::entry-unsynced::";
@@ -634,8 +635,8 @@ export class ExtensionDataSync {
             STR_ENCODER.encode(JSON.stringify(data))
         );
 
-        const ivStr = Base64.fromUint8Array(encryptionIv);
-        const encryptedDataStr = Base64.fromUint8Array(new Uint8Array(encryptedData));
+        const ivStr = base64FromArrayBuffer(encryptionIv);
+        const encryptedDataStr = base64FromArrayBuffer(encryptedData);
 
         return `${ivStr}$${encryptedDataStr}`;
     }
