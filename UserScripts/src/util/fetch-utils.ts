@@ -125,7 +125,7 @@ export async function apiFetch(method: HttpMethod, url: string, body: object | u
                 console.error("apiFetch: request failed with error");
                 console.error(event.error);
 
-                exceptionFromResp(event);
+                reject(exceptionFromResp(event));
             }
         });
     });
