@@ -1,11 +1,23 @@
 import {Base64} from "js-base64";
 import {StatusCodes} from "http-status-codes";
+import {GM} from "../monkey";
+import {arrayFold} from "./array-utils";
 
 const HEADER_AUTH = 'Authorization';
 const HEADER_CONTENT_TYPE = 'Content-Type';
 
 const CONTENT_TYPE_JSON = 'application/json';
-const CONTENT_TYPE_TEXT = 'text/plain';
+
+// type not exported in GM, so redefine it here
+type GmResponseEventBase = {
+    responseHeaders: string;
+    readyState: 0 | 1 | 2 | 3 | 4;
+    response: any;
+    responseText: string;
+    responseXML: Document | null;
+    status: number;
+    statusText: string;
+};
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
 
@@ -61,46 +73,62 @@ export class UnsupportedHttpResponseException extends Error {
  * @throws HttpResponseException if the resp-status was not in the ok range
  * @throws UnsupportedHttpResponseException if the response has a body which was neither json nor text
  */
-export async function apiFetch(method: HttpMethod, url: string, body: object | undefined, auth: HttpAuth | null): Promise<object | string | undefined> {
-    const reqHeaders = new Headers();
-    if(body !== undefined) {
-        reqHeaders.set(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON)
-    }
-    if(auth !== null) {
-        reqHeaders.set(HEADER_AUTH, authToHeaderVal(auth))
-    }
+export async function apiFetch(method: HttpMethod, url: string, body: object | undefined, auth: HttpAuth | null): Promise<object | undefined> {
+    return new Promise((resolve, reject) => {
+        const reqHeaders: Record<string, string> = {};
+        if(body !== undefined) {
+            reqHeaders[HEADER_CONTENT_TYPE] = CONTENT_TYPE_JSON;
+        }
+        if(auth !== null) {
+            reqHeaders[HEADER_AUTH] = authToHeaderVal(auth);
+        }
 
-    const reqBody = body !== undefined ? JSON.stringify(body) : null;
+        const reqBody = body !== undefined ? JSON.stringify(body) : undefined;
+        const reqMime = body !== undefined ? CONTENT_TYPE_JSON: undefined;
 
-    const resp = await fetch(url, {
-        method: method,
-        headers: reqHeaders,
-        body: reqBody,
-        mode: 'cors',
-        credentials: 'include',
-        referrerPolicy: 'no-referrer'
+        GM.xmlHttpRequest({
+            url: url,
+            method: method,
+            headers: reqHeaders,
+            data: reqBody,
+            overrideMimeType: reqMime,
+            responseType: 'json',
+            fetch: true,
+
+            onload: (resp) => {
+                if(resp.status < 200 || resp.status >= 400) {
+                    reject(exceptionFromResp(resp));
+                    return;
+                }
+
+                if(resp.status === StatusCodes.NO_CONTENT) {
+                    resolve(undefined);
+                    return;
+                }
+
+                const headers = parseHeaders(resp.responseHeaders);
+                switch(headers[HEADER_CONTENT_TYPE]) {
+                    case CONTENT_TYPE_JSON:
+                        resolve(resp.response);
+                        return;
+                    default:
+                        throw new UnsupportedHttpResponseException(
+                            resp.status, resp.statusText,
+                            headers[HEADER_CONTENT_TYPE],
+                            resp.responseText
+                        );
+                }
+
+                throw new Error("unreachable");// just to make sure that I did not forget a return
+            },
+            onerror: (event) => {
+                console.error("apiFetch: request failed with error");
+                console.error(event.error);
+
+                exceptionFromResp(event);
+            }
+        });
     });
-
-    if(!resp.ok) {
-        const errBody = await resp.text();
-        throw new HttpResponseException(resp.status, resp.statusText, errBody);
-    }
-
-    if(resp.status === StatusCodes.NO_CONTENT)
-        return undefined;
-
-    switch(resp.headers.get(HEADER_CONTENT_TYPE)) {
-        case CONTENT_TYPE_JSON:
-            return await resp.json();
-        case CONTENT_TYPE_TEXT:
-            return await resp.text();
-        default:
-            throw new UnsupportedHttpResponseException(
-                resp.status, resp.statusText,
-                resp.headers.get(HEADER_CONTENT_TYPE),
-                await resp.text()
-            );
-    }
 }
 
 export async function expectHttpErr<T>(expectedStatusCodes: number[], exec: () => Promise<T>, onErr: (e: HttpResponseException) => Promise<T>): Promise<T> {
@@ -126,4 +154,44 @@ function authToHeaderVal(auth: HttpAuth): string {
     const uAndP = `${auth.username}:${auth.password}`;
     const encoded = Base64.encode(uAndP);
     return `Basic ${encoded}`;
+}
+
+function parseHeaders(headersStr: string | null): Record<string, string> {
+    if(headersStr != null) {
+        const entries = headersStr
+            .split('\r\n')
+            .map(h => {
+                const sep = ': ';
+                const sepIdx = h.indexOf(sep);
+
+                const key = h.substring(0, sepIdx);
+                const value = h.substring(sepIdx + sep.length);
+
+                return { key, value };
+            })
+            .filter((entry) => entry.key.length !== 0);
+        return arrayFold(entries, {}, (acc, cur) => {
+            const entry: Record<string, string> = {};
+            entry[cur.key] = cur.value;
+
+            return { ...acc, ...entry };
+        });
+    } else {
+        return {};
+    }
+}
+
+function exceptionFromResp(event: GmResponseEventBase): HttpResponseException {
+    if(event.status > 0) {
+        let respText: string | null;
+        try {
+            respText = event.responseText;
+        } catch {
+            respText = null;
+        }
+
+        return new HttpResponseException(event.status, event.statusText, respText);
+    } else {
+        return new HttpResponseException(0, "request failed", null);
+    }
 }
