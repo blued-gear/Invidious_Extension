@@ -46,7 +46,7 @@ async function runStartupHooks() {
 
 async function syncInvidiousData() {
     if(sharedStates.loggedIn.value && await invidiousDataSync.isBackgroundSyncEnabled()) {
-        const res = await invidiousDataSync.sync(false);
+        const res = await invidiousDataSync.sync(true);
         console.info("Invidious-Settings sync after startup finished");
 
         if(res === SyncResult.IMPORTED) {

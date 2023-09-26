@@ -173,7 +173,7 @@ onBeforeMount(async () => {
                   :binary="true" :disabled="!syncPossible"
                   @input="onChangeBackgroundSync"/>
         <label for="invExt-exportPageMod-backgroundSync" class="ml-1">
-          Enable automatic sync (will only Import)
+          Enable automatic sync
         </label>
       </div>
     </div>
