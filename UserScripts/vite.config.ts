@@ -27,7 +27,8 @@ export default defineConfig({
         "run-at": "document-idle",
         sandbox: "DOM",
         connect: [
-            "chocolatecakecodes.goip.de"
+            "chocolatecakecodes.goip.de",
+            "localhost"
         ],
       },
 

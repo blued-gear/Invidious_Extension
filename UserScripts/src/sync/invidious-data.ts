@@ -10,6 +10,7 @@ import SyncTimeDto from "./dto/sync-time-dto";
 import AssertionError from "../util/AssertionError";
 import {StatusCodes} from "http-status-codes";
 import SyncTimeWithHashDto from "./dto/synctime-with-hash-dto";
+import DataGetDto from "./dto/data-get-dto";
 import {base64FromArrayBuffer} from "../workarounds/base64";
 
 const STORAGE_KEY_LAST_SYNC_TIME = STORAGE_PREFIX + "sync-invidious::lastSyncTime";
@@ -194,9 +195,9 @@ export class InvidiousDataSync {
                 `${SERVER_SYNC_INVIDIOUS_URL}/data`,
                 undefined,
                 this.login!!.apiCredentials()
-            ) as string;
+            ) as DataGetDto;
 
-            return await this.decryptData(encryptedData);
+            return await this.decryptData(encryptedData.data);
         }, async () => {
             return null;
         });

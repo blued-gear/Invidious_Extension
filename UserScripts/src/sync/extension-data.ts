@@ -12,6 +12,7 @@ import {StatusCodes} from "http-status-codes";
 import SyncConflictException from "./exception/sync-conflict-exception";
 import Lock from "../util/lock";
 import {setDifference, setIntersection, setUnion} from "../util/set-utils";
+import DataGetDto from "./dto/data-get-dto";
 import {base64FromArrayBuffer} from "../workarounds/base64";
 
 const STORAGE_KEY_ENTRY_PREFIX = STORAGE_PREFIX + "sync-extension::entry::";
@@ -321,12 +322,12 @@ export class ExtensionDataSync {
             `${SERVER_SYNC_URL}/entry/${encodeURIComponent(remoteKey)}/data`,
             undefined,
             this.login!!.apiCredentials()
-        ) as string | undefined;
+        ) as DataGetDto | undefined;
 
         if(data === undefined)
             throw new AssertionError("sync data-get did not return expected payload");
 
-        return this.decryptEntryData(data, key);
+        return this.decryptEntryData(data.data, key);
     }
 
     private async sendEntry<T>(key: string, data: T, force: boolean): Promise<SyncTimeDto> {
