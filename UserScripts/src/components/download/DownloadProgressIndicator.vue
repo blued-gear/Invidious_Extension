@@ -49,7 +49,8 @@ const indicatorProgress = computed(() => {
       .map(job => job.progress);
   const progSum = runningProgs.reduce((acc, cur) => acc + cur, 0);
 
-  return (progSum / runningProgs.length) * 100;
+  const prog = (progSum / runningProgs.length) * 100;
+  return Math.max(prog, 0.1);// progress have to be > 0 or else the legend-icon would not be shown
 });
 const indicatorColor = computed(() => {
   if(jobs.value.some(job => job.state === 'FAILED'))
@@ -186,7 +187,7 @@ onBeforeMount(() => {
          class="fixed bottom-0 left-0 ml-1 w-fit h-fit"
          @click.stop="onIndicatorClick">
       <VeProgress :progress="indicatorProgress" :color="indicatorColor"
-                  :hideLegend="false" size="50"
+                  :hideLegend="false" :legend="true" size="50"
                   class="cursor-pointer">
         <template #default>
           <span class="pi pi-download"></span>
