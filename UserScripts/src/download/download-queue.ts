@@ -108,6 +108,8 @@ export class DownloadQueue {
 
     private async updateProgresses() {
         const jobs = await this.runningJobs();
+        if(jobs.length === 0)
+            return;
 
         if(!sharedStates.loggedIn.value) {
             console.warn("logged out while download were running; dropping them");
