@@ -9,7 +9,7 @@ import playlistsMgr from "../../managers/playlists";
 import PlaylistsGroup from "../../model/PlaylistsGroup";
 import {arrayFold} from "../../util/array-utils";
 import {playlistId} from "../../util/url-utils";
-import {logException} from "../../util/utils";
+import {logException, nodeListToArray} from "../../util/utils";
 
 const targetElmId = "invExt-playlistDetailsMod";
 const uiTarget = (() => {
@@ -34,6 +34,22 @@ const toast = useToast();
 
 const groups = ref<PlaylistsGroup[]>([]);
 const groupSelection = ref<Record<string, boolean>>({});
+
+const isPlaylistSaved = computed(() => {
+  const hasEditBtn = nodeListToArray(document.querySelectorAll('html body div.pure-g div#contents div.h-box.title div.button-container div.pure-u a.pure-button.pure-button-secondary'))
+      .map(a => (a as HTMLElement).getAttribute('href'))
+      .some(href => href != null && href.startsWith('/edit_playlist?'));
+  if(hasEditBtn)
+    return true;
+
+  const hasUnsubscribeBtn = nodeListToArray(document.querySelectorAll('html body div.pure-g div#contents div.h-box.title div.button-container div.pure-u a.pure-button.pure-button-secondary'))
+      .map(a => (a as HTMLElement).getAttribute('href'))
+      .some(href => href != null && href.startsWith('/delete_playlist?'));
+  if(hasUnsubscribeBtn)
+    return true;
+
+  return false;
+});
 
 const selectedGroupsText = computed(() => Object.keys(groupSelection.value)
     .filter(group => groupSelection.value[group])
@@ -108,7 +124,7 @@ onBeforeMount(() => {
 <template>
   <Teleport :to="uiTarget">
     <div class="flex gap-1">
-      <div class="groupsWrapper">
+      <div v-if="isPlaylistSaved" class="groupsWrapper">
         <MultiSelectWithAdd :model="groupSelection" :closed-text="selectedGroupsText"
                             :empty-placeholder="'Groups'"
                             @update="onSelectionChanged" @new-option="onNewGroup"></MultiSelectWithAdd>
