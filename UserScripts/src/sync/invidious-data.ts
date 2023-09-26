@@ -261,7 +261,8 @@ async function uploadData(data: string) {
 async function computeFingerprint(data: string): Promise<string> {
     const excludedProps: string [] = [
         'preferences.quality',
-        'preferences.quality_dash'
+        'preferences.quality_dash',
+        'preferences.dark_mode'
     ];
 
     const json = JSON.parse(data);
