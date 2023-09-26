@@ -1,13 +1,9 @@
 package apps.chocolatecakecodes.invidious_ext.sync.controller
 
-import apps.chocolatecakecodes.invidious_ext.sync.dto.DataPostDto
-import apps.chocolatecakecodes.invidious_ext.sync.dto.DataPutDto
-import apps.chocolatecakecodes.invidious_ext.sync.dto.KeyWithSyncTimeDto
-import apps.chocolatecakecodes.invidious_ext.sync.dto.SyncTimeDto
+import apps.chocolatecakecodes.invidious_ext.sync.dto.*
 import apps.chocolatecakecodes.invidious_ext.sync.service.ExtensionDataService
 import apps.chocolatecakecodes.invidious_ext.sync.service.UserService
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
@@ -28,10 +24,9 @@ class ExtensionDataSyncController(
     }
 
     @Get("entry/{key}/data")
-    @Produces(MediaType.TEXT_PLAIN)
-    fun getData(@PathVariable key: String, principal: Principal): String {
+    fun getData(@PathVariable key: String, principal: Principal): DataGetDto {
         val user = userService.loadUser(principal.name)
-        return extensionDataService.getData(user, key)
+        return DataGetDto(extensionDataService.getData(user, key))
     }
 
     @Get("allKeys")

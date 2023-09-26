@@ -1,12 +1,12 @@
 package apps.chocolatecakecodes.invidious_ext.sync.controller
 
+import apps.chocolatecakecodes.invidious_ext.sync.dto.DataGetDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.InvDataUpdateDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.SyncTimeDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.SyncTimeWithHashDto
 import apps.chocolatecakecodes.invidious_ext.sync.service.InvidiousDataService
 import apps.chocolatecakecodes.invidious_ext.sync.service.UserService
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
@@ -27,10 +27,9 @@ class InvidiousDataSyncController(
     }
 
     @Get("data")
-    @Produces(MediaType.TEXT_PLAIN)
-    fun getData(principal: Principal): String {
+    fun getData(principal: Principal): DataGetDto {
         val user = userService.loadUser(principal.name)
-        return invidiousDataService.getData(user)
+        return DataGetDto(invidiousDataService.getData(user))
     }
 
     @Put("data")
