@@ -20,8 +20,8 @@ interface PlGroup {
   savedPlaylists: PlaylistUiElm[]
 }
 interface PlaylistContainers {
-  createdPlaylistsContainer: HTMLElement,
-  savedPlaylistsContainer: HTMLElement
+  createdPlaylistsContainer: HTMLElement | null,
+  savedPlaylistsContainer: HTMLElement | null
 }
 
 const toast = useToast();
@@ -50,40 +50,51 @@ const expandedGroups = ref<number[]>([]);
 
 function collectPlaylists() {
   const playlists: PlaylistUiElm[] = [];
-
   const {createdPlaylistsContainer, savedPlaylistsContainer} = findPlaylistContainers();
-  elementListToArray(createdPlaylistsContainer.children).forEach((elm) => {
-    const linkElm = elm.querySelector('a') as HTMLAnchorElement;
-    const id = playlistId(linkElm.getAttribute('href')!!);
-    if(id === null)
-      throw new Error("unable to extract pl-id from playlist-item");
 
-    playlists.push({
-      element: elm as HTMLElement,
-      category: 'created',
-      plId: id
-    });
-  });
-  elementListToArray(savedPlaylistsContainer.children).forEach((elm) => {
-    const linkElm = elm.querySelector('a') as HTMLAnchorElement;
-    const id = playlistId(linkElm.getAttribute('href')!!);
-    if(id === null)
-      throw new Error("unable to extract pl-id from playlist-item");
+  if(createdPlaylistsContainer != null) {
+    elementListToArray(createdPlaylistsContainer.children).forEach((elm) => {
+      const linkElm = elm.querySelector('a') as HTMLAnchorElement;
+      const id = playlistId(linkElm.getAttribute('href')!!);
+      if(id === null)
+        throw new Error("unable to extract pl-id from playlist-item");
 
-    playlists.push({
-      element: elm as HTMLElement,
-      category: 'saved',
-      plId: id
+      playlists.push({
+        element: elm as HTMLElement,
+        category: 'created',
+        plId: id
+      });
     });
-  });
+  }
+
+  if(savedPlaylistsContainer != null) {
+    elementListToArray(savedPlaylistsContainer.children).forEach((elm) => {
+      const linkElm = elm.querySelector('a') as HTMLAnchorElement;
+      const id = playlistId(linkElm.getAttribute('href')!!);
+      if(id === null)
+        throw new Error("unable to extract pl-id from playlist-item");
+
+      playlists.push({
+        element: elm as HTMLElement,
+        category: 'saved',
+        plId: id
+      });
+    });
+  }
 
   playlistElements.value = playlists;
 }
 
-function clearUi() {
-  const contentsElm = document.querySelector('html body div.pure-g.w-full div#contents') as HTMLElement;
+/**
+ * @return boolean true if successful
+ */
+function clearUi(): boolean {
+  const {createdPlaylistsContainer, savedPlaylistsContainer} = findPlaylistContainers();
+  if(createdPlaylistsContainer == null && savedPlaylistsContainer == null)
+    return false;
 
   // remove all headings ("<x> created playlists", ...)
+  const contentsElm = document.querySelector('html body div.pure-g.w-full div#contents') as HTMLElement;
   (nodeListToArray(contentsElm.querySelectorAll('div.h-box')) as HTMLElement[]).forEach((container) => {
     const headingElm = container.querySelector('div h3');
     if(headingElm == null)
@@ -95,9 +106,12 @@ function clearUi() {
   });
 
   // remove playlist-containers
-  const {createdPlaylistsContainer, savedPlaylistsContainer} = findPlaylistContainers();
-  createdPlaylistsContainer.remove();
-  savedPlaylistsContainer.remove();
+  if(createdPlaylistsContainer != null)
+    createdPlaylistsContainer.remove();
+  if(savedPlaylistsContainer != null)
+    savedPlaylistsContainer.remove();
+
+  return true;
 }
 
 function groupPlaylists() {
@@ -207,7 +221,10 @@ function onDeleteGroup(group: PlGroup) {
 
 onBeforeMount(() => {
   collectPlaylists();
-  clearUi();
+
+  if(!clearUi())
+    return;
+
   groupPlaylists();
 });
 
