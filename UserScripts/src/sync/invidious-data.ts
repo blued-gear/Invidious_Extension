@@ -229,7 +229,7 @@ const invidiousDataSyncInstance = InvidiousDataSync.INSTANCE;
 export default invidiousDataSyncInstance;
 
 async function downloadData(): Promise<string> {
-    const resp = await fetch('/subscription_manager?action_takeout=1&format=json');
+    const resp = await fetch(`${location.origin}/subscription_manager?action_takeout=1&format=json`);
     return await resp.text();
 }
 
@@ -244,7 +244,7 @@ async function uploadData(data: string) {
     form.append('import_newpipe_subscriptions', emptyBlob);
     form.append('import_newpipe', emptyBlob);
 
-    const resp = await fetch('/data_control?referer=/', {
+    const resp = await fetch(`${location.origin}/data_control?referer=/`, {
         method: 'POST',
         mode: 'same-origin',
         body: form
