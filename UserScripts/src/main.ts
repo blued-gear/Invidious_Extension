@@ -28,6 +28,9 @@ import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
 async function runRestoreLogin() {
     const login = await restoreLogin();
     await setLoginWhereNeeded(login, false);
+
+    const logoutBtn = document.querySelector('html body div.pure-g div#contents div.pure-g.navbar.h-box div.pure-u-1.user-field div.pure-u-1-4 form a.pure-menu-heading input');
+    sharedStates.invidiousLogin.value = logoutBtn != null;
 }
 
 async function runStartupHooks() {
@@ -45,7 +48,7 @@ async function runStartupHooks() {
 }
 
 async function syncInvidiousData() {
-    if(sharedStates.loggedIn.value && await invidiousDataSync.isBackgroundSyncEnabled()) {
+    if(sharedStates.loggedIn.value && sharedStates.invidiousLogin.value && await invidiousDataSync.isBackgroundSyncEnabled()) {
         const res = await invidiousDataSync.sync(true);
         console.info("Invidious-Settings sync after startup finished");
 
