@@ -259,9 +259,11 @@ async function uploadData(data: string) {
  * It will exclude some props from hashing which are know to differ between instances
  */
 async function computeFingerprint(data: string): Promise<string> {
+    // some preferences are not supported by all instances; this would cause an infinite sync
     const excludedProps: string [] = [
         'preferences.quality',
         'preferences.quality_dash',
+        'preferences.local',
         'preferences.dark_mode'
     ];
 
