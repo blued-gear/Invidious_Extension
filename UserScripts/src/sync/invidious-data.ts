@@ -13,10 +13,12 @@ import SyncTimeWithHashDto from "./dto/synctime-with-hash-dto";
 import DataGetDto from "./dto/data-get-dto";
 import {base64FromArrayBuffer} from "../workarounds/base64";
 
-const STORAGE_KEY_LAST_SYNC_TIME = STORAGE_PREFIX + "sync-invidious::lastSyncTime";
+const STORAGE_KEY_LAST_SYNC_TIMES = STORAGE_PREFIX + "sync-invidious::lastSyncTimes";
 const STORAGE_KEY_DO_BACKGROUND_SYNC = STORAGE_PREFIX + "sync-invidious::doBackgroundSync";
 
 const HASH_INP_CIPHER = "InvidiousDataSync-cipher";
+
+type LastSyncTimes = Record<string, number>;
 
 export enum SyncResult {
     /** data was up-to-date */
@@ -63,7 +65,7 @@ export class InvidiousDataSync {
         if(!this.hasLogin())
             throw new Error("this function needs login");
 
-        const localTime = await GM.getValue(STORAGE_KEY_LAST_SYNC_TIME, -1);
+        const localTime = await this.getLastSynctime();
         const remoteTime = await this.fetchLastSyncTime();
 
         if(remoteTime.syncTime === -1 && withExport) {
@@ -80,7 +82,7 @@ export class InvidiousDataSync {
                 console.debug("InvidiousDataSync::sync: exportData (after fingerprint check)");
 
                 const remoteTime = await this.sendData(data, localFingerprint);
-                await GM.setValue(STORAGE_KEY_LAST_SYNC_TIME, remoteTime);
+                await this.setLastSynctime(remoteTime);
                 return SyncResult.EXPORTED;
             } else {
                 console.debug("InvidiousDataSync::sync: up to date");
@@ -99,7 +101,7 @@ export class InvidiousDataSync {
         const data = await downloadData();
         const remoteTime = await this.sendData(data);
 
-        await GM.setValue(STORAGE_KEY_LAST_SYNC_TIME, remoteTime);
+        await this.setLastSynctime(remoteTime);
 
         return SyncResult.EXPORTED;
     }
@@ -116,7 +118,7 @@ export class InvidiousDataSync {
 
         await uploadData(data);
 
-        await GM.setValue(STORAGE_KEY_LAST_SYNC_TIME, remoteTime.syncTime);
+        await this.setLastSynctime(remoteTime.syncTime);
 
         return SyncResult.IMPORTED;
     }
@@ -165,7 +167,7 @@ export class InvidiousDataSync {
 
     private async sendData(data: string, fingerprint: string | undefined = undefined): Promise<number> {
         const encryptedDataStr = await this.encryptData(data);
-        const lastSyncTime = await GM.getValue(STORAGE_KEY_LAST_SYNC_TIME, -1);
+        const lastSyncTime = await this.getLastSynctime();
 
         if(fingerprint === undefined)
             fingerprint = await computeFingerprint(data);
@@ -220,8 +222,23 @@ export class InvidiousDataSync {
     }
 
     private async clearStorage() {
-        await GM.deleteValue(STORAGE_KEY_LAST_SYNC_TIME);
+        await GM.deleteValue(STORAGE_KEY_LAST_SYNC_TIMES);
         await GM.setValue(STORAGE_KEY_DO_BACKGROUND_SYNC, false);
+    }
+
+    private async getLastSynctime(): Promise<number> {
+        const entries = await GM.getValue<LastSyncTimes>(STORAGE_KEY_LAST_SYNC_TIMES, {});
+        const time: number | undefined = entries[location.host];
+
+        if(time === undefined)
+            return -1;
+        return time;
+    }
+
+    private async setLastSynctime(time: number) {
+        const entries = await GM.getValue<LastSyncTimes>(STORAGE_KEY_LAST_SYNC_TIMES, {});
+        entries[location.host] = time;
+        await GM.setValue(STORAGE_KEY_LAST_SYNC_TIMES, entries);
     }
 }
 
