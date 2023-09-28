@@ -199,12 +199,12 @@ defineExpose({
 
       <div v-if="supportsTags" class="flex flex-column gap-2">
         <div v-for="tag of TagFieldStr" :key="tag"
-             class="grid grid-nogutter">
-          <label :for="`downloadDlg-tags-${tag}`" class="col-2">{{Case.title(tag)}}</label>
+             class="flex flex-column sm:flex-row sm:align-items-center ">
+          <label :for="`downloadDlg-tags-${tag}`" class="sm:col-2">{{Case.title(tag)}}</label>
           <AutoComplete :id="`downloadDlg-tags-${tag}`" dropdown
                         v-model="selectedValues[tag]"
                         :suggestions="valueSuggestions[tag]"
-                        class="col-10"
+                        class="sm:col-10"
                         @complete="(e: AutoCompleteCompleteEvent) => filterNameSuggestions(tag, e)"></AutoComplete>
         </div>
       </div>
