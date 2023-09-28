@@ -155,6 +155,13 @@ export class ExtensionDataSync {
 
         const localCopy = await GM.getValue<Entry<T> | undefined>(STORAGE_KEY_ENTRY_PREFIX + key, undefined);
 
+        if(!this.hasLogin()) {
+            if(localCopy === undefined)
+                throw new Error(`no entry with with this key stored; key = ${key}`);
+
+            return localCopy.content;
+        }
+
         // check if sync is necessary
         try {
             const remoteKey = await this.encryptRemoteKey(key);
@@ -277,6 +284,9 @@ export class ExtensionDataSync {
      * @param useLocal if <code>true</code> overwrites remote with local copy, if <code>false</code> overwrites local with remote copy
      */
     async resolveConflict(key: string, useLocal: boolean) {
+        if(!this.hasLogin())
+            throw new Error("this function require login");
+
         await this.syncLock.wait();
 
         if(useLocal) {
