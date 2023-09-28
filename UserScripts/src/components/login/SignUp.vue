@@ -96,8 +96,8 @@ function submit() {
 
 <template>
   <div>
-    <form @submit.prevent="submit" class="pt-3 w-max">
-      <div class="w-max">
+    <form @submit.prevent="submit" class="pt-3 w-max max-w-full">
+      <div class="w-max max-w-full">
         <div class="field">
             <span class="p-float-label">
             <InputText id="signIn-username" v-model="username" aria-describedby="signUp-username_err"
@@ -110,7 +110,8 @@ function submit() {
         <div class="field">
             <span class="p-float-label">
             <Password id="signUp-password" v-model="password" toggleMask aria-describedby="signUp-password_err"
-                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }" />
+                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"
+                      :pt="{ 'input': { class: 'w-full' } }" />
             <label for="signUp-password">Password</label>
           </span>
           <small id="signUp-password_err" class="p-error ml-2">{{ passwordErr || '&nbsp;' }}</small>
@@ -120,7 +121,8 @@ function submit() {
             <span class="p-float-label">
             <Password id="signUp-password2" v-model="password2" toggleMask :feedback="false"
                       aria-describedby="signUp-password2_err"
-                      :class="{ 'p-invalid': password2Err !== null, 'w-full': true }" />
+                      :class="{ 'p-invalid': password2Err !== null, 'w-full': true }"
+                      :pt="{ 'input': { class: 'w-full' } }" />
             <label for="signUp-password2">Repeat Password</label>
           </span>
           <small id="signUp-password2_err" class="p-error ml-2">{{ password2Err || '&nbsp;' }}</small>

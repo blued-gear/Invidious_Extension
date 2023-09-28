@@ -77,8 +77,8 @@ function submit() {
 
 <template>
   <div>
-    <form @submit.prevent="submit" class="pt-3 w-max">
-      <div class="w-max">
+    <form @submit.prevent="submit" class="pt-3 w-max max-w-full">
+      <div class="w-max max-w-full">
         <div class="field">
           <span class="p-float-label">
             <InputText id="signIn-username" v-model="username"
@@ -93,7 +93,8 @@ function submit() {
           <span class="p-float-label">
             <Password id="signIn-password" v-model="password" toggleMask :feedback="false"
                       aria-describedby="signIn-password_err"
-                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"/>
+                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"
+                      :pt="{ 'input': { class: 'w-full' } }"/>
             <label for="signIn-password">Password</label>
           </span>
           <small id="signIn-password_err" class="p-error ml-2">{{ passwordErr || '&nbsp;' }}</small>
