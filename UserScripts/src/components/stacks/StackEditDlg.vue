@@ -163,7 +163,7 @@ watch(dlgOpen, async () => {
       <!-- endregion items -->
 
       <!-- region add -->
-      <div class="w-max mt-2 p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300">
+      <div class="w-max mt-2 p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300 flex-column sm:flex-row">
         <span class="p-float-label">
           <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" />
           <label for="stack_edit_dlg-add-vid">Video-ID</label>
