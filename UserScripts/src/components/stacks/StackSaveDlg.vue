@@ -88,13 +88,13 @@ watch(dlgOpen, (showing) => {
 
 <template>
   <Dialog v-model:visible="dlgOpen" header="Save Stack">
-    <div style="width: 30rem;">
+    <div class="w-full max-w-30rem">
       <span class="p-float-label mt-5">
-      <AutoComplete v-model="selectedName" :suggestions="existingNames" dropdown
-                    @keyup.enter="onSave" @complete="onQueryNames"
-                    input-id="stack_save_dlg-name" class="w-full"></AutoComplete>
-      <label for="stack_save_dlg-name">Stack Name</label>
-    </span>
+        <AutoComplete v-model="selectedName" :suggestions="existingNames" dropdown
+                      @keyup.enter="onSave" @complete="onQueryNames"
+                      input-id="stack_save_dlg-name" class="w-full"></AutoComplete>
+        <label for="stack_save_dlg-name">Stack Name</label>
+      </span>
 
       <Panel v-show="wouldOverwrite" header="Warning"
              class="panelWarn"

@@ -134,7 +134,7 @@ watch(dlgOpen, async () => {
 <template>
   <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Edit Stack"
           style="width: 75vw; height: 80vh;">
-    <div class="w-full flex flex-column" style="height: 100%;">
+    <div class="w-full h-full flex flex-column">
       <!-- region name -->
       <div class="flex flex-column gap-2">
         <label for="stack_edit_dlg-stack_name">Stack Name</label>
