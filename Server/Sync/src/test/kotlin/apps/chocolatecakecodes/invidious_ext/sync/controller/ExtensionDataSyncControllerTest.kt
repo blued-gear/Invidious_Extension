@@ -1,9 +1,6 @@
 package apps.chocolatecakecodes.invidious_ext.sync.controller
 
-import apps.chocolatecakecodes.invidious_ext.sync.dto.DataPostDto
-import apps.chocolatecakecodes.invidious_ext.sync.dto.DataPutDto
-import apps.chocolatecakecodes.invidious_ext.sync.dto.KeyWithSyncTimeDto
-import apps.chocolatecakecodes.invidious_ext.sync.dto.SyncTimeDto
+import apps.chocolatecakecodes.invidious_ext.sync.dto.*
 import apps.chocolatecakecodes.invidious_ext.sync.entity.User
 import apps.chocolatecakecodes.invidious_ext.sync.repo.ExtensionDataRepo
 import apps.chocolatecakecodes.invidious_ext.sync.repo.UserRepo
@@ -151,15 +148,15 @@ class ExtensionDataSyncControllerTest(
             keysWithData.forEach { (key, data) ->
                 val resp = http.exchange(
                     HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
-                    Argument.STRING
+                    Argument.of(DataGetDto::class.java)
                 )
 
                 resp.status shouldBe HttpStatus.OK
-                resp.contentType.getOrNull() shouldBe MediaType.TEXT_PLAIN_TYPE
+                resp.contentType.getOrNull() shouldBe MediaType.APPLICATION_JSON_TYPE
 
                 val respVal = resp.body()
                 respVal shouldNotBe null
-                respVal shouldBe data
+                respVal.data shouldBe data
             }
         }
     }
@@ -191,14 +188,14 @@ class ExtensionDataSyncControllerTest(
             keysWithData.keys.forEach { key ->
                 val resp = http.exchange(
                     HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
-                    Argument.STRING
+                    Argument.of(DataGetDto::class.java)
                 )
 
                 resp.status shouldBe HttpStatus.OK
 
                 val respVal = resp.body()
                 respVal shouldNotBe null
-                respVal shouldBe keysWithData[key]
+                respVal.data shouldBe keysWithData[key]
             }
         }
     }
@@ -223,10 +220,10 @@ class ExtensionDataSyncControllerTest(
             // check that not written
             http.exchange(
                 HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
-                Argument.STRING
+                Argument.of(DataGetDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.OK
-                resp.body() shouldBe keysWithData[key]
+                resp.body()?.data shouldBe keysWithData[key]
             }
         }
     }
@@ -261,10 +258,10 @@ class ExtensionDataSyncControllerTest(
             // check if really written
             http.exchange(
                 HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
-                Argument.STRING
+                Argument.of(DataGetDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.OK
-                resp.body() shouldBe newData
+                resp.body()?.data shouldBe newData
             }
         }
     }
@@ -294,10 +291,10 @@ class ExtensionDataSyncControllerTest(
             // check that not written
             http.exchange(
                 HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
-                Argument.STRING
+                Argument.of(DataGetDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.OK
-                resp.body() shouldBe keysWithData[key]
+                resp.body()?.data shouldBe keysWithData[key]
             }
         }
     }
@@ -333,10 +330,10 @@ class ExtensionDataSyncControllerTest(
             // check that written
             http.exchange(
                 HttpRequest.GET<Void>("/entry/$key/data").apply { basicAuth(username, password) },
-                Argument.STRING
+                Argument.of(DataGetDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.OK
-                resp.body() shouldBe newData
+                resp.body()?.data shouldBe newData
             }
         }
     }

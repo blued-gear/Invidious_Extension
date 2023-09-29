@@ -1,5 +1,6 @@
 package apps.chocolatecakecodes.invidious_ext.sync.controller
 
+import apps.chocolatecakecodes.invidious_ext.sync.dto.DataGetDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.InvDataUpdateDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.SyncTimeDto
 import apps.chocolatecakecodes.invidious_ext.sync.dto.SyncTimeWithHashDto
@@ -123,15 +124,15 @@ class InvidiousDataSyncControllerTest(
         testEndpoint(http) { http ->
             val resp = http.exchange(
                 HttpRequest.GET<Void>("/data").apply { basicAuth(USERNAME, PASSWORD) },
-                Argument.STRING
+                Argument.of(DataGetDto::class.java)
             )
 
             resp.status shouldBe HttpStatus.OK
-            resp.contentType.getOrNull() shouldBe MediaType.TEXT_PLAIN_TYPE
+            resp.contentType.getOrNull() shouldBe MediaType.APPLICATION_JSON_TYPE
 
             val respVal = resp.body()
             respVal shouldNotBe null
-            respVal shouldBe EXAMPLE_DATA
+            respVal.data shouldBe EXAMPLE_DATA
         }
     }
 
@@ -304,10 +305,10 @@ class InvidiousDataSyncControllerTest(
 
             http.exchange(
                 HttpRequest.GET<Void>("/data").apply { basicAuth(USERNAME, PASSWORD) },
-                Argument.STRING
+                Argument.of(DataGetDto::class.java)
             ).let { resp ->
                 resp.status shouldBe HttpStatus.OK
-                resp.body() shouldBe expectedData
+                resp.body()?.data shouldBe expectedData
             }
         }
     }
