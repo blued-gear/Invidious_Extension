@@ -49,9 +49,9 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.slf4j:slf4j-simple")
 
+    testImplementation("io.micronaut:micronaut-http-server-netty")
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("io.mockk:mockk:1.13.5")
-    testImplementation("io.micronaut:micronaut-http-server-netty")
 }
 
 java {

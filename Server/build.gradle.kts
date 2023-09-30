@@ -46,8 +46,6 @@ dependencies {
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("io.micronaut.reactor:micronaut-reactor")
 
-    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
-
     kapt("io.micronaut.security:micronaut-security-annotations")
     kapt("io.micronaut.serde:micronaut-serde-processor")
     kapt("io.micronaut.validation:micronaut-validation-processor")
