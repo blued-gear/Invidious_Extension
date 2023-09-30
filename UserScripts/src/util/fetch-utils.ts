@@ -112,11 +112,12 @@ export async function apiFetch(method: HttpMethod, url: string, body: object | u
                         resolve(resp.response);
                         return;
                     default:
-                        throw new UnsupportedHttpResponseException(
+                        reject(new UnsupportedHttpResponseException(
                             resp.status, resp.statusText,
                             headers[HEADER_CONTENT_TYPE],
                             resp.responseText
-                        );
+                        ));
+                        return;
                 }
 
                 throw new Error("unreachable");// just to make sure that I did not forget a return
