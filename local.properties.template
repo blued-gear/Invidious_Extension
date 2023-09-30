@@ -1,0 +1,9 @@
+# copy to local.properties and adjust values
+#
+# This file should *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+
+gitlab.host=url_of_gitlab
+gitlab.projectId=id_of_gitlab_project
+gitlab.publish.username=username_of_deploy_token
+gitlab.publish.password=password_of_deploy_token
