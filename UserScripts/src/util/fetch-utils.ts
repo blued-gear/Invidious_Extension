@@ -3,8 +3,9 @@ import {StatusCodes} from "http-status-codes";
 import {GM} from "../monkey";
 import {arrayFold} from "./array-utils";
 
-const HEADER_AUTH = 'Authorization';
-const HEADER_CONTENT_TYPE = 'Content-Type';
+const HEADER_AUTH = 'authorization';
+const HEADER_CONTENT_TYPE = 'content-type';
+const HEADER_CONTENT_LENGTH = 'content-length';
 
 const CONTENT_TYPE_JSON = 'application/json';
 
@@ -68,7 +69,6 @@ export class UnsupportedHttpResponseException extends Error {
  * @param body the body to send (will be stringified) or undefined to send none
  * @param auth if set a Basic-Auth header will be attached
  * @return a parsed json-object if type is application/json,
- *          a string is type is text/plain
  *          undefined if response does not contain a body
  * @throws HttpResponseException if the resp-status was not in the ok range
  * @throws UnsupportedHttpResponseException if the response has a body which was neither json nor text
@@ -107,6 +107,11 @@ export async function apiFetch(method: HttpMethod, url: string, body: object | u
                 }
 
                 const headers = parseHeaders(resp.responseHeaders);
+                if(headers[HEADER_CONTENT_LENGTH] === '0') {
+                    resolve(undefined);
+                    return;
+                }
+
                 switch(headers[HEADER_CONTENT_TYPE]) {
                     case CONTENT_TYPE_JSON:
                         resolve(resp.response);
@@ -165,7 +170,7 @@ function parseHeaders(headersStr: string | null): Record<string, string> {
                 const sep = ': ';
                 const sepIdx = h.indexOf(sep);
 
-                const key = h.substring(0, sepIdx);
+                const key = h.substring(0, sepIdx).toLowerCase();
                 const value = h.substring(sepIdx + sep.length);
 
                 return { key, value };
