@@ -14,7 +14,7 @@ export default defineConfig({
     monkey({
       entry: 'src/main.ts',
       userscript: {
-        icon: 'https://vitejs.dev/logo.svg',
+        //icon: 'https://vitejs.dev/logo.svg',
         namespace: 'apps.chocolatecakecodes.invidious_ext',
         match: [
           'https://yewtu.be/*',
