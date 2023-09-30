@@ -9,6 +9,8 @@ import Login, {setLoginWhereNeeded, storeLogin} from "../../sync/login";
 import {apiFetch, expectHttpErr} from "../../util/fetch-utils";
 import {StatusCodes} from "http-status-codes";
 import {SERVER_USER_URL, TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../util/constants";
+import ProgressSpinner from "primevue/progressspinner";
+import {logException} from "../../util/utils";
 
 const toast = useToast();
 
@@ -18,6 +20,7 @@ const emit = defineEmits<{
 
 const username = ref("");
 const password = ref("");
+const loginRunning = ref(false);
 
 const usernameErr = computed<string | null>(() => {
   return validateUsername(username.value);
@@ -30,8 +33,10 @@ const valid = computed<boolean>(() => {
 });
 
 function submit() {
-  if(!valid.value)
+  if(!valid.value || loginRunning.value === true)
     return;
+
+  loginRunning.value = true;
 
   const uname = username.value;
   const passwd = password.value;
@@ -59,11 +64,14 @@ function submit() {
       life: TOAST_LIFE_INFO
     });
 
+    loginRunning.value = false;
     emit('success');
   }
 
-  exec().catch((err) => {
-    console.error("error while login", err);
+  exec().catch((err: Error) => {
+    logException(err, "error while login");
+
+    loginRunning.value = false;
 
     toast.add({
       summary: "Unable to Login",
@@ -101,7 +109,10 @@ function submit() {
         </div>
       </div>
 
-      <Button type="submit" label="Login" :disabled="!valid" class="w-max"/>
+      <div class="flex align-items-center">
+        <Button type="submit" label="Login" :disabled="!valid || loginRunning" class="w-max"/>
+        <ProgressSpinner v-show="loginRunning" class="-ml-3 h-2rem" />
+      </div>
     </form>
   </div>
 </template>

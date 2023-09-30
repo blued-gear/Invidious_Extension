@@ -10,6 +10,8 @@ import Login, {setLoginWhereNeeded, storeLogin} from "../../sync/login";
 import {apiFetch, expectHttpErr} from "../../util/fetch-utils";
 import {StatusCodes} from "http-status-codes";
 import RegistrationPayload from "../../sync/dto/registration-payload-dto";
+import {logException} from "../../util/utils";
+import ProgressSpinner from "primevue/progressspinner";
 
 const toast = useToast();
 
@@ -20,6 +22,7 @@ const emit = defineEmits<{
 const username = ref("");
 const password = ref("");
 const password2 = ref("");
+const loginRunning = ref(false);
 
 const usernameErr = computed<string | null>(() => {
   return validateUsername(username.value);
@@ -45,8 +48,10 @@ const valid = computed<boolean>(() => {
 });
 
 function submit() {
-  if(!valid.value)
+  if(!valid.value || loginRunning.value === true)
     return;
+
+  loginRunning.value = true;
 
   const uname = username.value;
   const passwd = password.value;
@@ -78,11 +83,14 @@ function submit() {
       life: TOAST_LIFE_INFO
     });
 
+    loginRunning.value = false;
     emit('success');
   }
 
-  exec().catch((err) => {
-    console.error("error while signing up", err);
+  exec().catch((err: Error) => {
+    logException(err, "error while signing up");
+
+    loginRunning.value = false;
 
     toast.add({
       summary: "Unable to Sign-Up",
@@ -134,9 +142,12 @@ function submit() {
         the password can not be recovered if you lose it.
       </div>
 
-      <Button type="submit" label="Sign Up"
-              :disabled="!valid"
-              class="w-max mt-3" />
+      <div class="flex align-items-center">
+        <Button type="submit" label="Sign Up"
+                :disabled="!valid || loginRunning"
+                class="w-max mt-3" />
+        <ProgressSpinner v-show="loginRunning" class="-ml-3 h-2rem" />
+      </div>
     </form>
   </div>
 </template>
