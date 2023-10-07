@@ -16,6 +16,7 @@ export default defineConfig({
       userscript: {
         //icon: 'https://vitejs.dev/logo.svg',
         namespace: 'apps.chocolatecakecodes.invidious_ext',
+        downloadURL: 'https://chocolatecakecodes.goip.de/InvidiousExt/invidious-extension.user.js',
         match: [
           'https://yewtu.be/*',
           'https://vid.puffyan.us/*',
