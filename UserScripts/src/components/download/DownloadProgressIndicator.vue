@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {computed, onBeforeMount, ref, Teleport} from "vue";
-import {GM_download} from "../../monkey";
 import {VeProgress} from "vue-ellipse-progress";
 import OverlayPanel from "primevue/overlaypanel";
 import Button from "primevue/button";
@@ -89,9 +88,17 @@ function onRmJob(job: DownloadJobEx) {
 }
 
 function onDownload(job: DownloadJobEx) {
-  const url = `${SERVER_DOWNLOAD_URL}/file?id=${job.id}`;
   const filename = `${job.filename}.${job.fileExtension}`;
-  GM_download(url, filename);
+  const url = `${SERVER_DOWNLOAD_URL}/downloader?id=${job.id}&filename=${encodeURIComponent(filename)}`;
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
 }
 
 function onNewJob(job: DownloadJob) {
