@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download</title>
+</head>
+<body>
+    <div>
+        <a id="trigger" href="/download/file?id={{id}}" download="{{filename}}">Download</a>
+    </div>
+    <div>
+        You can close this tab after the download started.
+    </div>
+
+    <script>
+        document.getElementById('trigger').click();
+    </script>
+</body>
+</html>

@@ -36,6 +36,7 @@ dependencies {
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
     implementation("io.micronaut.validation:micronaut-validation")
     implementation("jakarta.validation:jakarta.validation-api")
+    implementation("io.micronaut.views:micronaut-views-pebble")
 
     implementation("com.mpatric:mp3agic:0.9.1")
 

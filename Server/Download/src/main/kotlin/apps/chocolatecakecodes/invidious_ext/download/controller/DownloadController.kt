@@ -5,11 +5,13 @@ import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadProgressDto
 import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadRequestDto
 import apps.chocolatecakecodes.invidious_ext.download.dto.FileExtensionDto
 import apps.chocolatecakecodes.invidious_ext.download.service.DownloadService
+import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.views.View
 import jakarta.inject.Inject
 import jakarta.validation.Valid
 import java.io.InputStream
@@ -36,6 +38,12 @@ class DownloadController(
         return FileExtensionDto(downloadService.fileExtension(id))
     }
 
+    @Delete
+    @Status(HttpStatus.NO_CONTENT)
+    fun cancel(@QueryValue id: String) {
+        downloadService.cancelDownload(id)
+    }
+
     @Get("/file")
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
@@ -43,9 +51,13 @@ class DownloadController(
         return downloadService.downloadFile(id)
     }
 
-    @Delete
-    @Status(HttpStatus.NO_CONTENT)
-    fun cancel(@QueryValue id: String) {
-        downloadService.cancelDownload(id)
+    @Get("/downloader")
+    @View("download/downloader")
+    @Secured(SecurityRule.IS_ANONYMOUS)
+    fun downloaderPage(@QueryValue id: String, @QueryValue filename: String): HttpResponse<*> {
+        return HttpResponse.ok(mapOf(
+            "id" to id,
+            "filename" to filename
+        ))
     }
 }
