@@ -17,6 +17,9 @@ export default defineConfig({
         //icon: 'https://vitejs.dev/logo.svg',
         namespace: 'apps.chocolatecakecodes.invidious_ext',
         downloadURL: 'https://chocolatecakecodes.goip.de/InvidiousExt/invidious-extension.user.js',
+        "run-at": "document-idle",
+        sandbox: "JavaScript",
+        "inject-into": "auto",
         match: [
           'https://yewtu.be/*',
           'https://vid.puffyan.us/*',
@@ -52,8 +55,6 @@ export default defineConfig({
           'https://invidious.perennialte.ch/*',
           'https://yt.cdaut.de/*'
         ],
-        "run-at": "document-idle",
-        sandbox: "DOM",
         connect: [
             "chocolatecakecodes.goip.de",
             "localhost"
