@@ -165,13 +165,14 @@ function authToHeaderVal(auth: HttpAuth): string {
 function parseHeaders(headersStr: string | null): Record<string, string> {
     if(headersStr != null) {
         const entries = headersStr
-            .split('\r\n')
+            .split('\n')
+            .map(s => s.trim())
             .map(h => {
-                const sep = ': ';
+                const sep = ':';
                 const sepIdx = h.indexOf(sep);
 
-                const key = h.substring(0, sepIdx).toLowerCase();
-                const value = h.substring(sepIdx + sep.length);
+                const key = h.substring(0, sepIdx).trim().toLowerCase();
+                const value = h.substring(sepIdx + sep.length).trim();
 
                 return { key, value };
             })
