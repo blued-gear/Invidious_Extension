@@ -113,12 +113,18 @@ function computeNameSuggestions(videoTitle: string): string[] {
   }
 
   parts.forEach(part => {
-    const parts = part.matchAll(/[^\(\)\[\]]+|\([^\(\)]+\)|\[[^\[\]]+\]/g);
+    const parts = part.matchAll(/([^\(\)\[\]]+)|\(([^\(\)]+)\)|\[([^\[\]]+)\]/g);
 
     for(let match of parts) {
-      const part = match[0].trim();
-      if(part.length !== 0)
-        suggestions.push(part);
+      let part = match.find((str, idx) => idx !== 0 && str != undefined);
+      if(part === undefined)
+        continue;
+
+      part = part.trim();
+      if(part.length === 0)
+        continue;
+
+      suggestions.push(part);
     }
   });
 
@@ -134,8 +140,8 @@ function computeFileNameSuggestion(videoTitle: string): string | null {
   if(aristTitleSplit === null || aristTitleSplit.length < 3)
     return null;
 
-  const artist = aristTitleSplit[1];
-  const title = aristTitleSplit[2];
+  const artist = aristTitleSplit[1].trim();
+  const title = aristTitleSplit[2].trim();
   return `${artist} - ${title}`;
 }
 
