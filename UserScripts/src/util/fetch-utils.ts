@@ -1,7 +1,7 @@
-import {Base64} from "js-base64";
 import {StatusCodes} from "http-status-codes";
 import {GM} from "../monkey";
 import {arrayFold} from "./array-utils";
+import {base64FromString} from "../workarounds/base64";
 
 const HEADER_AUTH = 'authorization';
 const HEADER_CONTENT_TYPE = 'content-type';
@@ -158,7 +158,7 @@ function authToHeaderVal(auth: HttpAuth): string {
         throw new Error("username may not contain a ':'");
 
     const uAndP = `${auth.username}:${auth.password}`;
-    const encoded = Base64.encode(uAndP);
+    const encoded = base64FromString(uAndP);
     return `Basic ${encoded}`;
 }
 
