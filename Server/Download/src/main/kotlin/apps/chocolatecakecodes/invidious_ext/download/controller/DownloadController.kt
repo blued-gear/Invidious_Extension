@@ -5,6 +5,7 @@ import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadProgressDto
 import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadRequestDto
 import apps.chocolatecakecodes.invidious_ext.download.dto.FileExtensionDto
 import apps.chocolatecakecodes.invidious_ext.download.service.DownloadService
+import io.micronaut.context.annotation.Value
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
@@ -19,7 +20,8 @@ import java.io.InputStream
 @Controller("/download")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class DownloadController(
-    @Inject private val downloadService: DownloadService
+    @Inject private val downloadService: DownloadService,
+    @Value("\${INVIDIOUS_EXT_SUBPATH}") private val subPath: String
 ) {
 
     @Post
@@ -56,6 +58,7 @@ class DownloadController(
     @Secured(SecurityRule.IS_ANONYMOUS)
     fun downloaderPage(@QueryValue id: String, @QueryValue filename: String): HttpResponse<*> {
         return HttpResponse.ok(mapOf(
+            "subpath" to subPath,
             "id" to id,
             "filename" to filename
         ))
