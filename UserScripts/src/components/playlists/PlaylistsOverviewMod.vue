@@ -1,28 +1,20 @@
 <script setup lang="ts">
 import {onBeforeMount, ref, Teleport} from "vue";
-import {elementListToArray, nodeListToArray} from "../../util/utils";
-import {playlistId} from "../../util/url-utils";
+import {nodeListToArray} from "../../util/utils";
 import playlistsMng from "../../managers/playlists";
 import PlaylistsGroup, {ID_UNGROUPED} from "../../model/PlaylistsGroup";
 import Accordion from "primevue/accordion";
 import AccordionTab from 'primevue/accordiontab';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
+import {findPlaylistContainers, Playlists, PlaylistUiElm, scrapePlaylists} from "../../util/playlist-info-scraper";
 
-interface PlaylistUiElm {
-  element: HTMLElement,
-  category: 'created' | 'saved',
-  plId: string;
-}
 interface PlGroup {
   group: PlaylistsGroup,
   createdPlaylists: PlaylistUiElm[],
   savedPlaylists: PlaylistUiElm[]
 }
-interface PlaylistContainers {
-  createdPlaylistsContainer: HTMLElement | null,
-  savedPlaylistsContainer: HTMLElement | null
-}
+
 
 const toast = useToast();
 
@@ -44,46 +36,8 @@ const uiTarget = (() => {
   return elm;
 })();
 
-const playlistElements = ref<PlaylistUiElm[]>([]);
 const groupedPlaylists = ref<PlGroup[]>([]);
 const expandedGroups = ref<number[]>([]);
-
-function collectPlaylists() {
-  const playlists: PlaylistUiElm[] = [];
-  const {createdPlaylistsContainer, savedPlaylistsContainer} = findPlaylistContainers();
-
-  if(createdPlaylistsContainer != null) {
-    elementListToArray(createdPlaylistsContainer.children).forEach((elm) => {
-      const linkElm = elm.querySelector('a') as HTMLAnchorElement;
-      const id = playlistId(linkElm.getAttribute('href')!!);
-      if(id === null)
-        throw new Error("unable to extract pl-id from playlist-item");
-
-      playlists.push({
-        element: elm as HTMLElement,
-        category: 'created',
-        plId: id
-      });
-    });
-  }
-
-  if(savedPlaylistsContainer != null) {
-    elementListToArray(savedPlaylistsContainer.children).forEach((elm) => {
-      const linkElm = elm.querySelector('a') as HTMLAnchorElement;
-      const id = playlistId(linkElm.getAttribute('href')!!);
-      if(id === null)
-        throw new Error("unable to extract pl-id from playlist-item");
-
-      playlists.push({
-        element: elm as HTMLElement,
-        category: 'saved',
-        plId: id
-      });
-    });
-  }
-
-  playlistElements.value = playlists;
-}
 
 /**
  * @return boolean true if successful
@@ -114,7 +68,7 @@ function clearUi(): boolean {
   return true;
 }
 
-function groupPlaylists() {
+function groupPlaylists(playlists: Playlists) {
   groupedPlaylists.value = [];
 
   const exec = async () => {
@@ -122,11 +76,11 @@ function groupPlaylists() {
     const groupedPls = new Set<string>();
 
     const grouped: PlGroup[] = groups.map((group) => {
-      const pls = playlistElements.value.filter(pl => group.playlists.includes(pl.plId));
-      const createdPls = pls.filter(pl => pl.category === 'created');
-      const savedPls = pls.filter(pl => pl.category === 'saved');
+      const createdPls = playlists.created.filter(pl => group.playlists.includes(pl.plId));
+      const savedPls = playlists.saved.filter(pl => group.playlists.includes(pl.plId));
 
-      pls.forEach(pl => groupedPls.add(pl.plId));
+      createdPls.forEach(pl => groupedPls.add(pl.plId));
+      savedPls.forEach(pl => groupedPls.add(pl.plId));
 
       return {
         group: group,
@@ -135,8 +89,12 @@ function groupPlaylists() {
       };
     });
 
-    const ungroupedPls = playlistElements.value.filter(pl => !groupedPls.has(pl.plId));
-    if(ungroupedPls.length !== 0) {
+    const ungroupedPls = <Playlists>{
+      created: playlists.created.filter(pl => !groupedPls.has(pl.plId)),
+      saved: playlists.saved.filter(pl => !groupedPls.has(pl.plId))
+    };
+    const hasUngroupedPls = ungroupedPls.created.length !== 0 || ungroupedPls.saved.length !== 0;
+    if(hasUngroupedPls) {
       grouped.push(createUngroupedGroup(ungroupedPls));
     }
 
@@ -152,7 +110,7 @@ function groupPlaylists() {
     groupedPlaylists.value = grouped;
 
     // 'Ungrouped' should be initially expanded
-    if(ungroupedPls.length > 0)
+    if(hasUngroupedPls)
       expandedGroups.value = [grouped.length - 1];
     else
       expandedGroups.value = [];
@@ -170,25 +128,6 @@ function groupPlaylists() {
   });
 }
 
-function findPlaylistContainers(): PlaylistContainers {
-  const contentsElm = document.querySelector('html body div.pure-g.w-full div#contents') as HTMLElement;
-
-  const createdPlContainer = elementListToArray(contentsElm.children).find((elm) => {
-    // first sub-div which contains pl-elements
-    return elm.querySelector('div.thumbnail') != null;
-  }) as HTMLElement;
-
-  const savedPlContainer = elementListToArray(contentsElm.children).find((elm) => {
-    // second sub-div which contains pl-elements
-    return elm !== createdPlContainer && elm.querySelector('div.thumbnail') != null;
-  }) as HTMLElement;
-
-  return {
-    createdPlaylistsContainer: createdPlContainer,
-    savedPlaylistsContainer: savedPlContainer
-  };
-}
-
 function onDeleteGroup(group: PlGroup) {
   const exec = async () => {
     const groups = groupedPlaylists.value;
@@ -198,11 +137,17 @@ function onDeleteGroup(group: PlGroup) {
     groups.splice(groups.indexOf(group), 1);
 
     // create 'Ungrouped' group, if some playlists end up without any group
-    const ungroupedPls: PlaylistUiElm[] = [
+    const ungroupedPls = <Playlists>{
+      created: group.createdPlaylists.filter(pl => !groups.some(g => g.createdPlaylists.some(gPl => gPl.plId === pl.plId))),
+      saved: group.savedPlaylists.filter(pl => !groups.some(g => g.savedPlaylists.some(gPl => gPl.plId === pl.plId)))
+    };
+    const hasUngroupedPls = ungroupedPls.created.length !== 0 || ungroupedPls.saved.length !== 0;
+
+    const ungroupedPls_: PlaylistUiElm[] = [
         ...group.createdPlaylists.filter(pl => !groups.some(g => g.createdPlaylists.some(gPl => gPl.plId === pl.plId))),
         ...group.savedPlaylists.filter(pl => !groups.some(g => g.savedPlaylists.some(gPl => gPl.plId === pl.plId))),
     ];
-    if(ungroupedPls.length !== 0) {
+    if(hasUngroupedPls) {
       groups.push(createUngroupedGroup(ungroupedPls));
     }
   };
@@ -220,26 +165,23 @@ function onDeleteGroup(group: PlGroup) {
 }
 
 onBeforeMount(() => {
-  collectPlaylists();
+  const playlists = scrapePlaylists();
 
   if(!clearUi())
     return;
 
-  groupPlaylists();
+  groupPlaylists(playlists);
 });
 
-function createUngroupedGroup(playlists: PlaylistUiElm[]): PlGroup {
-  const createdPls = playlists.filter(pl => pl.category === 'created');
-  const savedPls = playlists.filter(pl => pl.category === 'saved');
-
+function createUngroupedGroup(playlists: Playlists): PlGroup {
   return {
     group: {
       id: ID_UNGROUPED,
       name: "Ungrouped",
-      playlists: playlists.map(pl => pl.plId)
+      playlists: [...playlists.created, ...playlists.saved].map(pl => pl.plId)
     },
-    createdPlaylists: createdPls,
-    savedPlaylists: savedPls
+    createdPlaylists: playlists.created,
+    savedPlaylists: playlists.saved
   };
 }
 </script>
