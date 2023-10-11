@@ -7,7 +7,7 @@ import Accordion from "primevue/accordion";
 import AccordionTab from 'primevue/accordiontab';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
-import {findPlaylistContainers, Playlists, PlaylistUiElm, scrapePlaylists} from "../../util/playlist-info-scraper";
+import playlistScraper, {Playlists, PlaylistUiElm} from "../../scrapers/playlist-info-scraper";
 
 interface PlGroup {
   group: PlaylistsGroup,
@@ -43,7 +43,7 @@ const expandedGroups = ref<number[]>([]);
  * @return boolean true if successful
  */
 function clearUi(): boolean {
-  const {createdPlaylistsContainer, savedPlaylistsContainer} = findPlaylistContainers();
+  const {createdPlaylistsContainer, savedPlaylistsContainer} = playlistScraper.findPlaylistContainers();
   if(createdPlaylistsContainer == null && savedPlaylistsContainer == null)
     return false;
 
@@ -165,7 +165,7 @@ function onDeleteGroup(group: PlGroup) {
 }
 
 onBeforeMount(() => {
-  const playlists = scrapePlaylists();
+  const playlists = playlistScraper.findPlaylists();
 
   if(!clearUi())
     return;
