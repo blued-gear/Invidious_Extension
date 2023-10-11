@@ -22,6 +22,8 @@ import io.micronaut.security.authentication.AuthenticationResponse
 import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.kotest5.annotation.MicronautTest
 import reactor.core.publisher.Flux
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @MicronautTest(
     rollback = false,
@@ -65,8 +67,12 @@ class DownloadControllerTest(
                 extension shouldNotBe null
                 extension.extension.isNullOrBlank() shouldBe false
 
-                val file = http.retrieve("/file?id=${jobId.id}", ByteArray::class.java)
-                file.size shouldBeGreaterThan 1024
+                http.exchange("/file?id=${jobId.id}", ByteArray::class.java).let { fileResp ->
+                    fileResp.header("content-disposition") shouldBe null
+
+                    val file = fileResp.body()
+                    file.size shouldBeGreaterThan 1024
+                }
             }
         }
     }
@@ -94,8 +100,13 @@ class DownloadControllerTest(
                 extension shouldNotBe null
                 extension.extension shouldBe "mp3"
 
-                val file = http.retrieve("/file?id=${jobId.id}", ByteArray::class.java)
-                file.size shouldBeGreaterThan 1024
+                val filename = "title\".mp3"
+                http.exchange("/file?id=${jobId.id}&filename=${URLEncoder.encode(filename, StandardCharsets.UTF_8)}", ByteArray::class.java).let { fileResp ->
+                    fileResp.header("content-disposition") shouldBe "attachment; filename=\"${filename.replace("\"", "%22")}\""
+
+                    val file = fileResp.body()
+                    file.size shouldBeGreaterThan 1024
+                }
             }
         }
     }

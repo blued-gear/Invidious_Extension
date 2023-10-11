@@ -49,8 +49,15 @@ class DownloadController(
     @Get("/file")
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    fun downloadFile(@QueryValue id: String): InputStream {
-        return downloadService.downloadFile(id)
+    fun downloadFile(@QueryValue id: String, @QueryValue filename: String?): HttpResponse<InputStream> {
+        val dataStream = downloadService.downloadFile(id)
+        return HttpResponse.ok(dataStream).apply {
+            if(filename != null) {
+                // see https://stackoverflow.com/a/13308094/8288367
+                val escapedFilename = filename.replace("\"", "%22")
+                this.header("content-disposition", "attachment; filename=\"${escapedFilename}\"")
+            }
+        }
     }
 
     @Get("/downloader")
