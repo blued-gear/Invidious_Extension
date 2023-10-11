@@ -19,7 +19,12 @@ interface PlGroup {
 const toast = useToast();
 
 const targetElmId = "invExt-playlistsOverviewMod";
-const uiTarget = (() => {
+
+const uiTarget = ref<HTMLElement | null>(null);
+const groupedPlaylists = ref<PlGroup[]>([]);
+const expandedGroups = ref<number[]>([]);
+
+function attachUiAnchor() {
   let elm = document.getElementById(targetElmId);
   if(elm != null)
     return elm;
@@ -34,10 +39,7 @@ const uiTarget = (() => {
   anchor.insertAdjacentElement('afterend', elm);
 
   return elm;
-})();
-
-const groupedPlaylists = ref<PlGroup[]>([]);
-const expandedGroups = ref<number[]>([]);
+}
 
 /**
  * @return boolean true if successful
@@ -166,6 +168,8 @@ function onDeleteGroup(group: PlGroup) {
 
 onBeforeMount(() => {
   const playlists = playlistScraper.findPlaylists();
+
+  uiTarget.value = attachUiAnchor();
 
   if(!clearUi())
     return;

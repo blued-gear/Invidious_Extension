@@ -18,20 +18,38 @@ export interface PlaylistContainers {
 
 class PlaylistInfoScraper {
 
-    private cache: Playlists | null = null;
+    private plElmsCache: Playlists | null = null;
+    private plContainersCache: PlaylistContainers | null = null;
 
     findPlaylistContainers(): PlaylistContainers {
+        if(this.plContainersCache === null) {
+            this.plContainersCache = this.scrapePlaylistContainers();
+        }
+
+        return this.plContainersCache;
+    }
+
+    private scrapePlaylistContainers(): PlaylistContainers {
         const contentsElm = document.querySelector('html body div.pure-g.w-full div#contents') as HTMLElement;
 
-        const createdPlContainer = elementListToArray(contentsElm.children).find((elm) => {
-            // first sub-div which contains pl-elements
-            return elm.querySelector('div.thumbnail') != null;
-        }) as HTMLElement;
+        const sectionHeadings = elementListToArray(contentsElm.getElementsByTagName('h3'))
+            .filter(elm => elm.firstElementChild != null && elm.firstElementChild.tagName.toLowerCase() === 'span');
 
-        const savedPlContainer = elementListToArray(contentsElm.children).find((elm) => {
-            // second sub-div which contains pl-elements
-            return elm !== createdPlContainer && elm.querySelector('div.thumbnail') != null;
-        }) as HTMLElement;
+        const createdPlHeading = sectionHeadings[0];
+        const createdPlContainerSupposed = createdPlHeading.parentElement!!.parentElement!!.nextElementSibling!! as HTMLElement;
+        let createdPlContainer: HTMLElement | undefined;
+        if(createdPlContainerSupposed.classList.length === 1 && createdPlContainerSupposed.classList.contains('pure-g'))
+            createdPlContainer = createdPlContainerSupposed;
+        else
+            createdPlContainer = undefined;
+
+        const savedPlHeading = sectionHeadings[1];
+        const savedPlContainerSupposed = savedPlHeading.parentElement!!.parentElement!!.nextElementSibling!! as HTMLElement;
+        let savedPlContainer: HTMLElement | undefined;
+        if(savedPlContainerSupposed.classList.length === 1 && savedPlContainerSupposed.classList.contains('pure-g'))
+            savedPlContainer = savedPlContainerSupposed;
+        else
+            savedPlContainer = undefined;
 
         return {
             createdPlaylistsContainer: createdPlContainer,
@@ -40,11 +58,11 @@ class PlaylistInfoScraper {
     }
 
     findPlaylists(): Playlists {
-        if(this.cache == null) {
-            this.cache = this.scrapePlaylists();
+        if(this.plElmsCache == null) {
+            this.plElmsCache = this.scrapePlaylists();
         }
 
-        return this.cache
+        return this.plElmsCache
     }
 
     private scrapePlaylists(): Playlists {
