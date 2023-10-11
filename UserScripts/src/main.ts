@@ -24,6 +24,7 @@ import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
 import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
 import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
+import playlistsMgr from "./managers/playlists";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -37,8 +38,10 @@ async function runStartupHooks() {
     const results = await Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
         playerMgr.pickupState(),
+        playlistsMgr.setupHooks(),
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
-        syncInvidiousData()
+        syncInvidiousData(),
+        playlistsMgr.sync()
     ]);
 
     const errs = results.filter(r => r.status === 'rejected')

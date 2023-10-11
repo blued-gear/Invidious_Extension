@@ -67,15 +67,20 @@ export function isOnPlaylistDetails(): boolean {
     return location.pathname.startsWith('/playlist');
 }
 
+export function isOnPlaylistUnsubscribe(): boolean {
+    return location.pathname === '/delete_playlist';
+}
+
 export function playlistId(path: string | undefined = undefined): string | null {
     if(path == undefined) {
-        if(!isOnPlayer() && !isOnPlaylistDetails())
+        if(!isOnPlayer() && !isOnPlaylistDetails() && !isOnPlaylistUnsubscribe())
             return null;
 
         path = location.search;
     } else {
         if(!path.startsWith('/watch')
-            && !path.startsWith('/playlist'))
+            && !path.startsWith('/playlist')
+            && !path.startsWith('/delete_playlist?'))
             return null;
     }
 
