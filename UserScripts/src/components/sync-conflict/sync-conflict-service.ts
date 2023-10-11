@@ -2,7 +2,11 @@ import SyncConflictException from "../../sync/exception/sync-conflict-exception"
 import extensionDataSyncInstance, {ExtensionDataSync} from "../../sync/extension-data";
 import {generateUniqueId, isString} from "../../util/utils";
 import {arrayFold, initArray} from "../../util/array-utils";
-import {STORAGE_KEY_GROUPS_PREFIX as KEY_PREFIX_PL_GROUPS} from "../../managers/playlists";
+import {
+    STORAGE_KEY_GROUPS_PREFIX as KEY_PREFIX_PL_GROUPS,
+    STORAGE_KEY_SUBSCRIBED_PLS as KEY_SUBSCRIBED_PLS,
+    STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED as KEY_SUBSCRIBED_PLS_INITIALIZED
+} from "../../managers/playlists";
 import {STORAGE_KEY_STACKS_PREFIX as KEY_PREFIX_STACKS} from "../../managers/stacks";
 
 export type ConflictException = SyncConflictException;
@@ -124,6 +128,8 @@ class SyncConflictService {
             return "Playlist Group";
         if(key.startsWith(KEY_PREFIX_STACKS))
             return "Stack";
+        if(key === KEY_SUBSCRIBED_PLS || key === KEY_SUBSCRIBED_PLS_INITIALIZED)
+            return "Subscribed Playlists";
 
         return null;
     }
