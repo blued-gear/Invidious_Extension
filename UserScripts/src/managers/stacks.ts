@@ -4,7 +4,7 @@ import WatchStack from "../model/stacks/watchstack";
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerMng from "./player";
 import {generateUniqueId} from "../util/utils";
-import currentVideoItem from "../util/video-info-scrapers";
+import currentVideoItem from "../scrapers/video-info-scrapers";
 import extensionDataSync from "../sync/extension-data";
 
 export interface StackNameWithId {

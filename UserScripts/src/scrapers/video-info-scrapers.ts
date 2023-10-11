@@ -1,4 +1,3 @@
-import {nodeListToArray} from "./utils";
 import {
     PlaylistVideoStackItem,
     STACK_ITEM_EXTRA_PLAYLIST_NAME,
@@ -7,7 +6,8 @@ import {
     VideoStackItem,
     VideoStackItemProps
 } from "../model/stacks/stack-item";
-import {channelId, isOnPlayer, isPlayingPlaylist, playlistId, playlistIndex, videoId} from "./url-utils";
+import {channelId, isOnPlayer, isPlayingPlaylist, playlistId, playlistIndex, videoId} from "../util/url-utils";
+import {nodeListToArray} from "../util/utils";
 
 export default function currentVideoItem(): VideoStackItem {
     if(!isOnPlayer())

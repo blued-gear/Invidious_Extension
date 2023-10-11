@@ -1,7 +1,7 @@
 import DownloadDlg from "../../download/DownloadDlg.vue";
 import {Ref} from "vue";
 import {isOnPlayer, videoId} from "../../../util/url-utils";
-import {scrapeTitle} from "../../../util/video-info-scrapers";
+import {scrapeTitle} from "../../../scrapers/video-info-scrapers";
 import {MenuItem} from "primevue/menuitem";
 import sharedStates from "../../../util/shared-states";
 
