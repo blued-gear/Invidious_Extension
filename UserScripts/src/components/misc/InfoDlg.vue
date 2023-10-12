@@ -16,6 +16,10 @@ const show = defineModel<boolean>()
         <TabPanel header="Info">
           <div>
             TODO
+
+            <p>
+              License: <a href="https://www.mozilla.org/en-US/MPL/2.0/">MPL 2.0</a>
+            </p>
           </div>
         </TabPanel>
         <TabPanel header="Backend Licenses">
