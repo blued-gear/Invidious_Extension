@@ -9,6 +9,7 @@ import StackEditDlg from "../stacks/StackEditDlg.vue";
 import StackSaveDlg from "../stacks/StackSaveDlg.vue";
 import LoginDlg from "../login/LoginDlg.vue";
 import DownloadDlg from "../download/DownloadDlg.vue";
+import InfoDlg from "../misc/InfoDlg.vue";
 
 import mnuStacks, {
   stackEditorDlgOpen,
@@ -19,6 +20,7 @@ import mnuStacks, {
 import mnuChannel, {updateMenu as updateChannelMenu} from "./entries/channel";
 import mnuLogin, {loginDlgOpen, updateMenu as updateLoginMenu} from "./entries/login";
 import mnuDownload from "./entries/download";
+import mnuOther, {infoDlgOpen, updateMenu as updateOtherMenu} from "./entries/other";
 
 // in the menu-bar beside the settings-button
 const btnTarget = (() => {
@@ -49,13 +51,15 @@ const vidMnuContent = computed<MenuItem[]>(() => [
     ...mnuDownload({ downloadDlgRef: downloadDlgRef }),
     ...mnuStacks(),
     ...mnuChannel(),
-    ...mnuLogin()
+    ...mnuLogin(),
+    ...mnuOther()
 ]);
 
 function onMenuOpen() {
   updateStacksMenu();
   updateChannelMenu();
   updateLoginMenu();
+  updateOtherMenu();
 }
 </script>
 
@@ -71,6 +75,7 @@ function onMenuOpen() {
   <StackSaveDlg v-model="stackSaveDlgOpen"></StackSaveDlg>
   <LoginDlg v-model="loginDlgOpen"></LoginDlg>
   <DownloadDlg ref="downloadDlgRef"></DownloadDlg>
+  <InfoDlg v-model="infoDlgOpen"></InfoDlg>
 </template>
 
 <style scoped>

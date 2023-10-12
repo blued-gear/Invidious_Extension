@@ -32,11 +32,36 @@ npm {
 
 tasks.named<NpmScriptTask>("build") {
     group = BasePlugin.BUILD_GROUP
+    dependsOn("collectLicenses")
 
     inputs.dir("src")
     inputs.file(project.file("package.json"))
     inputs.file(project.file("vite.config.ts"))
     outputs.dir("dist")
+}
+
+tasks.create<Copy>("collectLicenses") {
+    dependsOn("licenses", ":Server:licenseReport")
+
+    from(
+        "${projectDir.absolutePath}/dist/licenses.html",
+        project(":Server").layout.buildDirectory.file("reports/licenses/licenseReport.html")
+    )
+
+    into("${projectDir.absolutePath}/src/assets/licenses")
+
+    rename {
+        when (it) {
+            "licenses.html" -> "frontend.html"
+            "licenseReport.html" -> "backend.html"
+            else -> it
+        }
+    }
+}
+
+tasks.named("licenses").configure {
+    inputs.file("${projectDir.absolutePath}/package-lock.json")
+    outputs.file("${projectDir.absolutePath}/dist/licenses.html")
 }
 
 tasks.create("publishUserScript") {
