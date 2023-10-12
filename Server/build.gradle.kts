@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"
-version = "0.1"
+version = "1.0.0-Beta"
 
 repositories {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
