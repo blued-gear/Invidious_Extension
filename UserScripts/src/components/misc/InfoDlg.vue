@@ -21,11 +21,26 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
       <TabView class="h-full">
         <TabPanel header="Info">
           <div class="w-full" :style="`height: ${contentHeight}px;`">
-            TODO
+            <div>
+              A Userscript with Backend to extend the functionality of Invidious
+              and enable syncing between instances.
+            </div>
 
-            <p>
+            <div class="mt-3">
+              Features:
+              <ul>
+                <li>Stacks: save the currently playing video with timestamp (+ last played videos) to reopen it later</li>
+                <li>group playlists in the playlist-overview</li>
+                <li>download as video or mp3 (with simple ID3-tagger)</li>
+                <li>sync extension-specific data between browsers</li>
+                <li>sync Invidious settings between accounts</li>
+                <li>sync subscribed playlists between accounts</li>
+              </ul>
+            </div>
+
+            <div class="mt-3">
               License: <a href="https://www.mozilla.org/en-US/MPL/2.0/">MPL 2.0</a>
-            </p>
+            </div>
           </div>
         </TabPanel>
         <TabPanel header="Backend Licenses">
