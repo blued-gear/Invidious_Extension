@@ -16,6 +16,8 @@ import io.micronaut.views.View
 import jakarta.inject.Inject
 import jakarta.validation.Valid
 import java.io.InputStream
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Controller("/download")
 @Secured(SecurityRule.IS_AUTHENTICATED)
@@ -67,7 +69,8 @@ class DownloadController(
         return HttpResponse.ok(mapOf(
             "subpath" to subPath,
             "id" to id,
-            "filename" to filename
+            "filename" to filename,
+            "filenameUrl" to URLEncoder.encode(filename, StandardCharsets.UTF_8)
         ))
     }
 }
