@@ -1,5 +1,5 @@
 import PlaylistsGroup from "../model/PlaylistsGroup";
-import {generateUniqueId, logException} from "../util/utils";
+import {elementListToArray, generateUniqueId, logException} from "../util/utils";
 import extensionDataSync from "../sync/extension-data";
 import {isOnPlaylistDetails, isOnPlaylistsOverview, isOnPlaylistUnsubscribe, playlistId} from "../util/url-utils";
 import sharedStates from "../util/shared-states";
@@ -11,6 +11,8 @@ import {TOAST_LIFE_ERROR} from "../util/constants";
 export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 export const STORAGE_KEY_SUBSCRIBED_PLS = "playlists::subscribed_playlists";
 export const STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED = "playlists::subscribed_playlists_initialized";
+
+const INVIDIOUS_PLAYLIST_ID_PREFIX = 'IVPL';
 
 export class PlaylistsManager {
 
@@ -104,6 +106,10 @@ export class PlaylistsManager {
 
     //region sync subscribed playlists
     async setupHooks() {
+        // don't hook into created playlists
+        if(isOnOwnPlaylistDetails())
+            return;
+
         if(isOnPlaylistDetails()) {
            this.setupSubscribeHook();
         } else if(isOnPlaylistUnsubscribe()) {
@@ -337,4 +343,18 @@ async function extractUnsubscribePlaylistCsrfToken(plId: string): Promise<string
     const csrfInpElm = new DOMParser().parseFromString(csrfInpXml, 'application/xml');
 
     return csrfInpElm.activeElement!!.getAttribute('value')!!;
+}
+
+export function isOnOwnPlaylistDetails(): boolean {
+    if(!isOnPlaylistDetails())
+        return false;
+    if(!playlistId()!!.startsWith(INVIDIOUS_PLAYLIST_ID_PREFIX))
+        return false;
+
+    const plEditBtnContainer = document.querySelector('html body div.pure-g div#contents div.h-box.flexible.title');
+    if(plEditBtnContainer == null)
+        return false;
+    const plEditBtn = elementListToArray(plEditBtnContainer.getElementsByTagName('a'))
+        .find((a) => (a as HTMLAnchorElement).href.includes('/edit_playlist?'));
+    return plEditBtn != undefined;
 }
