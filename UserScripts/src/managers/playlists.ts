@@ -225,7 +225,7 @@ export class PlaylistsManager {
 
         const idx = storedSubscriptions.indexOf(id);
         if(idx === -1) {
-            console.warn("PlaylistsManager::delSubscribedPlaylist(): playlist-subscription not in stored; this should not happen (except when out-of-sync)");
+            console.warn("PlaylistsManager::delSubscribedPlaylist(): playlist-subscription not in stored; this should not happen (except when out-of-sync or deleting a created playlist)");
             return;
         }
 
