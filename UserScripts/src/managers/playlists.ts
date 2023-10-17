@@ -181,7 +181,7 @@ export class PlaylistsManager {
 
         const plId = playlistId();
         if(plId === null) {
-            console.warn("PlaylistsManager::setupHooks(): playlist-id, even when on playlist-unsubscribe");
+            console.warn("PlaylistsManager::setupHooks(): no playlist-id, even when on playlist-unsubscribe");
             return;
         }
 
