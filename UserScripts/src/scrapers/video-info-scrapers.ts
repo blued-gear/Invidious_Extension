@@ -54,18 +54,18 @@ export function scrapeTitle(): string | null {
 }
 
 export function scrapeThumbUrl(): string | null {
-    const posterElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled div.vjs-poster') as HTMLElement | null;
+    const posterElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js div.vjs-poster') as HTMLElement | null;
     if(posterElm == null)
         return null;
 
-    const styleImg = posterElm.style.backgroundImage;//url("/vi/f1A7SdVTlok/maxres.jpg")
+    const styleImg = posterElm.style.backgroundImage;//url("/vi/.../maxres.jpg")
     let relUrl = styleImg.substring('url("'.length, styleImg.length - '")'.length);
 
     return location.origin + relUrl;
 }
 
 export function scrapeTimeTotal(): number | null {
-    const timeTotalElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display');
+    const timeTotalElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display');
     if(timeTotalElm == null)
         return null;
 
