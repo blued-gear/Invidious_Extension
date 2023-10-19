@@ -135,7 +135,17 @@ export class PlayerManager {
     async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null): Promise<boolean> {
         if(playlistId() === plId && videoId() === vidId && playlistIndex() === plIdx) {
             // set time if necessary
-            return this.openVideo(vidId, vidTime);
+            await this.waitForPlayerStartet();
+
+            if(vidTime != null) {
+                const currentTime = scrapeTimeCurrent();
+                if(currentTime == null || Math.abs(currentTime - vidTime) > 2) {// two seconds as acceptable delta
+                    location.assign(`/watch?v=${vidId}&list=${plId}&index=${plIdx}&t=${vidTime}`);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         const timeParam = vidTime != null ? `&t=${vidTime}` : "";
@@ -207,24 +217,27 @@ function isVideoLoaded(): {
 } {
     // check if load was started
     const playerElm = document.getElementById('player')!!;
-    if(!playerElm.classList.contains('vjs-has-started'))
+    if(!playerElm.classList.contains('vjs-has-started')) {
         return {
             initiated: false,
             loaded: false
         };
+    }
 
     // check if video was loaded
     const timeTotalElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.player-style-invidious.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display");
-    if(timeTotalElm == null)
+    if(timeTotalElm == null) {
         return {
             initiated: true,
             loaded: false
         };
-    if(timeTotalElm.textContent === "-:-")
+    }
+    if(timeTotalElm.textContent === '-:-' || timeTotalElm.textContent === '0:00') {
         return {
             initiated: true,
             loaded: false
         };
+    }
 
     return {
         initiated: true,
