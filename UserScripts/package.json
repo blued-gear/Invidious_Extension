@@ -1,7 +1,7 @@
 {
   "name": "invidious-extension",
   "author": "blued_gear",
-  "license": "MPL-2.0",
+  "license": "AGPL-3.0-or-later",
   "private": true,
   "version": "1.0.0-Beta",
   "type": "module",

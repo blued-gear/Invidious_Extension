@@ -39,7 +39,7 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
             </div>
 
             <div class="mt-3">
-              License: <a href="https://www.mozilla.org/en-US/MPL/2.0/">MPL 2.0</a>
+              License: <a href="https://www.gnu.org/licenses/agpl-3.0.html">AGPLv3</a>
             </div>
           </div>
         </TabPanel>
