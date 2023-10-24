@@ -47,7 +47,6 @@ export class ExtensionDataSync {
     private login: Login | null = null;
     private readonly syncLock = new Lock();
 
-    //TODO lock r/w methods while full sync is running (but better with timeout + warn)
     //TODO wait for ad-hoc sync on r/w/rm only for a specific amount of time -> else: keep list of potential conflicts and warn on write
 
     /**

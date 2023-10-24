@@ -7,7 +7,7 @@ import OrderList from "../misc/OrderList.vue";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
 import {computed, ref, watch} from "vue";
-import {VideoStackItem} from "../../model/stacks/stack-item";
+import {PlaylistVideoStackItem, VideoStackItem} from "../../model/stacks/stack-item";
 import Dialog from "primevue/dialog";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
 import {useToast} from "primevue/usetoast";
@@ -62,10 +62,24 @@ function onSelectionChanged(sel: VideoStackItem[]) {
     return;
 
   const selected = sel[sel.length - 1];
-  if(addVidId.value === "" || (lastSelected.value !== null && addVidId.value === lastSelected.value.id)) {
+  const lastSel = lastSelected.value;
+  const jumpedFromLastSel = lastSel !== null && addVidId.value === lastSel.id;
+  const jumpedFromLastSelPl = jumpedFromLastSel &&
+      (lastSel instanceof PlaylistVideoStackItem ? addPlId.value === lastSel.playlistId : addPlId.value === "");
+
+  if(addVidId.value === "" || jumpedFromLastSel) {
     addVidId.value = selected.id;
   }
-  //TODO fill pl-id
+
+  if(selected instanceof PlaylistVideoStackItem) {
+    if(addPlId.value === "" || jumpedFromLastSelPl) {
+      addPlId.value = selected.playlistId;
+    }
+  } else {
+    if(jumpedFromLastSelPl) {
+      addPlId.value = "";
+    }
+  }
 
   lastSelected.value = selected;
 }
@@ -82,16 +96,28 @@ function onAdd() {
       idx = 0;
   }
 
-  const item = new VideoStackItem({
-    extras: {},
-    id: addVidId.value,
-    title: "~~to be fetched~~",//TODO find a better source
-    thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
-    timeCurrent: null,
-    timeTotal: null,
-  });
-
-  //TODO pl
+  let item: VideoStackItem;
+  if(addPlId.value === "") {
+    item = new VideoStackItem({
+      extras: {},
+      id: addVidId.value,
+      title: "~~to be fetched~~",//TODO find a better source
+      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
+      timeCurrent: null,
+      timeTotal: null
+    });
+  } else {
+    item = new PlaylistVideoStackItem({
+      extras: {},
+      id: addVidId.value,
+      title: "~~to be fetched~~",//TODO find a better source
+      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
+      timeCurrent: null,
+      timeTotal: null,
+      playlistId: addPlId.value,
+      playlistIdx: -1
+    });
+  }
 
   stack.value!!.add(item, idx);
 }
