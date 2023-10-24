@@ -27,9 +27,14 @@ export default function currentVideoItem(): VideoStackItem {
 
     if(isPlayingPlaylist()) {
         const plId = playlistId();
-        const plIdx = playlistIndex();
-        if(plId == null || plIdx == null)
-            throw new Error("unable to extract playlist-id or playlist-idx even if playing playlist");
+        let plIdx = playlistIndex();
+
+        if(plId == null)
+            throw new Error("unable to extract playlist-id even if playing playlist");
+        if(plIdx == null) {
+            plIdx = -1;
+            console.warn("unable to extract playlist-idx even if playing playlist; defaulting to -1")
+        }
 
         return new PlaylistVideoStackItem({
             ...vidProps,

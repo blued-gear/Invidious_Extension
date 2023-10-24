@@ -133,14 +133,16 @@ export class PlayerManager {
      * @return if a page-reload was triggered
      */
     async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null): Promise<boolean> {
-        if(playlistId() === plId && videoId() === vidId && playlistIndex() === plIdx) {
+        const plIdxParam = plIdx !== -1 ? `&index=${plIdx}` : "";
+
+        if(playlistId() === plId && videoId() === vidId && (plIdx === -1 || playlistIndex() === plIdx)) {
             // set time if necessary
             await this.waitForPlayerStartet();
 
             if(vidTime != null) {
                 const currentTime = scrapeTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - vidTime) > 2) {// two seconds as acceptable delta
-                    location.assign(`/watch?v=${vidId}&list=${plId}&index=${plIdx}&t=${vidTime}`);
+                    location.assign(`/watch?v=${vidId}&list=${plId}${plIdxParam}&t=${vidTime}`);
                     return true;
                 }
             }
@@ -149,7 +151,7 @@ export class PlayerManager {
         }
 
         const timeParam = vidTime != null ? `&t=${vidTime}` : "";
-        location.assign(`/watch?v=${vidId}&list=${plId}&index=${plIdx}${timeParam}`);
+        location.assign(`/watch?v=${vidId}&list=${plId}${plIdxParam}${timeParam}`);
         return true;
     }
 
