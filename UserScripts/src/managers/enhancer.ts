@@ -1,6 +1,6 @@
 import {isOnPlayer, isOnPlaylistDetails} from "../util/url-utils";
 import {PIPED_HOST} from "../util/constants";
-import {elementListToArray} from "../util/utils";
+import {elementListToArray, nodeListToArray} from "../util/utils";
 import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlists";
 
 /**
@@ -25,29 +25,29 @@ class InvidiousEnhancer {
 
     //region add video upload_date
     private async addUploadDateToVideoItemsOnPlay() {
-        const relatedVideoElements = document.querySelectorAll<HTMLElement>('html body div.pure-g div#contents div.pure-g div.pure-u-1.pure-u-lg-1-5 div.h-box div.pure-u-1');
-        for(let i = 0; i < relatedVideoElements.length; i++) {
-            const vidElm = relatedVideoElements.item(i);
+        const runners = nodeListToArray(document.querySelectorAll('html body div.pure-g div#contents div.pure-g div.pure-u-1.pure-u-lg-1-5 div.h-box div.pure-u-1'))
+            .map(async (elm) => {
+                try {
+                    await this.addUploadDateToVideoItem(elm as HTMLElement);
+                } catch (e) {
+                    console.warn("addUploadDateToVideoItemsOnPlay(): unable to process element", elm, e);
+                }
+            });
 
-            try {
-                await this.addUploadDateToVideoItem(vidElm);
-            } catch(e) {
-                console.warn("addUploadDateToVideoItemsOnPlay(): unable to process element", vidElm, e);
-            }
-        }
+        await Promise.allSettled(runners);
     }
 
     private async addUploadDateToVideoItemsOnPlaylist() {
-        const relatedVideoElements = document.querySelectorAll<HTMLElement>('html body div.pure-g div#contents div.pure-g div.pure-u-1 div.h-box');
-        for(let i = 0; i < relatedVideoElements.length; i++) {
-            const vidElm = relatedVideoElements.item(i);
+        const runners = nodeListToArray(document.querySelectorAll('html body div.pure-g div#contents div.pure-g div.pure-u-1 div.h-box'))
+            .map(async (elm) => {
+                try {
+                    await this.addUploadDateToVideoItem(elm as HTMLElement);
+                } catch (e) {
+                    console.warn("addUploadDateToVideoItemsOnPlaylist(): unable to process element", elm, e);
+                }
+            });
 
-            try {
-                await this.addUploadDateToVideoItem(vidElm);
-            } catch(e) {
-                console.warn("addUploadDateToVideoItemsOnPlaylist(): unable to process element", vidElm, e);
-            }
-        }
+        await Promise.allSettled(runners);
     }
 
     private async addUploadDateToVideoItem(elm: HTMLElement) {
@@ -85,7 +85,7 @@ class InvidiousEnhancer {
 
     //region fix playlist thumb
     async fixSavedPlaylistThumbnails() {
-        const imagesWithVid = elementListToArray(document.getElementsByTagName('img'))
+        const runners = elementListToArray(document.getElementsByTagName('img'))
             .map((elm) => {
                 return elm as HTMLImageElement;
             }).filter((img) => {
@@ -109,19 +109,19 @@ class InvidiousEnhancer {
                 return itm!!;
             }).filter((itm) => {
                 return !itm.plId.startsWith(INVIDIOUS_PLAYLIST_ID_PREFIX);
+            }).map(async (imgWithId) => {
+                try {
+                    const url = await this.loadPlaylistThumbUrl(imgWithId.plId);
+                    if(url == null || url.length === 0)
+                        return;
+
+                    imgWithId.img.src = url;
+                } catch(e) {
+                    console.warn("fixSavedPlaylistThumbnails(): unable to process element", e);
+                }
             });
 
-        for(let itm of imagesWithVid) {
-            try {
-                const url = await this.loadPlaylistThumbUrl(itm.plId);
-                if(url == null || url.length === 0)
-                    continue;
-
-                itm.img.src = url;
-            } catch(e) {
-                console.warn("fixSavedPlaylistThumbnails(): unable to process element", e);
-            }
-        }
+        await Promise.allSettled(runners);
     }
 
     private async loadPlaylistThumbUrl(id: string): Promise<string | null> {
