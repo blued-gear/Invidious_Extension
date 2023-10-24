@@ -176,8 +176,15 @@ function onSave() {
   exec();
 }
 
-watch(dlgOpen, async () => {
-  await loadData();
+watch(dlgOpen, async (newVal) => {
+  if(newVal) {
+    addVidId.value = "";
+    addPlId.value = "";
+
+    await loadData();
+  } else {
+    stack.value = undefined;
+  }
 });
 </script>
 
