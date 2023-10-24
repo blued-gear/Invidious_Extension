@@ -25,6 +25,7 @@ import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
 import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
 import playlistsMgr from "./managers/playlists";
+import enhancer from "./managers/enhancer";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -41,7 +42,8 @@ async function runStartupHooks() {
         playlistsMgr.setupHooks(),
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
         syncInvidiousData(),
-        playlistsMgr.sync()
+        playlistsMgr.sync(),
+        enhancer.run()
     ]);
 
     const errs = results.filter(r => r.status === 'rejected')
