@@ -65,7 +65,6 @@ function onMenuOpen() {
 
 <template>
   <Teleport :to="btnTarget">
-    <!-- TODO make icon-color fitting page-theme -->
     <Button @click="e => vidMnu!!.toggle(e)" icon="pi pi-database" text rounded
             aria-label="InvExt" v-tooltip="'InvExt'"></Button>
     <TieredMenu ref="vidMnu" :model="vidMnuContent" popup @before-show="onMenuOpen"></TieredMenu>

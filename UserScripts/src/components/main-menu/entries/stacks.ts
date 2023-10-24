@@ -144,7 +144,7 @@ export default () => <MenuItem[]>[
         label: "Last Video (from Stack)",
         command: () => popWatchStack(),
         visible: () => isOnPlayer(),
-        disabled: !watchStackPopable.value//TODO
+        disabled: !watchStackPopable.value
     },
     {
         label: "Edit current Watch-Stack",
