@@ -97,7 +97,10 @@ function onItemBottom() {
   // else: updated list will be computed by parent
 }
 
-function onSelectionChanged(sel: any[]) {
+function onSelectionChanged(sel: any[] | any) {
+  if(!(sel instanceof Array))
+    sel = [sel];
+
   emit('changed:selected', sel);
   selected.splice(0, selected.length, ...sel);
 }
