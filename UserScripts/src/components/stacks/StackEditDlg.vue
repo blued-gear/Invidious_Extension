@@ -27,6 +27,7 @@ const stack = ref<WatchStack | undefined>(undefined);
 const addVidId = ref("");
 const addPlId = ref("");
 const lastSelected = ref<VideoStackItem | null>(null);
+const curSelected = ref<VideoStackItem[]>([]);
 
 const stackItems = computed<VideoStackItem[]>(() => {
   if(stack.value === undefined)
@@ -82,6 +83,7 @@ function onSelectionChanged(sel: VideoStackItem[]) {
   }
 
   lastSelected.value = selected;
+  curSelected.value = [selected];
 }
 
 function onItemsMoved(move: MoveAction<VideoStackItem>) {
@@ -120,6 +122,28 @@ function onAdd() {
   }
 
   stack.value!!.add(item, idx);
+  curSelected.value = [item];
+}
+
+function onDel() {
+  const s = stack.value!!;
+  const lastSel = lastSelected.value;
+  if(lastSel == null)
+    return;
+
+  const idx = s.toArray().indexOf(lastSel);
+  s.remove(idx);
+
+  if(s.length() !== 0) {
+    const nextIdx = idx !== s.length() ? idx : idx - 1;
+    const nextItem = s.peek(nextIdx)!!;
+
+    lastSelected.value = nextItem;
+    curSelected.value = [nextItem];
+  } else {
+    lastSelected.value = null;
+    curSelected.value = [];
+  }
 }
 
 function onCancel() {
@@ -176,8 +200,9 @@ watch(dlgOpen, async () => {
           <Skeleton class="mb-2 w-4"></Skeleton>
           <Skeleton class="mb-2 w-5"></Skeleton>
         </div>
-        <OrderList :model-value="stackItems" :emit-items-update="false" :multiple="true" v-show="stack != undefined"
+        <OrderList :model-value="stackItems" :emit-items-update="false" :multiple="false" :selected="curSelected"
                    @changed:selected="onSelectionChanged" @move="onItemsMoved"
+                   v-show="stack != undefined"
                    class="flex-1 surface-border h-full">
           <template v-slot="slotProps">
             <div class="itemContainer">
@@ -188,20 +213,29 @@ watch(dlgOpen, async () => {
       </div>
       <!-- endregion items -->
 
-      <!-- region add -->
-      <div class="w-max mt-2 p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300 flex-column sm:flex-row">
-        <span class="p-float-label">
-          <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" />
-          <label for="stack_edit_dlg-add-vid">Video-ID</label>
-        </span>
-        <span class="p-float-label">
-          <InputText id="stack_edit_dlg-add-pl" v-model="addPlId" />
-          <label for="stack_edit_dlg-add-pl">Playlist-ID</label>
-        </span>
+      <!-- region add, remove -->
+      <div class="w-full mt-2 pr-6 flex align-items-center flex-column sm:flex-row">
+        <!-- region add -->
+        <div class="w-max p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300 flex-column sm:flex-row">
+          <span class="p-float-label">
+            <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" />
+            <label for="stack_edit_dlg-add-vid">Video-ID</label>
+          </span>
+            <span class="p-float-label">
+            <InputText id="stack_edit_dlg-add-pl" v-model="addPlId" />
+            <label for="stack_edit_dlg-add-pl">Playlist-ID</label>
+          </span>
 
-        <Button @click="onAdd" :disabled="stack !== undefined && addVidId === ''" class="w-max">Add</Button>
+          <Button @click="onAdd" :disabled="stack === undefined || addVidId === ''" class="w-max">Add</Button>
+        </div>
+        <!-- endregion add -->
+
+        <div class="w-full"></div>
+        <div>
+          <Button @click="onDel" :disabled="stack === undefined || lastSelected === null" class="w-max">Remove</Button>
+        </div>
       </div>
-      <!-- endregion add -->
+      <!-- endregion add, remove -->
 
       <!-- region cancel, save -->
       <div class="flex mt-4">
