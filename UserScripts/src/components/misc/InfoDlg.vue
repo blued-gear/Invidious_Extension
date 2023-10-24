@@ -49,6 +49,14 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
         <TabPanel header="Frontend Licenses" :style="{ height: `${contentHeight}px` }">
           <iframe :srcdoc="contentLicensesFrontend" class="border-none w-full" :style="`height: ${contentHeight}px;`"></iframe>
         </TabPanel>
+        <TabPanel header="Other Licenses" :style="{ height: `${contentHeight}px` }">
+          <ul>
+            <li>
+              <a href="https://github.com/TeamPiped/Piped">Piped:&nbsp;</a>
+              <a href="https://github.com/TeamPiped/Piped/blob/master/LICENSE">AGPL-3.0</a>
+            </li>
+          </ul>
+        </TabPanel>
       </TabView>
     </div>
   </Dialog>
