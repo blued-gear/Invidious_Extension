@@ -10,7 +10,7 @@
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "jest",
-    "licenses": "license-report --output=html --fields=name --fields=author --fields=licenseType --fields=link --fields=installedVersion > dist/licenses.html"
+    "licenses": "license-report --output=html --fields=name --fields=author --fields=licenseType --fields=link --fields=installedVersion > build/licenses.html"
   },
   "dependencies": {
     "case": "^1.6.3",

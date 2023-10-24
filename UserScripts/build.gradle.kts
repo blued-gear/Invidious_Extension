@@ -44,7 +44,7 @@ tasks.create<Copy>("collectLicenses") {
     dependsOn("licenses", ":Server:licenseReport")
 
     from(
-        "${projectDir.absolutePath}/dist/licenses.html",
+        "${projectDir.absolutePath}/build/licenses.html",
         project(":Server").layout.buildDirectory.file("reports/licenses/licenseReport.html")
     )
 
@@ -61,7 +61,7 @@ tasks.create<Copy>("collectLicenses") {
 
 tasks.named("licenses").configure {
     inputs.file("${projectDir.absolutePath}/package-lock.json")
-    outputs.file("${projectDir.absolutePath}/dist/licenses.html")
+    outputs.file("${projectDir.absolutePath}/build/licenses.html")
 }
 
 tasks.create("publishUserScript") {
