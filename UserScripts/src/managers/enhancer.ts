@@ -1,5 +1,7 @@
 import {isOnPlayer, isOnPlaylistDetails} from "../util/url-utils";
 import {PIPED_HOST} from "../util/constants";
+import {elementListToArray} from "../util/utils";
+import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlists";
 
 /**
  * runs misc enhancement for the general Invidious UI
@@ -21,6 +23,7 @@ class InvidiousEnhancer {
         }
     }
 
+    //region add video upload_date
     private async addUploadDateToVideoItemsOnPlay() {
         const relatedVideoElements = document.querySelectorAll<HTMLElement>('html body div.pure-g div#contents div.pure-g div.pure-u-1.pure-u-lg-1-5 div.h-box div.pure-u-1');
         for(let i = 0; i < relatedVideoElements.length; i++) {
@@ -54,7 +57,7 @@ class InvidiousEnhancer {
             return;// silently fail
 
         const uploadDate = await this.loadVideoUploadDate(vidId);
-        if(uploadDate == undefined || uploadDate.length === 0)
+        if(uploadDate == null || uploadDate.length === 0)
             return;
 
         const innerDiv = document.createElement('div');
@@ -68,16 +71,69 @@ class InvidiousEnhancer {
         anchor.insertAdjacentElement('afterend', outerDiv);
     }
 
-    private async loadVideoUploadDate(id: string): Promise<string | undefined> {
+    private async loadVideoUploadDate(id: string): Promise<string | null> {
         const resp = await fetch(`${PIPED_HOST}/streams/${id}`);
         const respJson = await resp.json();
 
         const uploadDateTime = respJson['uploadDate'];
         if(uploadDateTime == undefined)
-            return undefined;
+            return null;
 
         return this.dateFormatter.format(Date.parse(uploadDateTime))
     }
+    //endregion
+
+    //region fix playlist thumb
+    async fixSavedPlaylistThumbnails() {
+        const imagesWithVid = elementListToArray(document.getElementsByTagName('img'))
+            .map((elm) => {
+                return elm as HTMLImageElement;
+            }).filter((img) => {
+                return img.src.endsWith('/vi/-----------/mqdefault.jpg');
+            }).map((img) => {
+                const parent = img.parentElement;
+                if(!(parent instanceof HTMLAnchorElement))
+                    return null;
+
+                const plId = new URLSearchParams(new URL((parent as HTMLAnchorElement).href).search).get('list');
+                if(plId == null)
+                    return null;
+
+                return {
+                    img: img,
+                    plId: plId
+                };
+            }).filter((itm) => {
+                return itm != null;
+            }).map((itm) => {
+                return itm!!;
+            }).filter((itm) => {
+                return !itm.plId.startsWith(INVIDIOUS_PLAYLIST_ID_PREFIX);
+            });
+
+        for(let itm of imagesWithVid) {
+            try {
+                const url = await this.loadPlaylistThumbUrl(itm.plId);
+                if(url == null || url.length === 0)
+                    continue;
+
+                itm.img.src = url;
+            } catch(e) {
+                console.warn("fixSavedPlaylistThumbnails(): unable to process element", e);
+            }
+        }
+    }
+
+    private async loadPlaylistThumbUrl(id: string): Promise<string | null> {
+        const resp = await fetch(`${PIPED_HOST}/playlists/${id}`);
+        const respJson = await resp.json();
+
+        const thumbUrl = respJson['thumbnailUrl'];
+        if(thumbUrl == undefined)
+            return null;
+        return thumbUrl;
+    }
+    //endregion
 }
 
 const invidiousEnhancerInstance = new InvidiousEnhancer();

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {onBeforeMount, ref, Teleport} from "vue";
-import {nodeListToArray} from "../../util/utils";
+import {nextTick, onBeforeMount, ref, Teleport} from "vue";
+import {logException, nodeListToArray} from "../../util/utils";
 import playlistsMng from "../../managers/playlists";
 import PlaylistsGroup, {ID_UNGROUPED} from "../../model/PlaylistsGroup";
 import Accordion from "primevue/accordion";
@@ -8,6 +8,7 @@ import AccordionTab from 'primevue/accordiontab';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
 import playlistScraper, {Playlists, PlaylistUiElm} from "../../scrapers/playlist-info-scraper";
+import invidiousEnhancer from "../../managers/enhancer";
 
 interface PlGroup {
   group: PlaylistsGroup,
@@ -116,10 +117,16 @@ function groupPlaylists(playlists: Playlists) {
       expandedGroups.value = [grouped.length - 1];
     else
       expandedGroups.value = [];
+
+    await nextTick(() => {
+      invidiousEnhancer.fixSavedPlaylistThumbnails().catch(e => {
+        logException(e, "invidiousEnhancer.fixSavedPlaylistThumbnails() failed");
+      });
+    });
   };
 
   exec().catch((err) => {
-    console.error("error in groupPlaylists()", err);
+    logException(err, "error in groupPlaylists()");
 
     toast.add({
       summary: "Unable to group playlists",
@@ -155,7 +162,7 @@ function onDeleteGroup(group: PlGroup) {
   };
 
   exec().catch((err) => {
-    console.error("error in onDeleteGroup()", err);
+    logException(err, "error in onDeleteGroup()");
 
     toast.add({
       summary: "Unable to remove group",

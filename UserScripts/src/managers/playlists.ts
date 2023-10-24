@@ -12,7 +12,7 @@ export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 export const STORAGE_KEY_SUBSCRIBED_PLS = "playlists::subscribed_playlists";
 export const STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED = "playlists::subscribed_playlists_initialized";
 
-const INVIDIOUS_PLAYLIST_ID_PREFIX = 'IVPL';
+export const INVIDIOUS_PLAYLIST_ID_PREFIX = 'IVPL';
 
 export class PlaylistsManager {
 
