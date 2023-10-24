@@ -221,7 +221,7 @@ watch(dlgOpen, async (newVal) => {
       <!-- endregion items -->
 
       <!-- region add, remove -->
-      <div class="w-full mt-2 pr-6 flex align-items-center flex-column sm:flex-row">
+      <div class="w-full mt-2 pr-6 flex flex-column sm:align-items-center sm:flex-row">
         <!-- region add -->
         <div class="w-max p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300 flex-column sm:flex-row">
           <span class="p-float-label">
@@ -237,7 +237,7 @@ watch(dlgOpen, async (newVal) => {
         </div>
         <!-- endregion add -->
 
-        <div class="w-full"></div>
+        <div class="w-full h-1rem"></div>
         <div>
           <Button @click="onDel" :disabled="stack === undefined || lastSelected === null" class="w-max">Remove</Button>
         </div>
