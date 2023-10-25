@@ -12,6 +12,7 @@ import {StatusCodes} from "http-status-codes";
 import RegistrationPayload from "../../sync/dto/registration-payload-dto";
 import {logException} from "../../util/utils";
 import ProgressSpinner from "primevue/progressspinner";
+import confirm from "../../util/confirm-popup";
 
 const toast = useToast();
 
@@ -74,8 +75,10 @@ function submit() {
       throw new Error("a user with the same name does already exist", { cause: e });
     });
 
+    const rmData = await confirm("Clear Data?", "Do you want to clear the currently stored data?");
+
     await storeLogin(login);
-    await setLoginWhereNeeded(login, false);//TODO ask with confirmation-dlg
+    await setLoginWhereNeeded(login, rmData);
 
     toast.add({
       summary: "Sign-Up successful",

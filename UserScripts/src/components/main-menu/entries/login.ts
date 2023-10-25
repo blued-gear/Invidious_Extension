@@ -3,8 +3,8 @@ import {TOAST_LIFE_ERROR} from "../../../util/constants";
 import sharedStates from "../../../util/shared-states";
 import {setLoginWhereNeeded, storeLogin} from "../../../sync/login";
 import toast from "../../../workarounds/toast";
-import confirm from "../../../workarounds/confirm";
 import {MenuItem} from "primevue/menuitem";
+import confirm from "../../../util/confirm-popup";
 
 export const loginDlgOpen = ref(false);
 
@@ -14,18 +14,7 @@ function openLoginDlg() {
 
 function logout() {
     const exec = async () => {
-        const rmData = await new Promise<boolean>((resolve) => {
-            confirm.require({
-                header: "Clear Data?",
-                message: "Do you want to clear the stored data?",
-                accept: () => {
-                    resolve(true);
-                },
-                reject: () => {
-                    resolve(false);
-                }
-            });
-        });
+        const rmData = await confirm("Clear Data?", "Do you want to clear the stored data?");
 
         await storeLogin(null);
         await setLoginWhereNeeded(null, rmData);

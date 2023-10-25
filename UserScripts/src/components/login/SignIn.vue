@@ -11,6 +11,7 @@ import {StatusCodes} from "http-status-codes";
 import {SERVER_USER_URL, TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../util/constants";
 import ProgressSpinner from "primevue/progressspinner";
 import {logException} from "../../util/utils";
+import confirm from "../../util/confirm-popup";
 
 const toast = useToast();
 
@@ -55,8 +56,10 @@ function submit() {
       throw new Error("Login-credentials are not correct or the user does not exist", { cause: e });
     });
 
+    const rmData = await confirm("Clear Data?", "Do you want to clear the currently stored data?");
+
     await storeLogin(login);
-    await setLoginWhereNeeded(login, false);//TODO ask with confirmation-dlg
+    await setLoginWhereNeeded(login, rmData);
 
     toast.add({
       summary: "Login successful",
