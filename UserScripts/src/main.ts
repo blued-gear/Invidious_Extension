@@ -68,9 +68,6 @@ async function syncInvidiousData() {
 }
 
 async function setupUi() {
-    // fix Invidious sizing
-    document.querySelector("html body div.pure-g")!!.classList.add('w-full');
-
     createApp(App)
         .use(PrimeVue).use(DialogService).use(ToastService).use(ConfirmationService)
         .directive('tooltip', Tooltip)

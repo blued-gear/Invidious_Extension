@@ -16,12 +16,20 @@ class InvidiousEnhancer {
     });
 
     async run() {
+        this.fixInvidiousSizing();
+
         if(urlExtractor.isOnPlayer()) {
             await this.addUploadDateToVideoItemsOnPlay();
         } else if(urlExtractor.isOnPlaylistDetails()) {
             await this.addUploadDateToVideoItemsOnPlaylist();
         }
     }
+
+    //region misc
+    private fixInvidiousSizing() {
+        document.querySelector("html body div.pure-g")!!.classList.add('w-full');
+    }
+    //endregion
 
     //region add video upload_date
     private async addUploadDateToVideoItemsOnPlay() {
