@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import {nextTick, onBeforeMount, ref, Teleport} from "vue";
-import {logException, nodeListToArray} from "../../util/utils";
-import playlistsMng from "../../managers/playlists";
-import PlaylistsGroup, {ID_UNGROUPED} from "../../model/PlaylistsGroup";
+import {logException, nodeListToArray} from "../../../../util/utils";
+import playlistsMng from "../../../../managers/playlists";
+import PlaylistsGroup, {ID_UNGROUPED} from "../../../../model/PlaylistsGroup";
 import Accordion from "primevue/accordion";
 import AccordionTab from 'primevue/accordiontab';
 import {useToast} from "primevue/usetoast";
-import {TOAST_LIFE_ERROR} from "../../util/constants";
-import playlistScraper, {Playlists, PlaylistUiElm} from "../../scrapers/playlist-info-scraper";
-import invidiousEnhancer from "../../managers/enhancer";
+import {TOAST_LIFE_ERROR} from "../../../../util/constants";
+import playlistController, {Playlists, PlaylistUiElm} from "../../../../controllers/playlist-controller";
+import invidiousEnhancer from "../../../../controllers/invidious/enhancer";
 
 interface PlGroup {
   group: PlaylistsGroup,
@@ -46,7 +46,7 @@ function attachUiAnchor() {
  * @return boolean true if successful
  */
 function clearUi(): boolean {
-  const {createdPlaylistsContainer, savedPlaylistsContainer} = playlistScraper.findPlaylistContainers();
+  const {createdPlaylistsContainer, savedPlaylistsContainer} = playlistController.findPlaylistContainers();
   if(createdPlaylistsContainer == null && savedPlaylistsContainer == null)
     return false;
 
@@ -151,11 +151,6 @@ function onDeleteGroup(group: PlGroup) {
       saved: group.savedPlaylists.filter(pl => !groups.some(g => g.savedPlaylists.some(gPl => gPl.plId === pl.plId)))
     };
     const hasUngroupedPls = ungroupedPls.created.length !== 0 || ungroupedPls.saved.length !== 0;
-
-    const ungroupedPls_: PlaylistUiElm[] = [
-        ...group.createdPlaylists.filter(pl => !groups.some(g => g.createdPlaylists.some(gPl => gPl.plId === pl.plId))),
-        ...group.savedPlaylists.filter(pl => !groups.some(g => g.savedPlaylists.some(gPl => gPl.plId === pl.plId))),
-    ];
     if(hasUngroupedPls) {
       groups.push(createUngroupedGroup(ungroupedPls));
     }
@@ -174,7 +169,7 @@ function onDeleteGroup(group: PlGroup) {
 }
 
 onBeforeMount(() => {
-  const playlists = playlistScraper.findPlaylists();
+  const playlists = playlistController.findPlaylists();
 
   uiTarget.value = attachUiAnchor();
 

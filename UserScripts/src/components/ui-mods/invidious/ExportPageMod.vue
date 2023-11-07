@@ -4,11 +4,11 @@ import Button from "primevue/button";
 import Checkbox from 'primevue/checkbox';
 import ProgressSpinner from "primevue/progressspinner";
 import {useToast} from "primevue/usetoast";
-import invidiousDataSync, {SyncResult} from "../../sync/invidious-data";
-import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../util/constants";
-import AssertionError from "../../util/AssertionError";
-import sharedStates from "../../util/shared-states";
-import {HttpResponseException} from "../../util/fetch-utils";
+import invidiousDataSync, {SyncResult} from "../../../sync/invidious-data";
+import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../../util/constants";
+import AssertionError from "../../../util/AssertionError";
+import sharedStates from "../../../util/shared-states";
+import {HttpResponseException} from "../../../util/fetch-utils";
 import {StatusCodes} from "http-status-codes";
 
 const toast = useToast();

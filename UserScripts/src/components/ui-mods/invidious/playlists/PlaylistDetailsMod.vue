@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import {Teleport} from "vue/dist/vue";
-import MultiSelectWithAdd from "../misc/MultiSelectWithAdd.vue";
+import MultiSelectWithAdd from "../../../misc/MultiSelectWithAdd.vue";
 import {computed, onBeforeMount, ref} from "vue";
-import {TOAST_LIFE_ERROR} from "../../util/constants";
+import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import {useToast} from "primevue/usetoast";
 
-import playlistsMgr from "../../managers/playlists";
-import PlaylistsGroup from "../../model/PlaylistsGroup";
-import {arrayFold} from "../../util/array-utils";
-import {playlistId} from "../../util/url-utils";
-import {logException, nodeListToArray} from "../../util/utils";
+import playlistsMgr from "../../../../managers/playlists";
+import PlaylistsGroup from "../../../../model/PlaylistsGroup";
+import {arrayFold} from "../../../../util/array-utils";
+import {logException, nodeListToArray} from "../../../../util/utils";
+import urlExtractor from "../../../../controllers/url-extractor";
 
 const targetElmId = "invExt-playlistDetailsMod";
 const uiTarget = (() => {
@@ -58,7 +58,7 @@ const selectedGroupsText = computed(() => Object.keys(groupSelection.value)
 
 function onSelectionChanged(newSelection: Record<string, boolean>) {
   const exec = async () => {
-    const plId = playlistId()!!;
+    const plId = urlExtractor.playlistId(undefined)!!;
     const selectedGroups = groups.value.filter((group) => newSelection[group.name]);
 
     await playlistsMgr.setPlaylistGroups(plId, selectedGroups);
@@ -71,7 +71,7 @@ function onSelectionChanged(newSelection: Record<string, boolean>) {
 
 function onNewGroup(name: string) {
   const exec = async () => {
-    const plId = playlistId()!!;
+    const plId = urlExtractor.playlistId(undefined)!!;
 
     const group = await playlistsMgr.addGroup(name);
     if(!group.playlists.includes(plId)) {
@@ -93,7 +93,7 @@ function onNewGroup(name: string) {
 
 function loadGroups() {
   const exec = async () => {
-    const plId = playlistId()!!;
+    const plId = urlExtractor.playlistId(undefined)!!;
     groups.value = await playlistsMgr.loadGroups();
 
     groupSelection.value = arrayFold(groups.value, {} as Record<string, boolean>, (selection, group) => {

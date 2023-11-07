@@ -105,3 +105,9 @@ export function roundToDecimal(num: number, decimals: number): number {
     const scale = Math.pow(10.0, decimals);
     return Math.round(num * scale) / scale;
 }
+
+export async function sleep(millis: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(resolve, millis);
+    });
+}

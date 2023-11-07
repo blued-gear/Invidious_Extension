@@ -25,14 +25,14 @@ import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
 import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
 import playlistsMgr from "./managers/playlists";
-import enhancer from "./managers/enhancer";
+import runEnhancers from "./controllers/enhancers";
+import documentController from "./controllers/document-controller";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
     await setLoginWhereNeeded(login, false);
 
-    const logoutBtn = document.querySelector('html body div.pure-g div#contents div.pure-g.navbar.h-box div.pure-u-1.user-field div.pure-u-1-4 form a.pure-menu-heading input');
-    sharedStates.invidiousLogin.value = logoutBtn != null;
+    sharedStates.invidiousLogin.value = documentController.hasPlatformLogin();
 }
 
 async function runStartupHooks() {
@@ -43,7 +43,7 @@ async function runStartupHooks() {
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
         syncInvidiousData(),
         playlistsMgr.sync(),
-        enhancer.run()
+        runEnhancers()
     ]);
 
     const errs = results.filter(r => r.status === 'rejected')

@@ -8,6 +8,7 @@ import downloadQueue, {DownloadJob, jobIsRunning} from "../../download/download-
 import {useToast} from "primevue/usetoast";
 import {logException, roundToDecimal} from "../../util/utils";
 import {SERVER_DOWNLOAD_URL, TOAST_LIFE_ERROR} from "../../util/constants";
+import documentController from "../../controllers/document-controller";
 
 interface DownloadJobEx extends DownloadJob {
   readonly fileExtension: string | null
@@ -15,24 +16,7 @@ interface DownloadJobEx extends DownloadJob {
 
 const toast = useToast();
 
-const elmTarget = (() => {
-  const elmId = "invExt-downloadProgressIndicator";
-
-  let elm = document.getElementById(elmId);
-  if(elm != null)
-    return elm;
-
-  elm = document.createElement('div');
-  elm.id = elmId;
-
-  let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
-  if(anchor == null)
-    throw new Error("unable to find menu-bar to insert button");
-
-  anchor.insertAdjacentElement('beforeend', elm);
-
-  return elm;
-})();
+const elmTarget = documentController.getOrCreateElmForDownloadIndicator();
 
 const jobsPanel = ref<OverlayPanel>();
 const indicatorContainer = ref<HTMLElement>();

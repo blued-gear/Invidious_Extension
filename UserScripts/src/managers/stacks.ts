@@ -1,11 +1,11 @@
-import {isOnPlayer, videoId} from "../util/url-utils";
 import {STORAGE_PREFIX} from "../util/constants";
 import WatchStack from "../model/stacks/watchstack";
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerMng from "./player";
 import {generateUniqueId} from "../util/utils";
-import currentVideoItem from "../scrapers/video-info-scrapers";
 import extensionDataSync from "../sync/extension-data";
+import playerController from "../controllers/player-controller";
+import urlExtractor from "../controllers/url-extractor";
 
 export interface StackNameWithId {
     id: string,
@@ -28,7 +28,7 @@ export class StackManager {
 
     private constructor() {
         window.addEventListener('beforeunload', () => {
-            if(isOnPlayer()) {
+            if(urlExtractor.isOnPlayer()) {
                 const exec = async () => {
                     await this.updateCurrentStack();
                 };
@@ -41,7 +41,7 @@ export class StackManager {
     }
 
     async updateCurrentWatchStack() {
-        if(isOnPlayer()) {
+        if(urlExtractor.isOnPlayer()) {
             await this.updateCurrentStack();
         } else {
             this.resetCurrentStack(true);
@@ -162,7 +162,7 @@ export class StackManager {
         const popped = this.updateStackPopped(stack);
 
         if(!popped) {
-            const currentVid = currentVideoItem();
+            const currentVid = playerController.currentVideoItem();
 
             if (currentVid.equals(stack.peek(), true))
                 return;// already up-to-date
@@ -193,7 +193,7 @@ export class StackManager {
         if(stack.length() < 2)
             return false;
 
-        const currVidId = videoId()!!;
+        const currVidId = urlExtractor.videoId(undefined)!!;
         if(currVidId !== stack.peek()!!.id// prevent false-positive if the same video is at idx 0 and 1 and this function is called more than once
             && currVidId === stack.peek(1)!!.id) {
             //XXX this also matches if the user opened the previous video again (e.g. from rels),

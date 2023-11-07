@@ -1,18 +1,18 @@
 import PlaylistsGroup from "../model/PlaylistsGroup";
-import {elementListToArray, generateUniqueId, logException} from "../util/utils";
+import {generateUniqueId, logException, sleep} from "../util/utils";
 import extensionDataSync from "../sync/extension-data";
-import {isOnPlaylistDetails, isOnPlaylistsOverview, isOnPlaylistUnsubscribe, playlistId} from "../util/url-utils";
 import sharedStates from "../util/shared-states";
 import toast from "../workarounds/toast";
-import playlistScraper from "../scrapers/playlist-info-scraper";
 import {setDifference} from "../util/set-utils";
 import {TOAST_LIFE_ERROR} from "../util/constants";
+import urlExtractor from "../controllers/url-extractor";
+import playlistController from "../controllers/playlist-controller";
 
 export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 export const STORAGE_KEY_SUBSCRIBED_PLS = "playlists::subscribed_playlists";
 export const STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED = "playlists::subscribed_playlists_initialized";
 
-export const INVIDIOUS_PLAYLIST_ID_PREFIX = 'IVPL';
+
 
 export class PlaylistsManager {
 
@@ -107,18 +107,15 @@ export class PlaylistsManager {
     //region sync subscribed playlists
     async setupHooks() {
         // don't hook into created playlists
-        if(isOnOwnPlaylistDetails())
+        if(playlistController.isOnOwnPlaylistDetails())
             return;
 
-        if(isOnPlaylistDetails()) {
-           this.setupSubscribeHook();
-        } else if(isOnPlaylistUnsubscribe()) {
-            this.setupUnsubscribeHook();
-        }
+        playlistController.addPlaylistSubscribeHook((id) => this.onPlSubscribed(id));
+        playlistController.addPlaylistUnsubscribeHook((id) => this.onPlUnsubscribed(id));
     }
 
     async sync() {
-        if(!isOnPlaylistsOverview())
+        if(!urlExtractor.isOnPlaylistsOverview())
             return;
         if(!sharedStates.invidiousLogin.value)
             return;
@@ -137,74 +134,36 @@ export class PlaylistsManager {
         return await extensionDataSync.getEntry(STORAGE_KEY_SUBSCRIBED_PLS);
     }
 
-    private setupSubscribeHook() {
-        const btn = document.querySelector<HTMLAnchorElement>('html body div.pure-g div#contents div.h-box.title div.button-container div.pure-u a.pure-button.pure-button-secondary');
-        if(btn == null) {
-            console.warn("PlaylistsManager::setupHooks(): subscribe button not found, even when on playlist-details");
-            return;
-        }
+    private async onPlSubscribed(plId: string) {
+        try {
+            await this.addSubscribedPlaylist(plId);
+        } catch(e) {
+            logException(e as Error, "PlaylistsManager::addSubscribedPlaylist()");
 
-        const plId = playlistId();
-        if(plId === null) {
-            console.warn("PlaylistsManager::setupHooks(): playlist-id, even when on playlist-overview");
-            return;
-        }
-
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();// prevent page unload; trigger it after save
-
-            this.addSubscribedPlaylist(plId).then(() => {
-                btn.click();
-            }).catch((e) => {
-                logException(e as Error, "PlaylistsManager::addSubscribedPlaylist()");
-
-                toast.add({
-                    summary: "Error while recording this subscription",
-                    detail: "Failed to save that you subscribe to this playlist.\nExpect it to be removed at next sync.",
-                    severity: 'error',
-                    life: TOAST_LIFE_ERROR
-                });
-
-                setTimeout(() => {
-                    btn.click();
-                }, TOAST_LIFE_ERROR);
+            toast.add({
+                summary: "Error while recording this subscription",
+                detail: "Failed to save that you subscribe to this playlist.\nExpect it to be removed at next sync.",
+                severity: 'error',
+                life: TOAST_LIFE_ERROR
             });
-        }, { once: true });
+            await sleep(TOAST_LIFE_ERROR);
+        }
     }
 
-    private setupUnsubscribeHook() {
-        const btn = document.querySelector<HTMLButtonElement>('html body div.pure-g div#contents div.h-box form.pure-form.pure-form-aligned div.pure-g div button.pure-button.pure-button-primary');
-        if(btn == null) {
-            console.warn("PlaylistsManager::setupHooks(): unsubscribe button not found, even when on playlist-unsubscribe");
-            return;
-        }
+    private async onPlUnsubscribed(plId: string) {
+        try {
+            await this.delSubscribedPlaylist(plId);
+        } catch(e) {
+            logException(e as Error, "PlaylistsManager::delSubscribedPlaylist()");
 
-        const plId = playlistId();
-        if(plId === null) {
-            console.warn("PlaylistsManager::setupHooks(): no playlist-id, even when on playlist-unsubscribe");
-            return;
-        }
-
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();// prevent page unload; trigger it after save
-
-            this.delSubscribedPlaylist(plId).then(() => {
-                btn.click();
-            }).catch((e) => {
-                logException(e as Error, "PlaylistsManager::delSubscribedPlaylist()");
-
-                toast.add({
-                    summary: "Error while recording this unsubscription",
-                    detail: "Failed to save that you unsubscribe from this playlist.\nExpect it to be re-added at next sync.",
-                    severity: 'error',
-                    life: TOAST_LIFE_ERROR
-                });
-
-                setTimeout(() => {
-                    btn.click();
-                }, TOAST_LIFE_ERROR);
+            toast.add({
+                summary: "Error while recording this unsubscription",
+                detail: "Failed to save that you unsubscribe from this playlist.\nExpect it to be re-added at next sync.",
+                severity: 'error',
+                life: TOAST_LIFE_ERROR
             });
-        }, { once: true });
+            await sleep(TOAST_LIFE_ERROR);
+        }
     }
 
     private async addSubscribedPlaylist(id: string) {
@@ -244,7 +203,7 @@ export class PlaylistsManager {
 
     private async syncSubscriptions() {
         const expectedPls = await this.loadSubscribedPlaylists();
-        const actualPls = playlistScraper.findPlaylists().saved.map(pl => pl.plId);
+        const actualPls = playlistController.findPlaylists().saved.map(pl => pl.plId);
         let changed = false;
 
         const toAdd = setDifference(expectedPls, actualPls);
@@ -252,7 +211,7 @@ export class PlaylistsManager {
             console.debug(`syncSubscriptions: adding [${Array.from(toAdd).join(', ')}]`);
 
             for(let pl of toAdd) {
-                await subscribeToPlaylist(pl);
+                await playlistController.subscribeToPlaylist(pl);
             }
 
             changed = true;
@@ -263,7 +222,7 @@ export class PlaylistsManager {
             console.debug(`syncSubscriptions: deleting [${Array.from(toDel).join(', ')}]`);
 
             for(let pl of toDel) {
-                await unsubscribeFromPlaylist(pl);
+                await playlistController.unsubscribeFromPlaylist(pl);
             }
 
             changed = true;
@@ -282,7 +241,7 @@ export class PlaylistsManager {
     }
 
     private async storeInitialSubscriptions() {
-        const currentPls = playlistScraper.findPlaylists().saved.map(pl => pl.plId);
+        const currentPls = playlistController.findPlaylists().saved.map(pl => pl.plId);
 
         await extensionDataSync.setEntry(STORAGE_KEY_SUBSCRIBED_PLS, currentPls);
         await extensionDataSync.setEntry(STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED, true);
@@ -294,67 +253,3 @@ export class PlaylistsManager {
 
 export const playlistsManagerInstance = PlaylistsManager.INSTANCE;
 export default playlistsManagerInstance;
-
-async function subscribeToPlaylist(id: string) {
-    const resp = await fetch(`${location.origin}/subscribe_playlist?list=${id}`, {
-        method: 'GET',
-        mode: 'same-origin'
-    });
-
-    if(!resp.ok)
-        throw new Error(`Invidious-Server responded with ${resp.status} when subscribing to playlist`);
-}
-
-async function unsubscribeFromPlaylist(id: string) {
-    const formCsrfToken = await extractUnsubscribePlaylistCsrfToken(id);
-
-    let form = new FormData();
-    form.append('submit', 'delete_playlist');
-    if(formCsrfToken !== null)
-        form.append('csrf_token', formCsrfToken);
-
-    const resp = await fetch(`${location.origin}/delete_playlist?list=${id}&referer=/`, {
-        method: 'POST',
-        mode: 'same-origin',
-        body: form
-    });
-
-    if(!resp.ok)
-        throw new Error(`Invidious-Server responded with ${resp.status} when unsubscribing to playlist`);
-}
-
-async function extractUnsubscribePlaylistCsrfToken(plId: string): Promise<string | null> {
-    const resp = await fetch(`${location.origin}/delete_playlist?list=${plId}`);
-    if(!resp.ok)
-        throw new Error(`Invidious-Server responded with ${resp.status} when loading playlist-unsubscribe-page`);
-
-    const doc = await resp.text();
-
-    // find the form-input eml with the csrfToken
-    const formMarkerIdx = doc.indexOf('action="/delete_playlist?');
-    if(formMarkerIdx === -1)
-        return null;
-    const inpMarkerIdx = doc.indexOf('name="csrf_token"', formMarkerIdx);
-    if(inpMarkerIdx === -1)
-        return null;
-    const startIdx = doc.lastIndexOf('<', inpMarkerIdx);
-    const endIdx = doc.indexOf('>', inpMarkerIdx);
-    const csrfInpXml = doc.substring(startIdx, endIdx) + '/>';// add '/>' to prevent warning from DOMParser
-    const csrfInpElm = new DOMParser().parseFromString(csrfInpXml, 'application/xml');
-
-    return csrfInpElm.activeElement!!.getAttribute('value')!!;
-}
-
-export function isOnOwnPlaylistDetails(): boolean {
-    if(!isOnPlaylistDetails())
-        return false;
-    if(!playlistId()!!.startsWith(INVIDIOUS_PLAYLIST_ID_PREFIX))
-        return false;
-
-    const plEditBtnContainer = document.querySelector('html body div.pure-g div#contents div.h-box.flexible.title');
-    if(plEditBtnContainer == null)
-        return false;
-    const plEditBtn = elementListToArray(plEditBtnContainer.getElementsByTagName('a'))
-        .find((a) => (a as HTMLAnchorElement).href.includes('/edit_playlist?'));
-    return plEditBtn != undefined;
-}

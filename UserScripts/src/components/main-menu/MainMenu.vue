@@ -21,28 +21,10 @@ import mnuChannel, {updateMenu as updateChannelMenu} from "./entries/channel";
 import mnuLogin, {loginDlgOpen, updateMenu as updateLoginMenu} from "./entries/login";
 import mnuDownload from "./entries/download";
 import mnuOther, {infoDlgOpen, updateMenu as updateOtherMenu} from "./entries/other";
+import DocumentController from "../../controllers/document-controller";
 
 // in the menu-bar beside the settings-button
-const btnTarget = (() => {
-  const elmId = "invExt-mainMenuHolder";
-
-  let elm = document.getElementById(elmId);
-  if(elm != null)
-    return elm;
-
-  elm = document.createElement('div');
-  elm.id = elmId;
-
-  let anchor = document.querySelector('html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
-  if(anchor == null)
-    anchor = document.querySelector('html body div div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
-  if(anchor == null)
-    throw new Error("unable to find menu-bar to insert button");
-
-  anchor.insertAdjacentElement('beforebegin', elm);
-
-  return elm;
-})();
+const btnTarget = DocumentController.getOrCreateElmForMainMenu();
 
 const downloadDlgRef = ref<typeof DownloadDlg>();
 

@@ -1,7 +1,7 @@
-import {isOnPlayer, isOnPlaylistDetails} from "../util/url-utils";
-import {PIPED_HOST} from "../util/constants";
-import {elementListToArray, nodeListToArray} from "../util/utils";
-import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlists";
+import {PIPED_HOST} from "../../util/constants";
+import urlExtractor from "../url-extractor";
+import {elementListToArray, nodeListToArray} from "../../util/utils";
+import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlist-controller";
 
 /**
  * runs misc enhancement for the general Invidious UI
@@ -16,9 +16,9 @@ class InvidiousEnhancer {
     });
 
     async run() {
-        if(isOnPlayer()) {
+        if(urlExtractor.isOnPlayer()) {
             await this.addUploadDateToVideoItemsOnPlay();
-        } else if(isOnPlaylistDetails()) {
+        } else if(urlExtractor.isOnPlaylistDetails()) {
             await this.addUploadDateToVideoItemsOnPlaylist();
         }
     }

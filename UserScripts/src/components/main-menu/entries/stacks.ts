@@ -2,10 +2,10 @@ import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../../util/constants";
 import {reactive, ref} from "vue";
 import stackMgr, {STACK_ID_CURRENT, StackNameWithId} from "../../../managers/stacks";
 import playerMgr from "../../../managers/player";
-import {isOnPlayer} from "../../../util/url-utils";
 import toast from "../../../workarounds/toast";
 import {MenuItem} from "primevue/menuitem";
 import {logException} from "../../../util/utils";
+import urlExtractor from "../../../controllers/url-extractor";
 
 export const stackToEditId = ref<string>(STACK_ID_CURRENT);
 export const stackEditorDlgOpen = ref(false);
@@ -143,18 +143,18 @@ export default () => <MenuItem[]>[
     {
         label: "Last Video (from Stack)",
         command: () => popWatchStack(),
-        visible: () => isOnPlayer(),
+        visible: () => urlExtractor.isOnPlayer(),
         disabled: !watchStackPopable.value
     },
     {
         label: "Edit current Watch-Stack",
         command: () => openStackEditor(),
-        visible: () => isOnPlayer()
+        visible: () => urlExtractor.isOnPlayer()
     },
     {
         label: "Save current Watch-Stack",
         command: () => saveCurrentStack(),
-        visible: () => isOnPlayer()
+        visible: () => urlExtractor.isOnPlayer()
     },
 
     {

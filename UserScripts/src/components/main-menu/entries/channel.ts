@@ -1,10 +1,10 @@
-import {channelId, isOnChannel} from "../../../util/url-utils";
 import toast from "../../../workarounds/toast";
 import {TOAST_LIFE_INFO} from "../../../util/constants";
 import {MenuItem} from "primevue/menuitem";
+import urlExtractor from "../../../controllers/url-extractor";
 
 function openChannelUploadsPl() {
-    const chanId = channelId()!!;
+    const chanId = urlExtractor.channelId(undefined)!!;
 
     let plId: string | null = null;
     if(chanId.startsWith('UC')) {
@@ -32,6 +32,6 @@ export default () => <MenuItem[]>[
     {
         label: "Open Uploads-Playlist",
         command: () => openChannelUploadsPl(),
-        visible: () => isOnChannel()
+        visible: () => urlExtractor.isOnChannel()
     }
 ];
