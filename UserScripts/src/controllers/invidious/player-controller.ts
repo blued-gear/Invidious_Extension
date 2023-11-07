@@ -92,29 +92,44 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         return location.origin + relUrl;
     }
 
+    /**
+     * @return null if not parable, else time in seconds
+     */
     getTimeCurrent(): number | null {
         const timeCurElm = document.querySelector('html body div#contents div#player-container.h-box div#player.on-video_player.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-current-time.vjs-time-control.vjs-control span.vjs-current-time-display');
         if(timeCurElm == null)
             return null;
 
-        const timeParts = timeCurElm.textContent!!.trim().split(':');
-
-        return timeParts.reverse().reduce((acc, cur, idx) => {
-            return acc + Number.parseInt(cur) * Math.pow(60, idx);
-        }, 0);
+        return this.parseTime(timeCurElm.textContent!!);
     }
 
+    /**
+     * @return null if not parable, else time in seconds
+     */
     getTimeTotal(): number | null {
         const timeTotalElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display');
         if(timeTotalElm == null)
             return null;
 
-        const timeParts = timeTotalElm.textContent!!.trim().split(':');
+        return this.parseTime(timeTotalElm.textContent!!);
+    }
 
-        return timeParts.reverse().reduce((acc, cur, idx) => {
-            //TODO check if parsed cur is NaN -> return@function null
-            return acc + Number.parseInt(cur) * Math.pow(60, idx);
-        }, 0);
+    private parseTime(timeStr: string): number | null {
+        timeStr = timeStr.trim();
+        if(timeStr.length === 0)
+            return null;
+
+        const timeParts = timeStr.split(':');
+
+        let time = 0;
+        for(let i = 0; i < timeParts.length; i++) {
+            const num = Number.parseInt(timeParts[i]);
+            if(Number.isNaN(num))
+                return null;
+
+            time += num * Math.pow(60, i);
+        }
+        return time;
     }
 
     getTitle(): string | null {
