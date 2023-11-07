@@ -194,25 +194,39 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         }
 
         // check if video was loaded
-        const timeTotalElm = document.querySelector("html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display");
-        if(timeTotalElm == null) {
+        const totalTime = this.getTimeTotal();
+        if(totalTime === null || totalTime === 0) {
             return {
                 initiated: true,
                 loaded: false
             };
         }
-        if(timeTotalElm.textContent === '-:-' || timeTotalElm.textContent === '0:00') {
+
+        // check if currentTime > 0:01 when playing
+        const isPaused = this.isPaused();
+        const currentTime = this.getTimeCurrent();
+        if(isPaused === null || currentTime === null || (!isPaused && currentTime <= 1)) {
             return {
                 initiated: true,
                 loaded: false
             };
         }
-        //TODO return loaded = false if playing but currentTime == 0:00
 
         return {
             initiated: true,
             loaded: true
         };
+    }
+
+    private isPaused(): boolean | null {
+        const player = document.querySelector('html body div.pure-g div#contents div#player-container div#player');
+        if(player === null)
+            return null;
+
+        if(!player.classList.contains('vjs-has-started'))
+            return null;
+
+        return player.classList.contains('vjs-paused');
     }
 
     async startVideo(): Promise<void> {
