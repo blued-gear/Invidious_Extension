@@ -26,7 +26,13 @@ export interface PlayerController {
 
     getTitle(): string | null
     getThumbUrl(): string | null
+    /**
+     * @return null if not parseable, else time in seconds
+     */
     getTimeTotal(): number | null
+    /**
+     * @return null if not parseable, else time in seconds
+     */
     getTimeCurrent(): number | null
     getPublisher(): PublisherInfo | null
     getPlaylistName(): PlaylistName | null

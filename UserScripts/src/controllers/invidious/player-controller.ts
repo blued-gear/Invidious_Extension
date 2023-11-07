@@ -92,9 +92,6 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         return location.origin + relUrl;
     }
 
-    /**
-     * @return null if not parable, else time in seconds
-     */
     getTimeCurrent(): number | null {
         const timeCurElm = document.querySelector('html body div#contents div#player-container.h-box div#player.on-video_player.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-current-time.vjs-time-control.vjs-control span.vjs-current-time-display');
         if(timeCurElm == null)
@@ -103,9 +100,6 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         return this.parseTime(timeCurElm.textContent!!);
     }
 
-    /**
-     * @return null if not parable, else time in seconds
-     */
     getTimeTotal(): number | null {
         const timeTotalElm = document.querySelector('html body div div#contents div#player-container.h-box div#player.on-video_player.video-js.vjs-controls-enabled.vjs-has-started div.vjs-control-bar div.vjs-duration.vjs-time-control.vjs-control span.vjs-duration-display');
         if(timeTotalElm == null)
@@ -127,7 +121,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(Number.isNaN(num))
                 return null;
 
-            time += num * Math.pow(60, i);
+            time += num * Math.pow(60, timeParts.length - i - 1);
         }
         return time;
     }
