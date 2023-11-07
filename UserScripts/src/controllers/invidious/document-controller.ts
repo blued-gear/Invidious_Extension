@@ -3,6 +3,25 @@ import {DocumentController} from "../document-controller";
 export default class InvidiousDocumentControllerImpl implements DocumentController {
 
     getOrCreateElmForDownloadIndicator(): HTMLElement {
+        const elmId = "invExt-downloadProgressIndicator";
+
+        let elm = document.getElementById(elmId);
+        if(elm != null)
+            return elm;
+
+        elm = document.createElement('div');
+        elm.id = elmId;
+
+        let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
+        if(anchor == null)
+            throw new Error("unable to find menu-bar to insert button");
+
+        anchor.insertAdjacentElement('beforeend', elm);
+
+        return elm;
+    }
+
+    getOrCreateElmForMainMenu(): HTMLElement {
         const elmId = "invExt-mainMenuHolder";
 
         let elm = document.getElementById(elmId);
@@ -19,25 +38,6 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
             throw new Error("unable to find menu-bar to insert button");
 
         anchor.insertAdjacentElement('beforebegin', elm);
-
-        return elm;
-    }
-
-    getOrCreateElmForMainMenu(): HTMLElement {
-        const elmId = "invExt-downloadProgressIndicator";
-
-        let elm = document.getElementById(elmId);
-        if(elm != null)
-            return elm;
-
-        elm = document.createElement('div');
-        elm.id = elmId;
-
-        let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
-        if(anchor == null)
-            throw new Error("unable to find menu-bar to insert button");
-
-        anchor.insertAdjacentElement('beforeend', elm);
 
         return elm;
     }
