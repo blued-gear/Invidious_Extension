@@ -35,8 +35,11 @@ tasks.named<NpmScriptTask>("build") {
     dependsOn("collectLicenses")
 
     inputs.dir("src")
-    inputs.file(project.file("package.json"))
+    inputs.file(project.file("package-lock.json"))
     inputs.file(project.file("vite.config.ts"))
+    inputs.file(project.file("tsconfig.json"))
+    inputs.file(project.file("tsconfig.node.json"))
+
     outputs.dir("dist")
 }
 
