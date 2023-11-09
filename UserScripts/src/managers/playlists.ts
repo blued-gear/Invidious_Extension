@@ -7,12 +7,15 @@ import {setDifference} from "../util/set-utils";
 import {TOAST_LIFE_ERROR} from "../util/constants";
 import urlExtractor from "../controllers/url-extractor";
 import playlistController from "../controllers/playlist-controller";
+import SignalLatch from "../util/signal-latch";
 
 export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 export const STORAGE_KEY_SUBSCRIBED_PLS = "playlists::subscribed_playlists";
 export const STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED = "playlists::subscribed_playlists_initialized";
+export const STORAGE_KEY_PL_ID_MAPPING = "playlists::pl_id_mapping";//TODO use in SyncConflictDlg
 
-
+/** Record<internal-id, Record<domain, pl-id>> */
+type StoredPlIds = Record<string, Record<string, string>>;
 
 export class PlaylistsManager {
 
@@ -21,7 +24,34 @@ export class PlaylistsManager {
         return PlaylistsManager._INSTANCE;
     }
 
+    private playlistScanned = new SignalLatch();
+    private idToPlId: Record<string, string> | null = null;
+    private plIdToId: Record<string, string> | null = null;
+
     private constructor() {}
+
+    async init() {
+        await this.setupHooks();
+        await this.indexPlaylists();
+
+        await this.saveChanges();
+
+        this.playlistScanned.signal();
+    }
+
+    /**
+     * after this function returned, the playlist ui-elements can be manipulated by other mods
+     */
+    async waitForInit() {
+        await this.playlistScanned.waitFor();
+    }
+
+    /**
+     * flushes all buffered changes to synced storage
+     */
+    async saveChanges() {
+        await this.storePlIdMapping();
+    }
 
     //region pl-groups
     async loadGroups(): Promise<PlaylistsGroup[]> {
@@ -104,16 +134,124 @@ export class PlaylistsManager {
     }
     //endregion
 
-    //region sync subscribed playlists
-    async setupHooks() {
-        // don't hook into created playlists
-        if(playlistController.isOnOwnPlaylistDetails())
-            return;
-
-        playlistController.addPlaylistSubscribeHook((id) => this.onPlSubscribed(id));
-        playlistController.addPlaylistUnsubscribeHook((id) => this.onPlUnsubscribed(id));
+    //region id mapping
+    /**
+     * get the internal id for the playlist-id of this domain, or null if not stored
+     * @param id the playlist id
+     */
+    async idForPlId(id: string): Promise<string | null> {
+        await this.loadPlIdMapping();
+        return this.plIdToId!![id] ?? null;
     }
 
+    /**
+     * get the id of the playlist for this domain by internal id, or null if not stored
+     * @param id the internal id
+     */
+    async plIdForId(id: string): Promise<string | null> {
+        await this.loadPlIdMapping();
+        return this.idToPlId!![id] ?? null;
+    }
+
+    /**
+     * store a playlist-id of this domain and generate a new internal id for it
+     * @param id the playlist id
+     * @return the generated internal id
+     */
+    async storePlId(id: string): Promise<string> {
+        const existingId = await this.idForPlId(id);
+        if(existingId !== null)
+            return existingId;
+
+        const newId = generateUniqueId(Object.keys(this.idToPlId!!));
+        this.idToPlId!![newId] = id;
+        this.plIdToId!![id] = newId;
+
+        return newId;
+    }
+
+    /**
+     * deletes a playlist-id - internal-id mapping for this domain
+     * @param id the internal id
+     */
+    async deletePlId(id: string) {
+        const plId = await this.plIdForId(id);
+        if(plId === null)
+            return;
+
+        delete this.idToPlId!![id];
+        delete this.plIdToId!![plId];
+    }
+
+    private async loadPlIdMapping() {
+        if(this.idToPlId === null || this.plIdToId === null) {
+            this.idToPlId = {};
+            this.plIdToId = {};
+
+            if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING)) {
+                return;
+            }
+
+            const domain = location.hostname;
+            const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
+            for(const id of Object.keys(data)) {
+                const plId = data[id][domain];
+                if(plId != undefined) {
+                    this.idToPlId[id] = plId;
+                    this.plIdToId[plId] = id;
+                }
+            }
+        }
+    }
+
+    private async storePlIdMapping() {
+        if(this.idToPlId === null) {
+            if(this.plIdToId !== null)
+                throw new Error("PlaylistManager is in invalid state (expected both idToPlId and plIdToId to be not loaded)");
+
+            return;
+        }
+        if(this.plIdToId === null)
+            throw new Error("PlaylistManager is in invalid state (expected both idToPlId and plIdToId to be loaded)");
+
+        let data: StoredPlIds;
+        if(await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING)) {
+            data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
+        } else {
+            data = {};
+        }
+
+        const domain = location.hostname;
+        for(let id of Object.keys(this.idToPlId)) {
+            const plId = this.idToPlId[id];
+
+            if(data[id] != undefined) {
+                data[id][domain] = plId;
+            } else {
+                data[id] = { [domain] : plId };
+            }
+        }
+
+        await extensionDataSync.setEntry(STORAGE_KEY_PL_ID_MAPPING, data);
+    }
+    //endregion
+
+    //region playlist sync
+    private async indexPlaylists() {
+        if(!urlExtractor.isOnPlaylistsOverview())
+            return;
+
+        const {created, saved} = playlistController.findPlaylists();
+        for(let pl of [ ...created, ...saved ]) {
+            const id = await this.idForPlId(pl.plId);
+            if(id === null) {
+                await this.storePlId(pl.plId);
+            }
+        }
+    }
+    //endregion
+
+    //region sync subscribed playlists
     async sync() {
         if(!urlExtractor.isOnPlaylistsOverview())
             return;
@@ -132,6 +270,15 @@ export class PlaylistsManager {
      */
     async loadSubscribedPlaylists(): Promise<string[]> {
         return await extensionDataSync.getEntry(STORAGE_KEY_SUBSCRIBED_PLS);
+    }
+
+    private async setupHooks() {
+        // don't hook into created playlists
+        if(playlistController.isOnOwnPlaylistDetails())
+            return;
+
+        playlistController.addPlaylistSubscribeHook((id) => this.onPlSubscribed(id));
+        playlistController.addPlaylistUnsubscribeHook((id) => this.onPlUnsubscribed(id));
     }
 
     private async onPlSubscribed(plId: string) {

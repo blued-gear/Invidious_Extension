@@ -27,7 +27,7 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
             this.plElmsCache = this.scrapePlaylists();
         }
 
-        return this.plElmsCache
+        return this.plElmsCache;
     }
 
     isOnOwnPlaylistDetails(): boolean {

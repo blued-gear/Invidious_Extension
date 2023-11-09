@@ -39,7 +39,7 @@ async function runStartupHooks() {
     const results = await Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
         playerMgr.pickupState(),
-        playlistsMgr.setupHooks(),
+        playlistsMgr.init(),
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
         syncInvidiousData(),
         playlistsMgr.sync(),

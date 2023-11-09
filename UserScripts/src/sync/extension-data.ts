@@ -136,6 +136,10 @@ export class ExtensionDataSync {
         return Array.from(keys).filter(k => k.startsWith(prefix));
     }
 
+    async hasKey(key: string, includeUnsynced: boolean = true): Promise<boolean> {
+        return (await this.getKeys(key, includeUnsynced)).includes(key);
+    }
+
     /**
      * Tries to get the lastest copy from remote.
      * If this fails the lastest local version is returned.
