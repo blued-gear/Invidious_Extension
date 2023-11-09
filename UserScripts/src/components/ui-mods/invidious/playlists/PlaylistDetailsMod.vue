@@ -59,9 +59,10 @@ const selectedGroupsText = computed(() => Object.keys(groupSelection.value)
 function onSelectionChanged(newSelection: Record<string, boolean>) {
   const exec = async () => {
     const plId = urlExtractor.playlistId(undefined)!!;
+    const internalId = await internalPlId(plId);
     const selectedGroups = groups.value.filter((group) => newSelection[group.name]);
 
-    await playlistsMgr.setPlaylistGroups(plId, selectedGroups);
+    await playlistsMgr.setPlaylistGroups(internalId, selectedGroups);
 
     groupSelection.value = newSelection;
   }
@@ -72,12 +73,13 @@ function onSelectionChanged(newSelection: Record<string, boolean>) {
 function onNewGroup(name: string) {
   const exec = async () => {
     const plId = urlExtractor.playlistId(undefined)!!;
+    const internalId = await internalPlId(plId);
 
     const group = await playlistsMgr.addGroup(name);
-    if(!group.playlists.includes(plId)) {
+    if(!group.playlists.includes(internalId)) {
       // new group was created -> add Pl and reload list
       const selectedGroups = groups.value.filter((group) => groupSelection.value[group.name]);
-      await playlistsMgr.setPlaylistGroups(plId, [group, ...selectedGroups]);
+      await playlistsMgr.setPlaylistGroups(internalId, [group, ...selectedGroups]);
 
       loadGroups();
     } else {
@@ -94,10 +96,11 @@ function onNewGroup(name: string) {
 function loadGroups() {
   const exec = async () => {
     const plId = urlExtractor.playlistId(undefined)!!;
+    const internalId = await internalPlId(plId);
     groups.value = await playlistsMgr.loadGroups();
 
     groupSelection.value = arrayFold(groups.value, {} as Record<string, boolean>, (selection, group) => {
-      selection[group.name] = group.playlists.includes(plId);
+      selection[group.name] = group.playlists.includes(internalId);
       return selection;
     });
   }
@@ -119,6 +122,17 @@ function showError(err: Error, where: string, failedAction: string) {
 onBeforeMount(() => {
   loadGroups();
 });
+
+async function internalPlId(plId: string): Promise<string> {
+  const internalPlId = await playlistsMgr.idForPlId(plId);
+
+  if(internalPlId !== null)
+    return internalPlId;
+
+  const id = await playlistsMgr.storePlId(plId);
+  await playlistsMgr.saveChanges();
+  return id;
+}
 </script>
 
 <template>
