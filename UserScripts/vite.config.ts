@@ -67,7 +67,8 @@ export default defineConfig({
         metaFileName: true,
 
         externalGlobals: {
-          vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js'),
+          //vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js')
+          vue: cdn.jsdelivr('Vue', 'dist/vue.global.js')
         },
         externalResource: {
           'primeflex/primeflex.min.css': cdn.jsdelivr()
