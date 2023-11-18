@@ -11,6 +11,7 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.micronaut.core.type.Argument
+import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
@@ -68,10 +69,12 @@ class DownloadControllerTest(
                 extension.extension.isNullOrBlank() shouldBe false
 
                 http.exchange("/file?id=${jobId.id}", ByteArray::class.java).let { fileResp ->
-                    fileResp.header("content-disposition") shouldBe null
+                    fileResp.header(HttpHeaders.CONTENT_DISPOSITION) shouldBe null
 
                     val file = fileResp.body()
                     file.size shouldBeGreaterThan 1024
+
+                    fileResp.header(HttpHeaders.CONTENT_LENGTH) shouldBe file.size.toString()
                 }
             }
         }
@@ -102,10 +105,12 @@ class DownloadControllerTest(
 
                 val filename = "title\".mp3"
                 http.exchange("/file?id=${jobId.id}&filename=${URLEncoder.encode(filename, StandardCharsets.UTF_8)}", ByteArray::class.java).let { fileResp ->
-                    fileResp.header("content-disposition") shouldBe "attachment; filename=\"${filename.replace("\"", "%22")}\""
+                    fileResp.header(HttpHeaders.CONTENT_DISPOSITION) shouldBe "attachment; filename=\"${filename.replace("\"", "%22")}\""
 
                     val file = fileResp.body()
                     file.size shouldBeGreaterThan 1024
+
+                    fileResp.header(HttpHeaders.CONTENT_LENGTH) shouldBe file.size.toString()
                 }
             }
         }

@@ -6,6 +6,7 @@ import apps.chocolatecakecodes.invidious_ext.download.dto.DownloadRequestDto
 import apps.chocolatecakecodes.invidious_ext.download.dto.FileExtensionDto
 import apps.chocolatecakecodes.invidious_ext.download.service.DownloadService
 import io.micronaut.context.annotation.Value
+import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.MediaType
@@ -52,12 +53,14 @@ class DownloadController(
     @Secured(SecurityRule.IS_ANONYMOUS)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     fun downloadFile(@QueryValue id: String, @QueryValue filename: String?): HttpResponse<InputStream> {
-        val dataStream = downloadService.downloadFile(id)
+        val (dataStream, dataSize) = downloadService.downloadFile(id)
         return HttpResponse.ok(dataStream).apply {
+            this.header(HttpHeaders.CONTENT_LENGTH, dataSize.toString())
+
             if(filename != null) {
                 // see https://stackoverflow.com/a/13308094/8288367
                 val escapedFilename = filename.replace("\"", "%22")
-                this.header("content-disposition", "attachment; filename=\"${escapedFilename}\"")
+                this.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${escapedFilename}\"")
             }
         }
     }

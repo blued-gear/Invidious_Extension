@@ -89,7 +89,10 @@ class DownloadService(
         return job.resultedExtension
     }
 
-    fun downloadFile(id: String): InputStream {
+    /**
+     * @return Pair<data, file_size>
+     */
+    fun downloadFile(id: String): Pair<InputStream, Long> {
         val job = jobsLock.read {
             jobs[id]
         } ?: throw JobNotFoundException(id)
@@ -99,7 +102,10 @@ class DownloadService(
         if(job.lastProgress.state != DownloadJobState.DONE)
             throw JobFailedException(job.id)
 
-        return fileService.getContent(job.destFileId)
+        return Pair(
+            fileService.getContent(job.destFileId),
+            fileService.getContentSize(job.destFileId)
+        )
     }
 
     fun cancelDownload(id: String) {

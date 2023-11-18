@@ -63,6 +63,13 @@ class FileService(
         return Files.newInputStream(Path.of(entry.path))
     }
 
+    fun getContentSize(publicId: String): Long {
+        val entry = repo.findByPublicId(publicId).orElseThrow {
+            FileNotFoundException(publicId)
+        }
+        return Files.size(Path.of(entry.path))
+    }
+
     fun deleteFile(publicId: String) {
         val entry = repo.findByPublicId(publicId).orElseThrow {
             FileNotFoundException(publicId)
