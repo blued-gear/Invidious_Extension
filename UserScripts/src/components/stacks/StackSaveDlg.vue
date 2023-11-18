@@ -91,7 +91,7 @@ watch(dlgOpen, (showing) => {
     <div class="w-full max-w-30rem">
       <span class="p-float-label mt-5">
         <AutoComplete v-model="selectedName" :suggestions="existingNames" dropdown
-                      @keyup.enter="onSave" @complete="onQueryNames"
+                      @complete="onQueryNames"
                       input-id="stack_save_dlg-name" class="w-full"></AutoComplete>
         <label for="stack_save_dlg-name">Stack Name</label>
       </span>
