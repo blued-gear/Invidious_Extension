@@ -178,7 +178,7 @@ onBeforeMount(() => {
          class="fixed bottom-0 left-0 ml-1 w-fit h-fit"
          @click.stop="onIndicatorClick">
       <VeProgress :progress="indicatorProgress" :color="indicatorColor"
-                  :hideLegend="false" :legend="true" size="50"
+                  :hideLegend="false" :legend="true" :size="50"
                   class="cursor-pointer">
         <template #default>
           <span class="pi pi-download"></span>
