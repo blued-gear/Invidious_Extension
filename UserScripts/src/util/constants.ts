@@ -10,7 +10,7 @@ export const SERVER_SYNC_URL = SERVER_BASE_URL + "/sync/extension";
 export const SERVER_SYNC_INVIDIOUS_URL = SERVER_BASE_URL + "/sync/invidious";
 export const SERVER_DOWNLOAD_URL = SERVER_BASE_URL + "/download";
 
-export const PIPED_HOST = "https://api.piped.yt";
+export const PIPED_HOST = "https://pipedapi-libre.kavin.rocks";
 
 export const STR_ENCODER = new TextEncoder();
 export const STR_DECODER = new TextDecoder();
