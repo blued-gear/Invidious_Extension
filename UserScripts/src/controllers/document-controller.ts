@@ -1,9 +1,12 @@
 import {isInvidious} from "./platform-detection";
 import InvidiousDocumentControllerImpl from "./invidious/document-controller";
 
+export const ADDED_ELM_MARKER_ATTR = "inv_ext-0elm";
+
 export interface DocumentController {
     getOrCreateElmForMainMenu(): HTMLElement
     getOrCreateElmForDownloadIndicator(): HTMLElement
+    createGeneralElement(tagName: string, id?: string): HTMLElement
 
     hasPlatformLogin(): boolean
 }

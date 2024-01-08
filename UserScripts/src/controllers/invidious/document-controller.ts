@@ -1,4 +1,4 @@
-import {DocumentController} from "../document-controller";
+import {ADDED_ELM_MARKER_ATTR, DocumentController} from "../document-controller";
 
 export default class InvidiousDocumentControllerImpl implements DocumentController {
 
@@ -9,8 +9,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
         if(elm != null)
             return elm;
 
-        elm = document.createElement('div');
-        elm.id = elmId;
+        elm = this.createGeneralElement('duv', elmId);
 
         let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
         if(anchor == null)
@@ -28,8 +27,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
         if(elm != null)
             return elm;
 
-        elm = document.createElement('div');
-        elm.id = elmId;
+        elm = this.createGeneralElement('duv', elmId);
 
         let anchor = document.querySelector('html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
         if(anchor == null)
@@ -39,6 +37,13 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
 
         anchor.insertAdjacentElement('beforebegin', elm);
 
+        return elm;
+    }
+
+    createGeneralElement(tagName: string, id?: string): HTMLElement {
+        const elm = document.createElement(tagName);
+        elm.id = id ?? '';
+        elm.dataset[ADDED_ELM_MARKER_ATTR] = '1';
         return elm;
     }
 

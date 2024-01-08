@@ -10,6 +10,7 @@ import AssertionError from "../../../util/AssertionError";
 import sharedStates from "../../../util/shared-states";
 import {HttpResponseException} from "../../../util/fetch-utils";
 import {StatusCodes} from "http-status-codes";
+import documentController from "../../../controllers/document-controller";
 
 const toast = useToast();
 
@@ -19,8 +20,7 @@ const uiTarget = (() => {
   if(elm != null)
     return elm;
 
-  elm = document.createElement('div');
-  elm.id = targetElmId;
+  elm = documentController.createGeneralElement('div', targetElmId);
 
   let anchor = document.querySelector('html body div.pure-g div#contents div.h-box form.pure-form.pure-form-aligned');
   if(anchor == null)

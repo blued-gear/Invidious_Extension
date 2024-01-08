@@ -2,6 +2,7 @@ import {PIPED_HOST} from "../../util/constants";
 import urlExtractor from "../url-extractor";
 import {elementListToArray, nodeListToArray} from "../../util/utils";
 import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlist-controller";
+import documentController, {ADDED_ELM_MARKER_ATTR} from "../document-controller";
 
 /**
  * runs misc enhancement for the general Invidious UI
@@ -34,7 +35,9 @@ class InvidiousEnhancer {
     //region add video upload_date
     private async addUploadDateToVideoItemsOnPlay() {
         const runners = nodeListToArray(document.querySelectorAll('html body div.pure-g div#contents div.pure-g div.pure-u-1.pure-u-lg-1-5 div.h-box div.pure-u-1'))
-            .map(async (elm) => {
+            .filter((elm) => {
+                return (elm as HTMLElement).dataset[ADDED_ELM_MARKER_ATTR] === undefined;
+            }).map(async (elm) => {
                 try {
                     await this.addUploadDateToVideoItem(elm as HTMLElement);
                 } catch (e) {
@@ -47,7 +50,9 @@ class InvidiousEnhancer {
 
     private async addUploadDateToVideoItemsOnPlaylist() {
         const runners = nodeListToArray(document.querySelectorAll('html body div.pure-g div#contents div.pure-g div.pure-u-1 div.h-box'))
-            .map(async (elm) => {
+            .filter((elm) => {
+                return (elm as HTMLElement).dataset[ADDED_ELM_MARKER_ATTR] === undefined;
+            }).map(async (elm) => {
                 try {
                     await this.addUploadDateToVideoItem(elm as HTMLElement);
                 } catch (e) {
@@ -68,10 +73,10 @@ class InvidiousEnhancer {
         if(uploadDate == null || uploadDate.length === 0)
             return;
 
-        const innerDiv = document.createElement('div');
+        const innerDiv = documentController.createGeneralElement('div');
         innerDiv.classList.add('video-data');
         innerDiv.textContent = `Shared on ${uploadDate}`;
-        const outerDiv = document.createElement('div');
+        const outerDiv = documentController.createGeneralElement('div');
         outerDiv.classList.add('video-card-row');
         outerDiv.appendChild(innerDiv);
 
@@ -96,6 +101,8 @@ class InvidiousEnhancer {
         const runners = elementListToArray(document.getElementsByTagName('img'))
             .map((elm) => {
                 return elm as HTMLImageElement;
+            }).filter((elm) => {
+                return elm.dataset[ADDED_ELM_MARKER_ATTR] === undefined;
             }).filter((img) => {
                 return img.src.endsWith('/vi/-----------/mqdefault.jpg');
             }).map((img) => {

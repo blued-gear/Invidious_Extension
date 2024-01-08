@@ -11,6 +11,7 @@ import {elementListToArray, logException} from "../../util/utils";
 import urlExtractor from "../url-extractor";
 import InvidiousUrlExtractorImpl from "./url-extractor";
 import ProgressController, {ProgressState} from "../../util/progress-controller";
+import {ADDED_ELM_MARKER_ATTR} from "../document-controller";
 
 interface PlaylistItem {
     vidId: string,
@@ -341,7 +342,9 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
             .filter(elm => elm.firstElementChild != null && elm.firstElementChild.tagName.toLowerCase() === 'span');
 
         const createdPlHeading = sectionHeadings[0];
-        const createdPlContainerSupposed = createdPlHeading.parentElement!!.parentElement!!.nextElementSibling!! as HTMLElement;
+        let createdPlContainerSupposed = createdPlHeading.parentElement!!.parentElement!!.nextElementSibling!! as HTMLElement;
+        if(createdPlContainerSupposed.dataset[ADDED_ELM_MARKER_ATTR] !== undefined)
+            createdPlContainerSupposed = createdPlContainerSupposed.nextElementSibling as HTMLElement;
         let createdPlContainer: HTMLElement | undefined;
         if(createdPlContainerSupposed.classList.length === 1 && createdPlContainerSupposed.classList.contains('pure-g'))
             createdPlContainer = createdPlContainerSupposed;
@@ -349,7 +352,9 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
             createdPlContainer = undefined;
 
         const savedPlHeading = sectionHeadings[1];
-        const savedPlContainerSupposed = savedPlHeading.parentElement!!.parentElement!!.nextElementSibling!! as HTMLElement;
+        let savedPlContainerSupposed = savedPlHeading.parentElement!!.parentElement!!.nextElementSibling!! as HTMLElement;
+        if(savedPlContainerSupposed.dataset[ADDED_ELM_MARKER_ATTR] !== undefined)
+            savedPlContainerSupposed = savedPlContainerSupposed.nextElementSibling as HTMLElement;
         let savedPlContainer: HTMLElement | undefined;
         if(savedPlContainerSupposed.classList.length === 1 && savedPlContainerSupposed.classList.contains('pure-g'))
             savedPlContainer = savedPlContainerSupposed;
@@ -617,7 +622,9 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
 
     private scrapePlaylistItems(doc: Document): PlaylistItem[] {
         const delButtons = elementListToArray(doc.querySelectorAll('html body div.pure-g div#contents div.pure-g div.pure-u-1 div.h-box div.thumbnail div.top-left-overlay form button.pure-button.pure-button-secondary.low-profile'));
-        return delButtons.map((btn) => {
+        return delButtons.filter((elm) => {
+            return (elm as HTMLElement).dataset[ADDED_ELM_MARKER_ATTR] === undefined;
+        }).map((btn) => {
             const btnElm = btn as HTMLElement;
             const plVidId = btnElm.dataset['index'];
             if(plVidId == null)

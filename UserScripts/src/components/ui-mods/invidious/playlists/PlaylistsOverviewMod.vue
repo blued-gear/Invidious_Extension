@@ -9,6 +9,7 @@ import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import playlistController, {Playlists, PlaylistUiElm} from "../../../../controllers/playlist-controller";
 import invidiousEnhancer from "../../../../controllers/invidious/enhancer";
+import documentController from "../../../../controllers/document-controller";
 
 interface PlGroup {
   group: PlaylistsGroup,
@@ -29,8 +30,7 @@ function attachUiAnchor() {
   if(elm != null)
     return elm;
 
-  elm = document.createElement('div');
-  elm.id = targetElmId;
+  elm = documentController.createGeneralElement('div', targetElmId);
 
   let anchor = document.querySelector('html body div.w-full div#contents div.h-box div h3')?.parentElement?.parentElement;
   if(anchor == null)

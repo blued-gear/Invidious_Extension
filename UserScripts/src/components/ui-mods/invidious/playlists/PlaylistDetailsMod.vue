@@ -10,6 +10,7 @@ import PlaylistsGroup from "../../../../model/PlaylistsGroup";
 import {arrayFold} from "../../../../util/array-utils";
 import {logException, nodeListToArray} from "../../../../util/utils";
 import urlExtractor from "../../../../controllers/url-extractor";
+import documentController from "../../../../controllers/document-controller";
 
 const targetElmId = "invExt-playlistDetailsMod";
 const uiTarget = (() => {
@@ -17,8 +18,7 @@ const uiTarget = (() => {
   if(elm != null)
     return elm;
 
-  elm = document.createElement('div');
-  elm.id = targetElmId;
+  elm = documentController.createGeneralElement('div', targetElmId);
   elm.style.display = 'inline-block';
 
   let anchor = document.querySelector('html body div.pure-g div#contents div.h-box div.pure-u-1-1');
