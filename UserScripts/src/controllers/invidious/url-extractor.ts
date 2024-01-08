@@ -58,12 +58,7 @@ export default class InvidiousUrlExtractorImpl implements UrlExtractor {
                 return null;
         }
 
-        const qmIdx = path.indexOf('?');
-        if(qmIdx === -1)
-            return null;
-        const query = path.substring(qmIdx + 1);
-
-        return new URLSearchParams(query).get('list');
+        return this.parseQueryParams(path).get('list');
     }
 
     playlistIndex(): number | null {
@@ -88,7 +83,7 @@ export default class InvidiousUrlExtractorImpl implements UrlExtractor {
             path = location.search;
         }
 
-        return new URLSearchParams(path).get('v');
+        return this.parseQueryParams(path).get('v');
     }
 
     //region special
@@ -98,6 +93,16 @@ export default class InvidiousUrlExtractorImpl implements UrlExtractor {
 
     isOnExportPage() {
         return location.pathname === '/data_control';
+    }
+    //endregion
+
+    //region helpers
+    private parseQueryParams(path: string): URLSearchParams {
+        const qmIdx = path.indexOf('?');
+        if(qmIdx !== -1)
+            path = path.substring(qmIdx + 1);
+
+        return new URLSearchParams(path);
     }
     //endregion
 }

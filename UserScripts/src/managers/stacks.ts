@@ -19,7 +19,7 @@ export const STORAGE_KEY_STACKS_PREFIX = "stacks::";
 const STORAGE_KEY_ACTIVE_STACK = STORAGE_PREFIX + "stack::active";
 const STORAGE_KEY_CURRENT_STACK = STORAGE_PREFIX + "stack::watch_stack";
 
-export class StackManager {
+export class StackManager {//TODO use internal IDs for playlists
 
     private static _INSTANCE = new StackManager();
     static get INSTANCE() {

@@ -7,6 +7,7 @@ import {MenuItem} from "primevue/menuitem";
 
 import StackEditDlg from "../stacks/StackEditDlg.vue";
 import StackSaveDlg from "../stacks/StackSaveDlg.vue";
+import PlaylistSyncDlg from "../playlists/PlaylistSyncDlg.vue";
 import LoginDlg from "../login/LoginDlg.vue";
 import DownloadDlg from "../download/DownloadDlg.vue";
 import InfoDlg from "../misc/InfoDlg.vue";
@@ -20,6 +21,7 @@ import mnuStacks, {
 import mnuChannel, {updateMenu as updateChannelMenu} from "./entries/channel";
 import mnuLogin, {loginDlgOpen, updateMenu as updateLoginMenu} from "./entries/login";
 import mnuDownload from "./entries/download";
+import mnuPlaylists, {playlistSyncDlgOpen, updateMenu as updatePlaylistsMenu} from "./entries/playlists";
 import mnuOther, {infoDlgOpen, updateMenu as updateOtherMenu} from "./entries/other";
 import DocumentController from "../../controllers/document-controller";
 
@@ -33,6 +35,7 @@ const vidMnuContent = computed<MenuItem[]>(() => [
     ...mnuDownload({ downloadDlgRef: downloadDlgRef }),
     ...mnuStacks(),
     ...mnuChannel(),
+    ...mnuPlaylists(),
     ...mnuLogin(),
     ...mnuOther()
 ]);
@@ -40,6 +43,7 @@ const vidMnuContent = computed<MenuItem[]>(() => [
 function onMenuOpen() {
   updateStacksMenu();
   updateChannelMenu();
+  updatePlaylistsMenu();
   updateLoginMenu();
   updateOtherMenu();
 }
@@ -54,6 +58,7 @@ function onMenuOpen() {
 
   <StackEditDlg v-model="stackEditorDlgOpen" :stack-id="stackToEditId"></StackEditDlg>
   <StackSaveDlg v-model="stackSaveDlgOpen"></StackSaveDlg>
+  <PlaylistSyncDlg v-model="playlistSyncDlgOpen"></PlaylistSyncDlg>
   <LoginDlg v-model="loginDlgOpen"></LoginDlg>
   <DownloadDlg ref="downloadDlgRef"></DownloadDlg>
   <InfoDlg v-model="infoDlgOpen"></InfoDlg>

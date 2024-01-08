@@ -62,6 +62,8 @@ export class InvidiousDataSync {
     }
 
     async sync(withExport: boolean): Promise<SyncResult> {
+        return SyncResult.NONE;//TODO remove saved playlists from data
+
         if(!this.hasLogin())
             throw new Error("this function needs login");
 
