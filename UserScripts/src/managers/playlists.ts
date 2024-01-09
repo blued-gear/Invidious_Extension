@@ -194,6 +194,28 @@ export class PlaylistsManager {
     }
 
     /**
+     * get the internal id for the playlist-id of this domain or any other domain, or null if not stored
+     * @param plId the playlist id
+     */
+    private async idForPlIdForeign(plId: string): Promise<string | null> {
+        const forLocal = await this.idForPlId(plId);
+        if(forLocal !== null)
+            return forLocal;
+
+        if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING))
+            return null;
+
+        const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
+        for(const id of Object.keys(data)) {
+            const domains = data[id];
+            if(Object.values(domains).includes(plId))
+                return id;
+        }
+
+        return null;
+    }
+
+    /**
      * deletes a playlist-id - internal-id mapping for this domain
      * @param id the internal id
      */
@@ -652,6 +674,12 @@ export class PlaylistsManager {
 
             for(let pl of toAdd) {
                 await playlistController.subscribeToPlaylist(pl);
+
+                const internalId = await this.idForPlIdForeign(pl);
+                if(internalId !== null)
+                    this.storeKnownPlId(internalId, pl)
+                else
+                    await this.storePlId(pl);
             }
 
             changed = true;
@@ -663,12 +691,18 @@ export class PlaylistsManager {
 
             for(let pl of toDel) {
                 await playlistController.unsubscribeFromPlaylist(pl);
+
+                const internalId = await this.idForPlId(pl);
+                if(internalId !== null)
+                    await this.deletePlId(internalId);
             }
 
             changed = true;
         }
 
         if(changed) {
+            await this.saveChanges();
+
             toast.add({
                 summary: "Playlist were updated",
                 detail: "The subscribed playlists were updated by sync.\nTo see the changes, please reload the page.",
