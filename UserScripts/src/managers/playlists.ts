@@ -323,14 +323,8 @@ export class PlaylistsManager {
                     const lastSyncTime = await this.getCreatedPlsSyncTime();
                     if (lastSyncTime < storedData.time) {
                         await this.syncCreatedPlsFromRemote(storedData, prog);
-                    } else if(lastSyncTime > storedData.time) {
-                        await this.syncCreatedPlsToRemote(prog);
                     } else {
-                        prog.setProgress(1.0);
-                        prog.setState(ProgressState.FINISHED);
-                        prog.setMessage("skip: nothing to do");
-                        prog.done(true);
-                        return;
+                        await this.syncCreatedPlsToRemote(prog);
                     }
                 }
             } else {
