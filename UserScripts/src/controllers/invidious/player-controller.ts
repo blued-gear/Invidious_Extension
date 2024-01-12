@@ -9,6 +9,7 @@ import {
 } from "../../model/stacks/stack-item";
 import urlExtractor from "../url-extractor";
 import {nodeListToArray} from "../../util/utils";
+import {ADDED_ELM_MARKER_ATTR} from "../document-controller";
 
 export default class InvidiousPlayerControllerImpl implements PlayerController {
 
@@ -136,6 +137,58 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
                 && node.textContent != null
                 && node.textContent.trim().length > 0
         })?.textContent?.trim() ?? null;
+    }
+
+    getPrevPlaylistLink(): string | null {
+        if(!urlExtractor.isPlayingPlaylist())
+            return null;
+
+        const currentVidId = urlExtractor.videoId(undefined);
+        if(currentVidId === null)
+            return null;
+
+        const currentPlItemElm = document.getElementById(currentVidId);
+        if(currentPlItemElm === null) {
+            console.warn("unable to find current playlist element, even if on PL");
+            return null;
+        }
+
+        const prevPlItemPlm = currentPlItemElm.previousElementSibling;
+        if(prevPlItemPlm === null)
+            return null;
+
+        let link = prevPlItemPlm.firstElementChild as HTMLElement;
+        while(link !== null && link.dataset[ADDED_ELM_MARKER_ATTR] !== undefined) {
+            link = link.nextElementSibling as HTMLElement;
+        }
+
+        return (link as HTMLAnchorElement).href;
+    }
+
+    getNextPlaylistLink(): string | null {
+        if(!urlExtractor.isPlayingPlaylist())
+            return null;
+
+        const currentVidId = urlExtractor.videoId(undefined);
+        if(currentVidId === null)
+            return null;
+
+        const currentPlItemElm = document.getElementById(currentVidId);
+        if(currentPlItemElm === null) {
+            console.warn("unable to find current playlist element, even if on PL");
+            return null;
+        }
+
+        const prevPlItemPlm = currentPlItemElm.nextElementSibling;
+        if(prevPlItemPlm === null)
+            return null;
+
+        let link = prevPlItemPlm.firstElementChild as HTMLElement;
+        while(link !== null && link.dataset[ADDED_ELM_MARKER_ATTR] !== undefined) {
+            link = link.nextElementSibling as HTMLElement;
+        }
+
+        return (link as HTMLAnchorElement).href;
     }
 
     async openVideo(id: string, time: number | null): Promise<boolean> {

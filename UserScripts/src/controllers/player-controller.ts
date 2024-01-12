@@ -36,6 +36,9 @@ export interface PlayerController {
     getTimeCurrent(): number | null
     getPublisher(): PublisherInfo | null
     getPlaylistName(): PlaylistName | null
+
+    getPrevPlaylistLink(): string | null
+    getNextPlaylistLink(): string | null
     //endregion
 
     //region player controls

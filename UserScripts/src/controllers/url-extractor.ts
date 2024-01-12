@@ -4,6 +4,7 @@ import InvidiousUrlExtractorImpl from "./invidious/url-extractor";
 export interface UrlExtractor {
     isOnPlayer(): boolean
     videoId(path: string | undefined): string | null
+    isListenMode(path: string | undefined): boolean
 
     isPlayingPlaylist(): boolean
     playlistIndex(): number | null

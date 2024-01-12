@@ -5,7 +5,7 @@ import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlist-controller";
 import documentController, {ADDED_ELM_MARKER_ATTR} from "../document-controller";
 
 /**
- * runs misc enhancement for the general Invidious UI
+ * runs misc enhancements for the general Invidious UI
  */
 class InvidiousEnhancer {
 

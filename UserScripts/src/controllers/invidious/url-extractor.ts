@@ -86,6 +86,17 @@ export default class InvidiousUrlExtractorImpl implements UrlExtractor {
         return this.parseQueryParams(path).get('v');
     }
 
+    isListenMode(path: string | undefined): boolean {
+        if(path === undefined) {
+            if(!this.isOnPlayer())
+                return false;
+
+            path = location.search;
+        }
+
+        return this.parseQueryParams(path).get('listen') === '1';
+    }
+
     //region special
     isOnPlaylistUnsubscribe(): boolean {
         return location.pathname === '/delete_playlist';

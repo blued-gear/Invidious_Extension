@@ -3,8 +3,10 @@ import stackMgr from './stacks';
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
+import {unsafeWindow} from "../monkey";
 
 const STORAGE_KEY_STATE = STORAGE_PREFIX + "player::state";
+const STORAGE_KEY_REVERSE_PLAYLIST = STORAGE_PREFIX + "player::reversePlaylist";
 
 enum OpeningPhase {
     NONE,
@@ -33,11 +35,17 @@ export class PlayerManager {
     }
 
     private state: PlayerState = defaultPlayerState();
+    private reversePlaylist: boolean = false;
+    private reversePlaylistNavigationCount: number = 0;
+    private readonly reversePlaylistNavigationHandler: () => void;
 
-    private constructor() {}
+    private constructor() {
+        this.reversePlaylistNavigationHandler = () => this.handleReversePlaylistNavigation();
+    }
 
     async pickupState() {
         this.state = this.loadState();
+        this.setReversePlaylist(this.loadReversePlaylist());
 
         if(!this.state.active)
             return;
@@ -45,6 +53,9 @@ export class PlayerManager {
         if(!urlExtractor.isOnPlayer()) {
             this.state.active = false;
             this.saveState();
+
+            this.setReversePlaylist(false);
+
             return;
         }
 
@@ -129,6 +140,21 @@ export class PlayerManager {
         this.saveState();
     }
 
+    setReversePlaylist(reverse: boolean) {
+        this.reversePlaylist = reverse;
+        sessionStorage.setItem(STORAGE_KEY_REVERSE_PLAYLIST, JSON.stringify(reverse));
+
+        if(reverse) {
+            unsafeWindow.addEventListener('beforeunload', this.reversePlaylistNavigationHandler);
+        } else {
+            unsafeWindow.removeEventListener('beforeunload', this.reversePlaylistNavigationHandler);
+        }
+    }
+
+    isReversePlaylist(): boolean {
+        return this.reversePlaylist;
+    }
+
     private async stateContOpenStack() {
         await this.openActiveStack();
     }
@@ -155,6 +181,37 @@ export class PlayerManager {
 
     private saveState() {
         sessionStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(this.state));
+    }
+
+    private loadReversePlaylist(): boolean {
+        const storedData = sessionStorage.getItem(STORAGE_KEY_REVERSE_PLAYLIST);
+        return storedData != null ? JSON.parse(storedData) : false;
+    }
+
+    private handleReversePlaylistNavigation() {
+        if(!this.reversePlaylist) return;
+
+        const time = playerController.getTimeCurrent();
+        if(time === null || time === 0) return;
+        const length = playerController.getTimeTotal();
+        if(length === null || length === 0) return;
+
+        if((length - time) > 1) return;
+
+        let prevItemLink = playerController.getPrevPlaylistLink();
+        if(prevItemLink === null)
+            return;
+
+        // if listen-mode is active set param to target-url
+        if(urlExtractor.isListenMode(undefined)) {
+            prevItemLink = prevItemLink.replace('&listen=0', '');
+            prevItemLink += '&listen=1';
+        }
+
+        if(this.reversePlaylistNavigationCount++ >= 5) return;
+
+        location.assign(prevItemLink);
+        setTimeout(() => { location.assign(prevItemLink!!); }, 0);
     }
 }
 
