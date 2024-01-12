@@ -3,7 +3,7 @@ import stackMgr from './stacks';
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
-import {unsafeWindow} from "../monkey";
+import locationController, {NavigationInterceptor} from "../controllers/location-controller";
 
 const STORAGE_KEY_STATE = STORAGE_PREFIX + "player::state";
 const STORAGE_KEY_REVERSE_PLAYLIST = STORAGE_PREFIX + "player::reversePlaylist";
@@ -36,11 +36,10 @@ export class PlayerManager {
 
     private state: PlayerState = defaultPlayerState();
     private reversePlaylist: boolean = false;
-    private reversePlaylistNavigationCount: number = 0;
-    private readonly reversePlaylistNavigationHandler: () => void;
+    private readonly reversePlaylistInterceptor: NavigationInterceptor;
 
-    private constructor() {
-        this.reversePlaylistNavigationHandler = () => this.handleReversePlaylistNavigation();
+    constructor() {
+        this.reversePlaylistInterceptor = () => this.handleReversePlaylistNavigation();
     }
 
     async pickupState() {
@@ -145,9 +144,9 @@ export class PlayerManager {
         sessionStorage.setItem(STORAGE_KEY_REVERSE_PLAYLIST, JSON.stringify(reverse));
 
         if(reverse) {
-            unsafeWindow.addEventListener('beforeunload', this.reversePlaylistNavigationHandler);
+            locationController.interceptNavigation(this.reversePlaylistInterceptor);
         } else {
-            unsafeWindow.removeEventListener('beforeunload', this.reversePlaylistNavigationHandler);
+            locationController.removeNavigationInterceptor(this.reversePlaylistInterceptor);
         }
     }
 
@@ -188,19 +187,18 @@ export class PlayerManager {
         return storedData != null ? JSON.parse(storedData) : false;
     }
 
-    private handleReversePlaylistNavigation() {
-        if(!this.reversePlaylist) return;
+    private handleReversePlaylistNavigation(): string | null {
+        if(!this.reversePlaylist) return null;
 
         const time = playerController.getTimeCurrent();
-        if(time === null || time === 0) return;
+        if(time === null || time === 0) return null;
         const length = playerController.getTimeTotal();
-        if(length === null || length === 0) return;
+        if(length === null || length === 0) return null;
 
-        if((length - time) > 1) return;
+        if((length - time) > 1) return null;
 
         let prevItemLink = playerController.getPrevPlaylistLink();
-        if(prevItemLink === null)
-            return;
+        if(prevItemLink === null) return null;
 
         // if listen-mode is active set param to target-url
         if(urlExtractor.isListenMode(undefined)) {
@@ -208,10 +206,7 @@ export class PlayerManager {
             prevItemLink += '&listen=1';
         }
 
-        if(this.reversePlaylistNavigationCount++ >= 5) return;
-
-        location.assign(prevItemLink);
-        setTimeout(() => { location.assign(prevItemLink!!); }, 0);
+        return prevItemLink;
     }
 }
 
