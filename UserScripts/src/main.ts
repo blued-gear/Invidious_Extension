@@ -12,7 +12,7 @@ import 'primeflex/primeflex.min.css';
 
 import {GM_addElement} from "./monkey";
 
-import './style.css';
+import './style.scss';
 import App from './App.vue';
 
 import stackMgr from './managers/stacks';

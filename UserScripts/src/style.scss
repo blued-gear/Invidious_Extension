@@ -1,3 +1,7 @@
+@import 'primevue/resources/themes/saga-blue/theme';
+@import 'primeicons/primeicons';
+@import 'primeflex/primeflex';
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -78,4 +82,32 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+.menuItem-checkbox::before {
+  @extend .border-1;
+  @extend .border-primary;
+  @extend .border-solid;
+  @extend .border-round;
+  @extend .pi;
+
+  position: absolute;
+  top: 25%;
+  display: inline-grid;
+  align-items: center;
+  text-align: center;
+  width: max-content;
+  height: max-content;
+  margin-left: 0.5rem;
+}
+.menuItem-checkbox > .p-menuitem-content {
+  margin-left: 1rem;
+}
+.menuItem-checkbox.menuItem-checkbox-checked::before {
+  @extend .bg-primary;
+  @extend .pi-check;
+}
+.menuItem-checkbox.menuItem-checkbox-unchecked::before {
+  @extend .bg-primary-reverse;
+  @extend .pi-stop;
 }
