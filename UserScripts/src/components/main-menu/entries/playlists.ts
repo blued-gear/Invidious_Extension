@@ -12,7 +12,7 @@ export function updateMenu() {}
 
 export default () => <MenuItem[]>[
     {
-        label: "Sync playlists",
+        label: "Sync Playlists",
         command: () => openSyncDlg(),
         visible: () => urlExtractor.isOnPlaylistsOverview()
     }

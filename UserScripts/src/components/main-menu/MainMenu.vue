@@ -22,6 +22,7 @@ import mnuChannel, {updateMenu as updateChannelMenu} from "./entries/channel";
 import mnuLogin, {loginDlgOpen, updateMenu as updateLoginMenu} from "./entries/login";
 import mnuDownload from "./entries/download";
 import mnuPlaylists, {playlistSyncDlgOpen, updateMenu as updatePlaylistsMenu} from "./entries/playlists";
+import mnuPlayer, {updateMenu as updatePlayerMenu} from "./entries/player";
 import mnuOther, {infoDlgOpen, updateMenu as updateOtherMenu} from "./entries/other";
 import DocumentController from "../../controllers/document-controller";
 
@@ -36,6 +37,7 @@ const vidMnuContent = computed<MenuItem[]>(() => [
     ...mnuStacks(),
     ...mnuChannel(),
     ...mnuPlaylists(),
+    ...mnuPlayer(),
     ...mnuLogin(),
     ...mnuOther()
 ]);
@@ -44,6 +46,7 @@ function onMenuOpen() {
   updateStacksMenu();
   updateChannelMenu();
   updatePlaylistsMenu();
+  updatePlayerMenu();
   updateLoginMenu();
   updateOtherMenu();
 }
