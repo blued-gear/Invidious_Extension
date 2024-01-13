@@ -64,7 +64,7 @@ defineExpose({
 <div>
   <ProgressBar :value="effectiveProgress" :mode="mode"
                :pt="{ value: {style: {background: color}} }"></ProgressBar>
-  <div v-show="controller.msg != null">{{controller.msg}}</div>
+  <div v-show="controller.msg != null" style="white-space: pre-wrap;">{{controller.msg}}</div>
 
   <div v-show="controller.children.length !== 0" class="pt-1 pl-2 border-solid border-1 surface-border w-full">
     <MultiProgress v-for="(ctrl, idx) of controller.children" :key="idx" :controller="ctrl"
