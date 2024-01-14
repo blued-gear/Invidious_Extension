@@ -62,8 +62,6 @@ export class InvidiousDataSync {
     }
 
     async sync(withExport: boolean): Promise<SyncResult> {
-        return SyncResult.NONE;//TODO remove saved playlists from data
-
         if(!this.hasLogin())
             throw new Error("this function needs login");
 
@@ -249,7 +247,17 @@ export default invidiousDataSyncInstance;
 
 async function downloadData(): Promise<string> {
     const resp = await fetch(`${location.origin}/subscription_manager?action_takeout=1&format=json`);
-    return await resp.text();
+    const data = await resp.text();
+
+    // exclude preferences handled by other sync-features
+    const excludedProps: string [] = [
+        'playlists'
+    ];
+
+    const json = JSON.parse(data);
+    excludedProps.forEach(prop => deleteProp(prop, json));
+
+    return JSON.stringify(json);
 }
 
 async function uploadData(data: string) {
