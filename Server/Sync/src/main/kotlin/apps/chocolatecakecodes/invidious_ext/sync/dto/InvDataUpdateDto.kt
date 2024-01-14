@@ -7,5 +7,6 @@ data class InvDataUpdateDto(
     /** unix-time ms */
     val expectedLastSync: Long,
     val hash: String,
+    val force: Boolean,
     val data: String
 )

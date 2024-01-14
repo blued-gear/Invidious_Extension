@@ -81,7 +81,7 @@ export class InvidiousDataSync {
             if(localFingerprint !== remoteTime.hash) {
                 console.debug("InvidiousDataSync::sync: exportData (after fingerprint check)");
 
-                const remoteTime = await this.sendData(data, localFingerprint);
+                const remoteTime = await this.sendData(data, false, localFingerprint);
                 await this.setLastSynctime(remoteTime);
                 return SyncResult.EXPORTED;
             } else {
@@ -94,12 +94,12 @@ export class InvidiousDataSync {
         }
     }
 
-    async exportData(): Promise<SyncResult> {
+    async exportData(force: boolean = false): Promise<SyncResult> {
         if(!this.hasLogin())
             throw new Error("this function needs login");
 
         const data = await downloadData();
-        const remoteTime = await this.sendData(data);
+        const remoteTime = await this.sendData(data, force);
 
         await this.setLastSynctime(remoteTime);
 
@@ -165,7 +165,7 @@ export class InvidiousDataSync {
         return STR_DECODER.decode(decryptedData);
     }
 
-    private async sendData(data: string, fingerprint: string | undefined = undefined): Promise<number> {
+    private async sendData(data: string, force: boolean, fingerprint: string | undefined = undefined): Promise<number> {
         const encryptedDataStr = await this.encryptData(data);
         const lastSyncTime = await this.getLastSynctime();
 
@@ -175,6 +175,7 @@ export class InvidiousDataSync {
         const payload: InvDataUpdateDto = {
             expectedLastSync: lastSyncTime,
             hash: fingerprint,
+            force: force,
             data: encryptedDataStr
         };
 

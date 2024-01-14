@@ -3,6 +3,8 @@ import {computed, onBeforeMount, ref, Teleport} from "vue";
 import Button from "primevue/button";
 import Checkbox from 'primevue/checkbox';
 import ProgressSpinner from "primevue/progressspinner";
+import Toast from "primevue/toast";
+import TimesCircleIcon from "primevue/icons/timescircle";
 import {useToast} from "primevue/usetoast";
 import invidiousDataSync, {SyncResult} from "../../../sync/invidious-data";
 import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../../util/constants";
@@ -11,6 +13,7 @@ import sharedStates from "../../../util/shared-states";
 import {HttpResponseException} from "../../../util/fetch-utils";
 import {StatusCodes} from "http-status-codes";
 import documentController from "../../../controllers/document-controller";
+import {logException} from "../../../util/utils";
 
 const toast = useToast();
 
@@ -66,7 +69,7 @@ function onImport() {
   };
 
   exec().catch(err => {
-    console.error("error while importing Invidious-settings", err);
+    logException(err, "error while importing Invidious-settings");
 
     toast.add({
       summary: "Error while importing",
@@ -79,11 +82,11 @@ function onImport() {
   });
 }
 
-function onExport() {
+function onExport(force: boolean) {
   syncRunning.value = true;
 
   const exec = async () => {
-    const res = await invidiousDataSync.exportData();
+    const res = await invidiousDataSync.exportData(force);
     switch(res) {
       case SyncResult.EXPORTED:
         toast.add({
@@ -109,10 +112,11 @@ function onExport() {
   };
 
   exec().catch(err => {
-    console.error("error while exporting Invidious-settings", err);
+    logException(err, "error while exporting Invidious-settings");
 
     if(err instanceof HttpResponseException && (err as HttpResponseException).statusCode === StatusCodes.PRECONDITION_FAILED) {
       toast.add({
+        group: 'export_page_mod-err_export_conflict',
         summary: "Error while exporting",
         detail: "Remote has a newer version; please import at first.",
         severity: 'error',
@@ -138,7 +142,7 @@ function onChangeBackgroundSync(enabled: boolean) {
   };
 
   exec().catch(err => {
-    console.error("error while setting InvidiousDataSync::backgroundSync", err);
+    logException(err, "error while setting InvidiousDataSync::backgroundSync");
 
     toast.add({
       summary: "Unable to set value",
@@ -163,7 +167,7 @@ onBeforeMount(async () => {
         <Button label="Import from Remote" :disabled="!syncPossible"
                 @click="onImport"></Button>
         <Button label="Export to Remote" :disabled="!syncPossible"
-                @click="onExport"></Button>
+                @click="() => onExport(false)"></Button>
 
         <ProgressSpinner v-show="syncRunning" class="-ml-3 h-full" />
       </div>
@@ -177,6 +181,19 @@ onBeforeMount(async () => {
         </label>
       </div>
     </div>
+
+    <Toast group="export_page_mod-err_export_conflict">
+      <template #message="slotProps">
+        <TimesCircleIcon class="p-toast-message-icon"></TimesCircleIcon>
+
+        <div class="p-toast-message-text flex flex-column">
+          <span class="p-toast-summary">{{slotProps.message.summary}}</span>
+          <div class="p-toast-detail">{{slotProps.message.detail}}</div>
+
+          <Button @click="() => onExport(true)" class="align-self-end mt-2">Force Export</Button>
+        </div>
+      </template>
+    </Toast>
   </Teleport>
 </template>
 

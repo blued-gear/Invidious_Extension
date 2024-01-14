@@ -38,11 +38,13 @@ class InvidiousDataService(
             InvidiousDataEntry(0, user, data.expectedLastSync, "", "")
         }
 
-        if (entry.lastSync > data.expectedLastSync) {
-            throw EntryOutOfSyncException("stored data is newer than supplied expectedLastSync")
-        } else if (entry.lastSync < data.expectedLastSync) {
-            logger.warn("expectedLastSync was in the past user: '${user.name}'")
-            throw EntryOutOfSyncException("stored data does not meet supplied expectedLastSync")
+        if(!data.force) {
+            if(entry.lastSync > data.expectedLastSync) {
+                throw EntryOutOfSyncException("stored data is newer than supplied expectedLastSync")
+            } else if(entry.lastSync < data.expectedLastSync) {
+                logger.warn("expectedLastSync was in the past user: '${user.name}'")
+                throw EntryOutOfSyncException("stored data does not meet supplied expectedLastSync")
+            }
         }
 
         entry.data = data.data
