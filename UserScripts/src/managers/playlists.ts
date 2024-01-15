@@ -157,19 +157,23 @@ export class PlaylistsManager {
     /**
      * get the internal id for the playlist-id of this domain, or null if not stored
      * @param id the playlist id
+     * @param fast if true returns a potentially outdated version of the value;
+     *          it must be handled as read-only
      */
-    async idForPlId(id: string): Promise<string | null> {
-        await this.loadPlIdMapping();
-        return this.plIdToId!![id] ?? null;
+    async idForPlId(id: string, fast: boolean = false): Promise<string | null> {
+        const mapping = await this.loadPlIdMapping(fast);
+        return mapping.plIdToId!![id] ?? null;
     }
 
     /**
      * get the id of the playlist for this domain by internal id, or null if not stored
      * @param id the internal id
+     * @param fast if true returns a potentially outdated version of the value;
+     *          it must be handled as read-only
      */
-    async plIdForId(id: string): Promise<string | null> {
-        await this.loadPlIdMapping();
-        return this.idToPlId!![id] ?? null;
+    async plIdForId(id: string, fast: boolean = false): Promise<string | null> {
+        const mapping = await this.loadPlIdMapping(fast);
+        return mapping.idToPlId!![id] ?? null;
     }
 
     /**
@@ -228,25 +232,78 @@ export class PlaylistsManager {
         delete this.plIdToId!![plId];
     }
 
-    private async loadPlIdMapping() {
+    private async loadPlIdMapping(fast: boolean): Promise<{idToPlId: Record<string, string>, plIdToId: Record<string, string>}> {
         if(this.idToPlId === null || this.plIdToId === null) {
+            if(!fast) {
+                return await this.loadPlIdMappingFullLoad();
+            } else {
+                return await this.loadPlIdMappingFastLoad();
+            }
+        } else {
+            return {
+                idToPlId: this.idToPlId,
+                plIdToId: this.plIdToId
+            };
+        }
+    }
+
+    private async loadPlIdMappingFullLoad(): Promise<{idToPlId: Record<string, string>, plIdToId: Record<string, string>}> {
+        if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING)) {
             this.idToPlId = {};
             this.plIdToId = {};
 
-            if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING)) {
-                return;
-            }
+            return {
+                idToPlId: this.idToPlId,
+                plIdToId: this.plIdToId
+            };
+        }
 
-            const domain = location.hostname;
-            const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
-            for(const id of Object.keys(data)) {
-                const plId = data[id][domain];
-                if(plId != undefined) {
-                    this.idToPlId[id] = plId;
-                    this.plIdToId[plId] = id;
-                }
+        const domain = location.hostname;
+        const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
+
+        this.idToPlId = {};
+        this.plIdToId = {};
+
+        for(const id of Object.keys(data)) {
+            const plId = data[id][domain];
+            if(plId != undefined) {
+                this.idToPlId[id] = plId;
+                this.plIdToId[plId] = id;
             }
         }
+
+        return {
+            idToPlId: this.idToPlId,
+            plIdToId: this.plIdToId
+        };
+    }
+
+    private async loadPlIdMappingFastLoad(): Promise<{idToPlId: Record<string, string>, plIdToId: Record<string, string>}> {
+        if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING, true, true)) {
+            return {
+                idToPlId: {},
+                plIdToId: {}
+            };
+        }
+
+        const domain = location.hostname;
+        const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING, true);
+
+        const idToPlId: Record<string, string> = {};
+        const plIdToId: Record<string, string> = {};
+
+        for(const id of Object.keys(data)) {
+            const plId = data[id][domain];
+            if(plId != undefined) {
+                idToPlId[id] = plId;
+                plIdToId[plId] = id;
+            }
+        }
+
+        return {
+            idToPlId: idToPlId,
+            plIdToId: plIdToId
+        };
     }
 
     private async storePlIdMapping() {
