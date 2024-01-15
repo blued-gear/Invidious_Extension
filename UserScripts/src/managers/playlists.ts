@@ -73,9 +73,9 @@ export class PlaylistsManager {
     }
 
     //region pl-groups
-    async loadGroups(): Promise<PlaylistsGroup[]> {
-        const storedGroups = await extensionDataSync.getKeys(STORAGE_KEY_GROUPS_PREFIX);
-        return await Promise.all(storedGroups.map(key => extensionDataSync.getEntry<PlaylistsGroup>(key)));
+    async loadGroups(fast: boolean = false): Promise<PlaylistsGroup[]> {
+        const storedGroups = await extensionDataSync.getKeys(STORAGE_KEY_GROUPS_PREFIX, true, true);
+        return await Promise.all(storedGroups.map(key => extensionDataSync.getEntry<PlaylistsGroup>(key, fast)));
     }
 
     async loadGroup(id: string): Promise<PlaylistsGroup> {

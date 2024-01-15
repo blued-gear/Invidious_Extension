@@ -100,7 +100,7 @@ async function groupPlaylists(playlists: Playlists) {
     });
   }
 
-  const groups = await playlistsMng.loadGroups();
+  const groups = await playlistsMng.loadGroups(true);
   const groupedPls = new Set<string>();
 
   const grouped: PlGroup[] = groups.map((group) => {

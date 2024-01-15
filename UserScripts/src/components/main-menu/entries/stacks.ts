@@ -131,7 +131,7 @@ function updateWatchStackPopable() {
 }
 
 export function updateMenu() {
-    stackMgr.listStacks().then(stacks => {
+    stackMgr.listStacks(true).then(stacks => {
         openableStacks.splice(0);
         openableStacks.push(...stacks.sort((a, b) => a.name.localeCompare(b.name)));
     });

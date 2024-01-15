@@ -72,10 +72,10 @@ export class StackManager {//TODO use internal IDs for playlists
     /**
      * @return list of saved stacks (excluding watch-stack)
      */
-    async listStacks(): Promise<StackNameWithId[]> {
-        const storedKeys = await extensionDataSync.getKeys(STORAGE_KEY_STACKS_PREFIX);
+    async listStacks(fast: boolean = false): Promise<StackNameWithId[]> {
+        const storedKeys = await extensionDataSync.getKeys(STORAGE_KEY_STACKS_PREFIX, true, true);
         return await Promise.all(storedKeys.map(async (k) => {
-            const s = (await extensionDataSync.getEntry(k))!! as WatchStack;
+            const s = (await extensionDataSync.getEntry(k, fast))!! as WatchStack;
             return {
                 id: s.id,
                 name: s.name
