@@ -76,7 +76,7 @@ async function groupPlaylists(playlists: Playlists) {
   // map the domain-specific IDs to internal IDs
   const playlistsTranslated: Playlists = { created: [], saved: [] };
   for(let pl of playlists.created) {
-    const id = await playlistsMng.idForPlId(pl.plId);
+    const id = await playlistsMng.idForPlId(pl.plId, true);
     if(id === null) {
       console.error(`created playlist was not indexed; id = ${pl.plId}`);
       continue;
@@ -88,7 +88,7 @@ async function groupPlaylists(playlists: Playlists) {
     });
   }
   for(let pl of playlists.saved) {
-    const id = await playlistsMng.idForPlId(pl.plId);
+    const id = await playlistsMng.idForPlId(pl.plId, true);
     if(id === null) {
       console.error(`saved playlist was not indexed; id = ${pl.plId}`);
       continue;
