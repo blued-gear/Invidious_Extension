@@ -14,6 +14,8 @@ import Lock from "../util/lock";
 import {setDifference, setIntersection, setUnion} from "../util/set-utils";
 import DataGetDto from "./dto/data-get-dto";
 import {base64FromArrayBuffer} from "../workarounds/base64";
+import throttle, {RESULT_THROTTLED} from "../util/throttled-function";
+import actionWithTimeout, {Ret} from "../util/action-with-timeout";
 
 const STORAGE_KEY_ENTRY_PREFIX = STORAGE_PREFIX + "sync-extension::entry::";
 const STORAGE_KEY_ENTRY_UNSYNCED_PREFIX = STORAGE_PREFIX + "sync-extension::entry-unsynced::";
@@ -22,8 +24,8 @@ const STORAGE_KEY_DELETED_ENTRIES = STORAGE_PREFIX + "sync-extension::deleted_en
 const HASH_TAG_KEY = "ExtensionDataSync-key--";
 const HASH_TAG_CIPHER = "ExtensionDataSync-cipher--";
 
-const MAX_WAIT_UPDATE = 2_000;
-const MAX_WAIT_SYNC = 30_000;
+const GET_ENTRY_MAX_WAIT = 500;
+const GET_ENTRY_THROTTLE = 10000;
 
 interface Entry<T> {
     content: T,
@@ -46,8 +48,8 @@ export class ExtensionDataSync {
 
     private login: Login | null = null;
     private readonly syncLock = new Lock();
-
-    //TODO wait for ad-hoc sync on r/w/rm only for a specific amount of time -> else: keep list of potential conflicts and warn on write
+    private readonly getEntryFullLoadThrottled = throttle(this.getEntryFullLoad, GET_ENTRY_THROTTLE);
+    private readonly getKeysFullLoadThrottled = throttle(this.getKeysFullLoad, GET_ENTRY_THROTTLE);
 
     /**
      * syncs all entries from remote and unsynced local entries
@@ -107,26 +109,71 @@ export class ExtensionDataSync {
         return this.login !== null;
     }
 
-    async getKeys(prefix: string = "", includeUnsynced: boolean = true): Promise<string[]> {
-        const keys = new Set<string>();
+    /**
+     * returns all keys which start with the given prefix
+     * @param prefix the prefix to filter for
+     * @param includeUnsynced if true, also keys unsynced entries will be included
+     * @param fast if true will only wait a short time for the load of remote-resources and else returns the local versions
+     *              (must only be used if the returned values and all dependencies are treated as read-only)
+     */
+    async getKeys(prefix: string = "", includeUnsynced: boolean = true, fast: boolean = false): Promise<string[]> {
+        if(!fast) {
+            return await this.getKeysFullLoad(prefix, includeUnsynced);
+        } else {
+            return await this.getKeysFastLoad(prefix, includeUnsynced);
+        }
+    }
 
+    private async getKeysFullLoad(prefix: string, includeUnsynced: boolean): Promise<string[]> {
+        const keys = new Set<string>();
         if(this.hasLogin()) {
             await this.syncLock.wait();
 
             try {
-                const remoteKeys = await apiFetch(
+                const remoteKeysResp = await apiFetch(
                     'GET',
                     `${SERVER_SYNC_URL}/allKeys`,
                     undefined,
                     this.login!!.apiCredentials()
                 ) as KeyWithSyncTimeDto[];
 
-                (await Promise.all(remoteKeys.map(async (k) => await this.decryptRemoteKey(k.key))))
-                    .forEach(k => keys.add(k));
+                (await Promise.all(remoteKeysResp.map(async (k) => await this.decryptRemoteKey(k.key))))
+                    .forEach(k => {
+                        if(k.startsWith(prefix))
+                            keys.add(k)
+                    });
             } catch(e) {
                 logSyncRemoteFail("getKeys: failed to receive remote-keys; will only return local keys", e);
             }
         }
+
+        const localKeys = await this.getKeysLocal(prefix, includeUnsynced);
+        localKeys.forEach(k => keys.add(k));
+
+        return [...keys];
+    }
+
+    private async getKeysFastLoad(prefix: string, includeUnsynced: boolean): Promise<string[]> {
+        const res: Ret<string[] | typeof RESULT_THROTTLED> = await actionWithTimeout(
+            GET_ENTRY_MAX_WAIT,
+            async () => Promise.resolve(this.getKeysFullLoadThrottled(prefix, includeUnsynced)),
+            () => {
+                console.debug("getKeysFastLoad: returning local version");
+                return this.getKeysLocal(prefix, includeUnsynced)
+            }
+        );
+
+        let ret = res.result;
+        if(ret === RESULT_THROTTLED) {
+            console.debug("getKeysFastLoad: returning local version");
+            ret = await this.getKeysLocal(prefix, includeUnsynced);
+        }
+
+        return ret as string[];
+    }
+
+    private async getKeysLocal(prefix: string, includeUnsynced: boolean): Promise<string[]> {
+        const keys = new Set<string>();
 
         const localKeys = await listStoredKeys();
         localKeys.synced.forEach(k => keys.add(k));
@@ -136,8 +183,16 @@ export class ExtensionDataSync {
         return Array.from(keys).filter(k => k.startsWith(prefix));
     }
 
-    async hasKey(key: string, includeUnsynced: boolean = true): Promise<boolean> {
-        return (await this.getKeys(key, includeUnsynced)).includes(key);
+    /**
+     * checks if a key exists
+     * @param key the key to look for
+     * @param includeUnsynced if false will return false if the only existing entry with this key is unsynced
+     *              (and has no outdated synced version)
+     * @param fast if true will only wait a short time for the load of remote-resources and else returns the local versions
+     *              (must only be used if the returned values and all dependencies are treated as read-only)
+     */
+    async hasKey(key: string, includeUnsynced: boolean = true, fast: boolean = false): Promise<boolean> {
+        return (await this.getKeys(key, includeUnsynced, fast)).includes(key);
     }
 
     /**
@@ -145,8 +200,18 @@ export class ExtensionDataSync {
      * If this fails the lastest local version is returned.
      * If there is a local unsynced version, it will be returned immediately.
      * @param key key of the entry
+     * @param fast if true will only wait a short time for the load of remote-resources and else returns the local versions
+     *              (must only be used if the returned values and all dependencies are treated as read-only)
      */
-    async getEntry<T>(key: string): Promise<T> {
+    async getEntry<T>(key: string, fast: boolean = false): Promise<T> {
+        if(!fast) {
+            return await this.getEntryFullLoad(key);
+        } else {
+            return await this.getEntryFastLoad(key);
+        }
+    }
+
+    private async getEntryFullLoad<T>(key: string): Promise<T> {
         await this.syncLock.wait();
 
         const unsyncedCopy = await GM.getValue<Entry<T> | undefined>(STORAGE_KEY_ENTRY_UNSYNCED_PREFIX + key, undefined);
@@ -200,12 +265,33 @@ export class ExtensionDataSync {
         }
     }
 
+    private async getEntryFastLoad<T>(key: string): Promise<T> {
+        const res: Ret<T | undefined | typeof RESULT_THROTTLED> = await actionWithTimeout(
+            GET_ENTRY_MAX_WAIT,
+            async () => Promise.resolve(this.getEntryFullLoadThrottled(key) as T | undefined | typeof RESULT_THROTTLED),
+            () => {
+                console.debug("getEntryFastLoad: returning local version");
+                return this.getLocalEntry<T>(key, true)
+            }
+        );
+
+        let ret = res.result;
+        if(ret === RESULT_THROTTLED) {
+            console.debug("getEntryFastLoad: returning local version");
+            ret = await this.getLocalEntry<T>(key, true);
+        }
+
+        if(ret === undefined)
+            throw new Error("no such key");
+        return ret as T;
+    }
+
     /**
      * returns the local copy of the entry, if any
      * @param key key of the entry
      * @param allowUnsynced if false, only synced entries can be returned
      * @return {Promise<T | undefined>} the local copy or <code>undefined</code> if none is found.
-     *      <code>undefined</code> will also be returned, if <code>allowUnsynced</code> is true and only an unsynced version exists locally
+     *      <code>undefined</code> will also be returned, if <code>allowUnsynced</code> is false and only an unsynced version exists locally
      */
     async getLocalEntry<T>(key: string, allowUnsynced: boolean): Promise<T | undefined> {
         if(allowUnsynced) {
