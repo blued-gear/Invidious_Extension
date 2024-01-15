@@ -54,8 +54,6 @@ export class PlaylistsManager {
         await this.indexPlaylists();
 
         await this.saveChanges();
-
-        this.playlistScanned.signal();
     }
 
     /**
@@ -340,10 +338,14 @@ export class PlaylistsManager {
 
     //region playlist sync
     private async indexPlaylists() {
-        if(!urlExtractor.isOnPlaylistsOverview())
+        if(!urlExtractor.isOnPlaylistsOverview()) {
+            this.playlistScanned.signal();
             return;
+        }
 
         const {created, saved} = playlistController.findPlaylists();
+        this.playlistScanned.signal();
+
         for(let pl of [ ...created, ...saved ]) {
             const id = await this.idForPlId(pl.plId);
             if(id === null) {
