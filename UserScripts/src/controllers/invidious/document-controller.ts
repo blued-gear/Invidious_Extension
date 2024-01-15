@@ -27,7 +27,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
         if(elm != null)
             return elm;
 
-        elm = this.createGeneralElement('duv', elmId);
+        elm = this.createGeneralElement('div', elmId);
 
         let anchor = document.querySelector('html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
         if(anchor == null)
