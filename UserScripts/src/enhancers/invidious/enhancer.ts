@@ -86,13 +86,19 @@ class InvidiousEnhancer {
 
     private async loadVideoUploadDate(id: string): Promise<string | null> {
         const resp = await fetch(`${PIPED_HOST}/streams/${id}`);
-        const respJson = await resp.json();
+        const respText = await resp.text();
 
-        const uploadDateTime = respJson['uploadDate'];
-        if(uploadDateTime == undefined)
-            return null;
+        try {
+            const respJson = JSON.parse(respText);
 
-        return this.dateFormatter.format(Date.parse(uploadDateTime))
+            const uploadDateTime = respJson['uploadDate'];
+            if(uploadDateTime == undefined)
+                return null;
+
+            return this.dateFormatter.format(Date.parse(uploadDateTime));
+        } catch (e) {
+            throw new Error(`unable to load video upload-date\nresp = ${respText}`, { cause: e });
+        }
     }
     //endregion
 
