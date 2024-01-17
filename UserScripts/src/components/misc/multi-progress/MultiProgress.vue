@@ -19,7 +19,7 @@ const emit = defineEmits<{ (event: 'done', shouldKeep: boolean): void }>();
 const effectiveProgress = computed<number>(() => {
   if((controller.state === ProgressState.ERR || controller.state === ProgressState.FINISHED)
       && controller.progress < 0.5)
-    return 99;// show nearly full bar as otherwise the color would not be visible
+    return 10;// show fuller bar as otherwise the color would not be visible
   return controller.progress >= 0 ? roundToDecimal(controller.progress * 100, 2) : 0;
 });
 const mode = computed<'determinate' | 'indeterminate'>(() => {
