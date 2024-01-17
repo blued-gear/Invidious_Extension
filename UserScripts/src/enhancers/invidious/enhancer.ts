@@ -1,8 +1,8 @@
 import {PIPED_HOST} from "../../util/constants";
-import urlExtractor from "../url-extractor";
+import urlExtractor from "../../controllers/url-extractor";
 import {elementListToArray, nodeListToArray} from "../../util/utils";
-import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "./playlist-controller";
-import documentController, {ADDED_ELM_MARKER_ATTR} from "../document-controller";
+import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "../../controllers/invidious/playlist-controller";
+import documentController, {ADDED_ELM_MARKER_ATTR} from "../../controllers/document-controller";
 
 /**
  * runs misc enhancements for the general Invidious UI

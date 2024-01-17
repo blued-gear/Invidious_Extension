@@ -25,7 +25,7 @@ import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
 import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
 import playlistsMgr from "./managers/playlists";
-import runEnhancers from "./controllers/enhancers";
+import runEnhancers from "./enhancers/enhancers";
 import documentController from "./controllers/document-controller";
 
 async function runRestoreLogin() {

@@ -8,7 +8,7 @@ import AccordionTab from 'primevue/accordiontab';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import playlistController, {Playlists, PlaylistUiElm} from "../../../../controllers/playlist-controller";
-import invidiousEnhancer from "../../../../controllers/invidious/enhancer";
+import invidiousEnhancer from "../../../../enhancers/invidious/enhancer";
 import documentController from "../../../../controllers/document-controller";
 
 interface PlGroup {
