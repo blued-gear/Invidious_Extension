@@ -1,8 +1,8 @@
-import {PIPED_HOST} from "../../util/constants";
 import urlExtractor from "../../controllers/url-extractor";
 import {elementListToArray, nodeListToArray} from "../../util/utils";
 import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "../../controllers/invidious/playlist-controller";
 import documentController, {ADDED_ELM_MARKER_ATTR} from "../../controllers/document-controller";
+import {pipedJsonRequest} from "../../util/piped";
 
 /**
  * runs misc enhancements for the general Invidious UI
@@ -85,20 +85,13 @@ class InvidiousEnhancer {
     }
 
     private async loadVideoUploadDate(id: string): Promise<string | null> {
-        const resp = await fetch(`${PIPED_HOST}/streams/${id}`);
-        const respText = await resp.text();
+        const resp = await pipedJsonRequest(`/streams/${id}`);
 
-        try {
-            const respJson = JSON.parse(respText);
+        const uploadDateTime = resp['uploadDate'];
+        if(uploadDateTime == undefined)
+            return null;
 
-            const uploadDateTime = respJson['uploadDate'];
-            if(uploadDateTime == undefined)
-                return null;
-
-            return this.dateFormatter.format(Date.parse(uploadDateTime));
-        } catch (e) {
-            throw new Error(`unable to load video upload-date\nresp = ${respText}`, { cause: e });
-        }
+        return this.dateFormatter.format(Date.parse(uploadDateTime));
     }
     //endregion
 
@@ -146,10 +139,9 @@ class InvidiousEnhancer {
     }
 
     private async loadPlaylistThumbUrl(id: string): Promise<string | null> {
-        const resp = await fetch(`${PIPED_HOST}/playlists/${id}`);
-        const respJson = await resp.json();
+        const resp = await pipedJsonRequest(`/playlists/${id}`);
+        const thumbUrl = resp['thumbnailUrl'];
 
-        const thumbUrl = respJson['thumbnailUrl'];
         if(thumbUrl == undefined)
             return null;
         return thumbUrl;
