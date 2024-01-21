@@ -1,21 +1,19 @@
 import PlaylistsGroup from "../model/PlaylistsGroup";
-import {generateUniqueId, logException, roundToDecimal, sleep} from "../util/utils";
+import {generateUniqueId, logException, roundToDecimal} from "../util/utils";
 import extensionDataSync from "../sync/extension-data";
 import sharedStates from "../util/shared-states";
-import toast from "../workarounds/toast";
 import {setDifference, setIntersection} from "../util/set-utils";
-import {TOAST_LIFE_ERROR} from "../util/constants";
 import urlExtractor from "../controllers/url-extractor";
 import playlistController from "../controllers/playlist-controller";
 import SignalLatch from "../util/signal-latch";
 import ProgressController, {ProgressState} from "../util/progress-controller";
 
 export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
-export const STORAGE_KEY_SUBSCRIBED_PLS = "playlists::subscribed_playlists";
-export const STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED = "playlists::subscribed_playlists_initialized";
-export const STORAGE_KEY_PL_ID_MAPPING = "playlists::pl_id_mapping";//TODO use in SyncConflictDlg
-export const STORAGE_KEY_PL_SYNC_CREATED_DATA = "playlists::created_sync::data";//TODO use in SyncConflictDlg
-export const STORAGE_KEY_PL_SYNC_CREATED_TIMES = "playlists::created_sync::times";//TODO use in SyncConflictDlg
+export const STORAGE_KEY_PL_ID_MAPPING = "playlists::pl_id_mapping";
+export const STORAGE_KEY_PL_SYNC_CREATED_DATA = "playlists::created_sync::data";
+export const STORAGE_KEY_PL_SYNC_CREATED_TIMES = "playlists::created_sync::times";
+export const STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA = "playlists::subscribed_sync::data";
+export const STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES = "playlists::subscribed_sync::times";
 
 /** Record<internal-id, Record<domain, pl-id>> */
 type StoredPlIds = Record<string, Record<string, string>>;
@@ -36,6 +34,14 @@ interface StoredCreatedPls {
 /** Record<domain, Unix-time of last sync> */
 type CreatedPlsSycTimes = Record<string, number>;
 
+interface StoredSubscribedPls {
+    /** Unix-time of last update */
+    time: number,
+    playlists: string[]
+}
+/** Record<domain, Unix-time of last sync> */
+type SubscribedPlsSycTimes = Record<string, number>;
+
 export class PlaylistsManager {
 
     private static _INSTANCE = new PlaylistsManager();
@@ -50,9 +56,7 @@ export class PlaylistsManager {
     private constructor() {}
 
     async init() {
-        await this.setupHooks();
         await this.indexPlaylists();
-
         await this.saveChanges();
     }
 
@@ -336,23 +340,7 @@ export class PlaylistsManager {
     }
     //endregion
 
-    //region playlist sync
-    private async indexPlaylists() {
-        if(!urlExtractor.isOnPlaylistsOverview()) {
-            this.playlistScanned.signal();
-            return;
-        }
-
-        const {created, saved} = playlistController.findPlaylists();
-        this.playlistScanned.signal();
-
-        for(let pl of [ ...created, ...saved ]) {
-            const id = await this.idForPlId(pl.plId);
-            if(id === null) {
-                await this.storePlId(pl.plId);
-            }
-        }
-    }
+    //region created playlist sync
 
     /**
      * Syncs the created playlists.<br/>
@@ -390,6 +378,7 @@ export class PlaylistsManager {
             prog.setState(ProgressState.ERR);
             prog.setMessage("error saving state before sync");
             prog.done(true);
+            return;
         }
 
         try {
@@ -416,6 +405,7 @@ export class PlaylistsManager {
 
             prog.setState(ProgressState.ERR);
             prog.done(true);
+            return;
         }
 
         prog.done(true);
@@ -625,161 +615,200 @@ export class PlaylistsManager {
     }
     //endregion
 
-    //region sync subscribed playlists
-    async sync() {
-        if(!urlExtractor.isOnPlaylistsOverview())
-            return;
-        if(!sharedStates.invidiousLogin.value)
-            return;
-
-        if(await this.initialSubscriptionsStored()) {
-            await this.syncSubscriptions();
-        } else {
-            await this.storeInitialSubscriptions();
-        }
-    }
-
+    //region subscribed playlists sync
     /**
-     * returns an array of playlist-IDs of playlist, which the user is subscribed to
+     * Syncs the subscribed playlists.<br/>
+     * This uses an all-or-noting approach, so no conflicts will be resolved and instead either local or remote will be fully applied.
+     * @param prog {ProgressController} ProgressController to use for progress-updates
+     * @param direction {string | null} can be used to force a direction:
+     *          <code>null</code> -> default;
+     *          <code>'local'</code> -> override remote with local state;
+     *          <code>'remote'</code> -> override local with remote state
      */
-    async loadSubscribedPlaylists(): Promise<string[]> {
-        return await extensionDataSync.getEntry(STORAGE_KEY_SUBSCRIBED_PLS);
-    }
+    async syncSubscribedPlaylists(prog: ProgressController, direction: 'local' | 'remote' | null) {
+        prog.setState(ProgressState.RUNNING);
+        prog.setProgress(0);
+        prog.setMessage("syncing subscribed playlists");
 
-    private async setupHooks() {
-        // don't hook into created playlists
-        if(playlistController.isOnOwnPlaylistDetails())
+        if(!urlExtractor.isOnPlaylistsOverview()) {
+            prog.setState(ProgressState.FINISHED);
+            prog.setMessage("skip: not on Playlist-Overview");
+            prog.done(true);
             return;
+        }
+        if(!sharedStates.invidiousLogin.value) {
+            prog.setState(ProgressState.FINISHED);
+            prog.setMessage("skip: no Login");
+            prog.done(true);
+            return;
+        }
 
-        playlistController.addPlaylistSubscribeHook((id) => this.onPlSubscribed(id));
-        playlistController.addPlaylistUnsubscribeHook((id) => this.onPlUnsubscribed(id));
-    }
-
-    private async onPlSubscribed(plId: string) {
         try {
-            await this.addSubscribedPlaylist(plId);
+            await this.waitForInit();
+            await this.saveChanges();
         } catch(e) {
-            logException(e as Error, "PlaylistsManager::addSubscribedPlaylist()");
+            logException(e as Error, "PlaylistsManager::syncSubscribedPlaylists(): error saving state before sync");
 
-            toast.add({
-                summary: "Error while recording this subscription",
-                detail: "Failed to save that you subscribe to this playlist.\nExpect it to be removed at next sync.",
-                severity: 'error',
-                life: TOAST_LIFE_ERROR
-            });
-            await sleep(TOAST_LIFE_ERROR);
+            prog.setState(ProgressState.ERR);
+            prog.setMessage("error saving state before sync");
+            prog.done(true);
+            return;
         }
-    }
 
-    private async onPlUnsubscribed(plId: string) {
         try {
-            await this.delSubscribedPlaylist(plId);
+            if (await extensionDataSync.hasKey(STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA)) {
+                const storedData = await extensionDataSync.getEntry<StoredSubscribedPls>(STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA);
+
+                if (direction === 'local') {
+                    await this.syncSubscribedPlsToRemote(prog);
+                } else if (direction === 'remote') {
+                    await this.syncSubscribedPlsFromRemote(storedData, prog);
+                } else {
+                    const lastSyncTime = await this.getSubscribedPlsSyncTime();
+                    if (lastSyncTime < storedData.time) {
+                        await this.syncSubscribedPlsFromRemote(storedData, prog);
+                    } else {
+                        await this.syncSubscribedPlsToRemote(prog);
+                    }
+                }
+            } else {
+                await this.syncSubscribedPlsToRemote(prog);
+            }
         } catch(e) {
-            logException(e as Error, "PlaylistsManager::delSubscribedPlaylist()");
+            logException(e as Error, "PlaylistsManager::syncSubscribedPlaylists(): error in sync");
 
-            toast.add({
-                summary: "Error while recording this unsubscription",
-                detail: "Failed to save that you unsubscribe from this playlist.\nExpect it to be re-added at next sync.",
-                severity: 'error',
-                life: TOAST_LIFE_ERROR
-            });
-            await sleep(TOAST_LIFE_ERROR);
-        }
-    }
-
-    private async addSubscribedPlaylist(id: string) {
-        const storedSubscriptions = await this.loadSubscribedPlaylists();
-
-        if(storedSubscriptions.includes(id)) {
-            console.warn("PlaylistsManager::addSubscribedPlaylist(): playlist-subscription already in stored; this should not happen (except when out-of-sync)");
+            prog.setState(ProgressState.ERR);
+            prog.done(true);
             return;
         }
 
-        storedSubscriptions.push(id);
-
-        await extensionDataSync.setEntry(STORAGE_KEY_SUBSCRIBED_PLS, storedSubscriptions);
+        prog.done(true);
     }
 
-    private async delSubscribedPlaylist(id: string) {
-        const storedSubscriptions = await this.loadSubscribedPlaylists();
+    private async getSubscribedPlsSyncTime(): Promise<number> {
+        if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES))
+            return -1;
 
-        const idx = storedSubscriptions.indexOf(id);
-        if(idx === -1) {
-            console.warn("PlaylistsManager::delSubscribedPlaylist(): playlist-subscription not in stored; this should not happen (except when out-of-sync or deleting a created playlist)");
-            return;
-        }
-
-        storedSubscriptions.splice(idx, 1);
-
-        await extensionDataSync.setEntry(STORAGE_KEY_SUBSCRIBED_PLS, storedSubscriptions);
+        const times = await extensionDataSync.getEntry<SubscribedPlsSycTimes>(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES);
+        const domain = location.hostname;
+        return times[domain] ?? -1;
     }
 
-    private async initialSubscriptionsStored(): Promise<boolean> {
-        if((await extensionDataSync.getKeys(STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED)).length !== 0) {
-            return await extensionDataSync.getEntry(STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED);
+    private async setSubscribedPlsSyncTime(time: number) {
+        let times: SubscribedPlsSycTimes;
+        if(await extensionDataSync.hasKey(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES)){
+            times = await extensionDataSync.getEntry<SubscribedPlsSycTimes>(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES);
         } else {
-            return false;
+            times = {};
         }
+
+        const domain = location.hostname;
+        times[domain] = time;
+
+        await extensionDataSync.setEntry(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES, times);
     }
 
-    private async syncSubscriptions() {
-        const expectedPls = await this.loadSubscribedPlaylists();
+    private async syncSubscribedPlsToRemote(prog: ProgressController) {
+        prog.setMessage("syncing subscribed playlists to remote");
+        prog.setProgress(0.1);
+        prog.setState(ProgressState.RUNNING);
+
+        const playlists = playlistController.findPlaylists().saved.map(pl => pl.plId);
+        const data: StoredSubscribedPls = {
+            playlists: playlists,
+            time: Date.now()
+        }
+
+        prog.setMessage("syncing subscribed playlists to remote\n(storing data)");
+        prog.setProgress(0.99);
+
+        if(prog.shouldStop()) {
+            prog.setMessage("syncing subscribed playlists to remote\n(storing data)\nstopped");
+            return;
+        }
+
+        await extensionDataSync.setEntry(STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA, data);
+        await this.setSubscribedPlsSyncTime(data.time);
+        await this.saveChanges();
+
+        prog.setMessage("syncing subscribed playlists to remote");
+        prog.setProgress(1);
+        prog.setState(ProgressState.FINISHED);
+    }
+
+    private async syncSubscribedPlsFromRemote(data: StoredSubscribedPls, prog: ProgressController) {
+        prog.setMessage("syncing subscribed playlists from remote");
+        prog.setProgress(0.01);
+        prog.setState(ProgressState.RUNNING);
+
+        const expectedPls = data.playlists;
         const actualPls = playlistController.findPlaylists().saved.map(pl => pl.plId);
-        let changed = false;
 
         const toAdd = setDifference(expectedPls, actualPls);
-        if(toAdd.size !== 0) {
-            console.debug(`syncSubscriptions: adding [${Array.from(toAdd).join(', ')}]`);
-
-            for(let pl of toAdd) {
-                await playlistController.subscribeToPlaylist(pl);
-
-                const internalId = await this.idForPlIdForeign(pl);
-                if(internalId !== null)
-                    this.storeKnownPlId(internalId, pl)
-                else
-                    await this.storePlId(pl);
-            }
-
-            changed = true;
-        }
-
         const toDel = setDifference(actualPls, expectedPls);
-        if(toDel.size !== 0) {
-            console.debug(`syncSubscriptions: deleting [${Array.from(toDel).join(', ')}]`);
+        let processed = 0;
 
-            for(let pl of toDel) {
-                await playlistController.unsubscribeFromPlaylist(pl);
+        for(let pl of toAdd) {
+            prog.setMessage(`syncing subscribed playlists from remote\nsubscribing to ${pl}`);
 
-                const internalId = await this.idForPlId(pl);
-                if(internalId !== null)
-                    await this.deletePlId(internalId);
-            }
+            await playlistController.subscribeToPlaylist(pl);
 
-            changed = true;
+            const internalId = await this.idForPlIdForeign(pl);
+            if(internalId !== null)
+                this.storeKnownPlId(internalId, pl);
+            else
+                await this.storePlId(pl);
+
+            processed++;
+            prog.setProgress(Math.min(roundToDecimal(processed / (toAdd.size + toDel.size), 3), 0.99));
         }
 
-        if(changed) {
-            await this.saveChanges();
+        for(let pl of toDel) {
+            prog.setMessage(`syncing subscribed playlists from remote\nunsubscribing from ${pl}`);
 
-            toast.add({
-                summary: "Playlist were updated",
-                detail: "The subscribed playlists were updated by sync.\nTo see the changes, please reload the page.",
-                severity: "info",
-                life: TOAST_LIFE_ERROR// give the user a bit more time to read the detail-text
-            });
-        } else {
-            console.debug("syncSubscriptions: up to date");
+            await playlistController.unsubscribeFromPlaylist(pl);
+
+            const internalId = await this.idForPlId(pl);
+            if(internalId !== null)
+                await this.deletePlId(internalId);
+
+            processed++;
+            prog.setProgress(Math.min(roundToDecimal(processed / (toAdd.size + toDel.size), 3), 0.99));
         }
+
+        prog.setMessage("syncing subscribed playlists from remote\n(storing data)");
+        prog.setProgress(0.99);
+
+        if(prog.shouldStop()) {
+            prog.setMessage("syncing subscribed playlists from remote\n(storing data)\nstopped");
+            return;
+        }
+
+        await this.saveChanges();
+        await this.setSubscribedPlsSyncTime(data.time);
+
+        prog.setMessage("syncing subscribed playlists from remote");
+        prog.setProgress(1);
+        prog.setState(ProgressState.FINISHED);
     }
+    //endregion
 
-    private async storeInitialSubscriptions() {
-        const currentPls = playlistController.findPlaylists().saved.map(pl => pl.plId);
+    //region misc
+    private async indexPlaylists() {
+        if(!urlExtractor.isOnPlaylistsOverview()) {
+            this.playlistScanned.signal();
+            return;
+        }
 
-        await extensionDataSync.setEntry(STORAGE_KEY_SUBSCRIBED_PLS, currentPls);
-        await extensionDataSync.setEntry(STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED, true);
+        const {created, saved} = playlistController.findPlaylists();
+        this.playlistScanned.signal();
 
-        console.debug("storeInitialSubscriptions: subscriptions stored");
+        for(let pl of [ ...created, ...saved ]) {
+            const id = await this.idForPlId(pl.plId);
+            if(id === null) {
+                await this.storePlId(pl.plId);
+            }
+        }
     }
     //endregion
 }

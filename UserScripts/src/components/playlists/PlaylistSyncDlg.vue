@@ -4,7 +4,7 @@ import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Panel from 'primevue/panel';
 import MultiProgress from "../misc/multi-progress/MultiProgress.vue";
-import ProgressController from "../../util/progress-controller";
+import ProgressController, {ProgressState} from "../../util/progress-controller";
 import playlistMng from "../../managers/playlists";
 import {useToast} from "primevue/usetoast";
 import {logException} from "../../util/utils";
@@ -16,51 +16,52 @@ const show = defineModel<boolean>();
 const started = ref(false);
 const progView = ref<typeof MultiProgress | undefined>(undefined);
 
-function onStart() {
+function onStart(direction: 'local' | 'remote' | null) {
   started.value = true;
   const progController: ProgressController = progView.value!!.getController();
 
-  //TODO maybe call sync() for subscribed playlists here instead of hooks
+  progController.setState(ProgressState.RUNNING);
+  progController.setProgress(-1);
 
-  playlistMng.syncCreatedPlaylists(progController, null).catch(e => {
-    logException(e as Error, "playlistMng.syncCreatedPlaylists() failed");
+  (async () => {
+    progController.setMessage("syncing created playlists");
+    await syncCreated(progController.fork(), direction);
 
-    toast.add({
-      summary: "An unexpected error occurred",
-      severity: 'error',
-      life: TOAST_LIFE_ERROR
-    });
-  });
+    progController.setMessage("syncing subscribed playlists");
+    await syncSubscribed(progController.fork(), direction);
+  })();
+
+  progController.setState(ProgressState.FINISHED);
+  progController.setProgress(1);
+  progController.done(true);
 }
 
-function onStartFromRemote() {
-  started.value = true;
-  const progController: ProgressController = progView.value!!.getController();
-
-  playlistMng.syncCreatedPlaylists(progController, 'remote').catch(e => {
+async function syncCreated(prog: ProgressController, direction: 'local' | 'remote' | null) {
+  try {
+    await playlistMng.syncCreatedPlaylists(prog, direction)
+  } catch(e) {
     logException(e as Error, "playlistMng.syncCreatedPlaylists() failed");
 
     toast.add({
-      summary: "An unexpected error occurred",
+      summary: "An unexpected error occurred while syncing created playlists",
       severity: 'error',
       life: TOAST_LIFE_ERROR
     });
-  });
+  }
 }
 
-function onStartFromLocal() {
-  started.value = true;
-  const progController: ProgressController = progView.value!!.getController();
-
-  playlistMng.syncCreatedPlaylists(progController, 'local').catch(e => {
-    logException(e as Error, "playlistMng.syncCreatedPlaylists() failed");
+async function syncSubscribed(prog: ProgressController, direction: 'local' | 'remote' | null) {
+  try {
+    await playlistMng.syncSubscribedPlaylists(prog, direction);
+  } catch(e) {
+    logException(e as Error, "playlistMng.syncSubscribedPlaylists() failed");
 
     toast.add({
-      summary: "An unexpected error occurred",
+      summary: "An unexpected error occurred while syncing subscribed playlists",
       severity: 'error',
       life: TOAST_LIFE_ERROR
     });
-  });
+  }
 }
 </script>
 
@@ -87,12 +88,12 @@ function onStartFromLocal() {
 
       <div v-show="!started">
         <div  class="flex flex-column align-items-center gap-4 w-full">
-          <Button @click="onStart" class="w-fit">Start</Button>
+          <Button @click="() => onStart(null)" class="w-fit">Start</Button>
 
           <Panel header="Advanced" toggleable collapsed class="w-full">
             <div class="flex flex-row justify-content-center gap-3">
-              <Button @click="onStartFromRemote">Force sync from remote</Button>
-              <Button @click="onStartFromLocal">Force sync to remote</Button>
+              <Button @click="() => onStart('remote')">Force sync from remote</Button>
+              <Button @click="() => onStart('local')">Force sync to remote</Button>
             </div>
           </Panel>
         </div>

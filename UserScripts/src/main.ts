@@ -42,7 +42,6 @@ async function runStartupHooks() {
         playlistsMgr.init(),
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
         syncInvidiousData(),
-        playlistsMgr.sync(),
         runEnhancers()
     ]);
 
