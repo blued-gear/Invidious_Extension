@@ -336,7 +336,7 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
     }
 
     private scrapePlaylistContainers(): PlaylistContainers {
-        const contentsElm = document.querySelector('html body div.pure-g.w-full div#contents') as HTMLElement;
+        const contentsElm = document.querySelector('html body div.pure-g div#contents') as HTMLElement;
 
         const sectionHeadings = elementListToArray(contentsElm.getElementsByTagName('h3'))
             .filter(elm => elm.firstElementChild != null && elm.firstElementChild.tagName.toLowerCase() === 'span');
