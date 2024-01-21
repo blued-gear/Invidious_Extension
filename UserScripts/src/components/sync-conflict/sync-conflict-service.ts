@@ -4,8 +4,11 @@ import {generateUniqueId, isString} from "../../util/utils";
 import {arrayFold, initArray} from "../../util/array-utils";
 import {
     STORAGE_KEY_GROUPS_PREFIX as KEY_PREFIX_PL_GROUPS,
-    STORAGE_KEY_SUBSCRIBED_PLS as KEY_SUBSCRIBED_PLS,
-    STORAGE_KEY_SUBSCRIBED_PLS_INITIALIZED as KEY_SUBSCRIBED_PLS_INITIALIZED
+    STORAGE_KEY_PL_ID_MAPPING as KEY_PL_ID_MAPPING,
+    STORAGE_KEY_PL_SYNC_CREATED_DATA as KEY_PL_CREATED_DATA,
+    STORAGE_KEY_PL_SYNC_CREATED_TIMES as KEY_PL_CREATED_TIMES,
+    STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA as KEY_PL_SUBSCRIBED_DATA,
+    STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES as KEY_PL_SUBSCRIBED_TIMES
 } from "../../managers/playlists";
 import {STORAGE_KEY_STACKS_PREFIX as KEY_PREFIX_STACKS} from "../../managers/stacks";
 
@@ -128,8 +131,12 @@ class SyncConflictService {
             return "Playlist Group";
         if(key.startsWith(KEY_PREFIX_STACKS))
             return "Stack";
-        if(key === KEY_SUBSCRIBED_PLS || key === KEY_SUBSCRIBED_PLS_INITIALIZED)
+        if(key === KEY_PL_SUBSCRIBED_DATA || key === KEY_PL_SUBSCRIBED_TIMES)
             return "Subscribed Playlists";
+        if(key === KEY_PL_CREATED_DATA || key === KEY_PL_CREATED_TIMES)
+            return "Created Playlists";
+        if(key === KEY_PL_ID_MAPPING)
+            return "Playlist metadata";
 
         return null;
     }
