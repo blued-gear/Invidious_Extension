@@ -180,6 +180,8 @@ class SyncConflictService {
      *          if element is true, the exception will be handled
      */
     private async handleConflicts(ex: ConflictException[]): Promise<boolean[]> {
+        console.error(`got sync-conflict for keys\n${ex.map(e => e.key)}`);
+
         const handler = this.resolveHandler;
 
         if(handler === null) {
