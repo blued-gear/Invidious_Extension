@@ -149,6 +149,7 @@ class InvidiousDataSyncControllerTest(
                 HttpRequest.PUT("/data", InvDataUpdateDto(
                     -1,
                     newHash,
+                    false,
                     newData
                 )).apply { basicAuth(USERNAME, PASSWORD) },
                 Argument.of(SyncTimeDto::class.java)
@@ -184,6 +185,7 @@ class InvidiousDataSyncControllerTest(
                 HttpRequest.PUT("/data", InvDataUpdateDto(
                     initialTime.time,
                     newHash,
+                    false,
                     newData
                 )).apply { basicAuth(USERNAME, PASSWORD) },
                 Argument.of(SyncTimeDto::class.java)
@@ -218,6 +220,7 @@ class InvidiousDataSyncControllerTest(
                     HttpRequest.PUT("/data", InvDataUpdateDto(
                         expectedLastSync.time - 1000,
                         newHash,
+                        false,
                         newData
                     )).apply { basicAuth(USERNAME, PASSWORD) },
                     Argument.of(SyncTimeDto::class.java)
@@ -228,6 +231,42 @@ class InvidiousDataSyncControllerTest(
 
             // check that not written
             verifyData(expectedLastSync.time, EXAMPLE_HASH, EXAMPLE_DATA)
+        }
+    }
+
+    @Test
+    fun canForceUpdate() {
+        val newData = "changed_data"
+        val newHash = "changed_hash"
+
+        val expectedLastSync = addTestData()
+        val startTime = Instant.now().toEpochMilli()
+        var savedTime: SyncTimeDto? = null
+
+        testEndpoint(http) { http ->
+            http.exchange(
+                HttpRequest.PUT("/data", InvDataUpdateDto(
+                    expectedLastSync.time - 1000,
+                    newHash,
+                    true,
+                    newData
+                )).apply { basicAuth(USERNAME, PASSWORD) },
+                Argument.of(SyncTimeDto::class.java)
+            ).let { resp ->
+                resp.status shouldBe HttpStatus.OK
+
+                val respVal = resp.body()
+                respVal shouldNotBe null
+
+                val endTime = Instant.now().toEpochMilli()
+                respVal.time shouldBeGreaterThan  startTime
+                respVal.time shouldBeLessThan endTime
+
+                savedTime = respVal
+            }
+
+            // check if really written
+            verifyData(savedTime!!.time, newHash, newData)
         }
     }
 
@@ -274,6 +313,7 @@ class InvidiousDataSyncControllerTest(
                 HttpRequest.PUT("/data", InvDataUpdateDto(
                     -1,
                     hash,
+                    false,
                     "data"
                 )).apply { basicAuth(username, password) },
                 Argument.of(SyncTimeDto::class.java)
@@ -317,6 +357,7 @@ class InvidiousDataSyncControllerTest(
         return entryService.updateData(user, InvDataUpdateDto(
             -1,
             EXAMPLE_HASH,
+            false,
             EXAMPLE_DATA
         ))
     }
