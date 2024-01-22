@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "1.9.10"
-    val micronautVersion = "4.1.1"
+    val kotlinVersion = "1.9.22"
+    val micronautVersion = "4.2.1"
 
     id("org.jetbrains.kotlin.jvm") version kotlinVersion
     id("org.jetbrains.kotlin.kapt") version kotlinVersion

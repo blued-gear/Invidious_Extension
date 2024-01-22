@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "1.9.10"
+    val kotlinVersion = "1.9.22"
 
     id("org.jetbrains.kotlin.jvm") version kotlinVersion
     id("org.jetbrains.kotlin.kapt") version kotlinVersion
@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"
-version = "1.0.0"
+version = "1.1.0"
 
 repositories {
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/") {
