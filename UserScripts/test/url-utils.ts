@@ -1,28 +1,30 @@
-import {channelId, playlistId} from "../src/util/url-utils";
+import IvUrlExtractor from "../src/controllers/invidious/url-extractor";
+
+const urlExtractor = new IvUrlExtractor();
 
 describe("url-utils", () => {
     describe("channelId", () => {
         it("should extract the id from a simple path", () => {
             const expectedId = "ABCD";
-            const id = channelId(`/channel/${expectedId}`);
+            const id = urlExtractor.channelId(`/channel/${expectedId}`);
             expect(id).toBe(expectedId);
         });
 
         it("should extract the id from a path with more subpaths", () => {
             const expectedId = "ABCD";
-            const id = channelId(`/channel/${expectedId}/playlists`);
+            const id = urlExtractor.channelId(`/channel/${expectedId}/playlists`);
             expect(id).toBe(expectedId);
         });
 
         it("should extract the id from a path with query", () => {
             const expectedId = "ABCD";
-            const id = channelId(`/channel/${expectedId}?a=b`);
+            const id = urlExtractor.channelId(`/channel/${expectedId}?a=b`);
             expect(id).toBe(expectedId);
         });
 
         it("should extract the id from a path with more subpaths and query", () => {
             const expectedId = "ABCD";
-            const id = channelId(`/channel/${expectedId}/playlists?a=b`);
+            const id = urlExtractor.channelId(`/channel/${expectedId}/playlists?a=b`);
             expect(id).toBe(expectedId);
         });
     });
@@ -30,18 +32,18 @@ describe("url-utils", () => {
     describe("playlistId", () => {
         it("should extract id from watch path", () => {
             const expectedId = "ABCD";
-            const id = playlistId(`/watch?v=vid_id&list=${expectedId}`);
+            const id = urlExtractor.playlistId(`/watch?v=vid_id&list=${expectedId}`);
             expect(id).toBe(expectedId);
         });
 
         it("should extract id from playlist path", () => {
             const expectedId = "ABCD";
-            const id = playlistId(`/playlist?list=${expectedId}`);
+            const id = urlExtractor.playlistId(`/playlist?list=${expectedId}`);
             expect(id).toBe(expectedId);
         });
 
         it("should return null on unrelated path", () => {
-            const id = playlistId("/path?v=vid_id&list=ABCD");
+            const id = urlExtractor.playlistId("/path?v=vid_id&list=ABCD");
             expect(id).toBeNull();
         });
     });
