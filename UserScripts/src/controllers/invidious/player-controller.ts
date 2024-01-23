@@ -10,6 +10,7 @@ import {
 import urlExtractor from "../url-extractor";
 import {nodeListToArray} from "../../util/utils";
 import {ADDED_ELM_MARKER_ATTR} from "../document-controller";
+import locationController from "../location-controller";
 
 export default class InvidiousPlayerControllerImpl implements PlayerController {
 
@@ -194,7 +195,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
     async openVideo(id: string, time: number | null): Promise<boolean> {
         if(urlExtractor.videoId(undefined) !== id) {
             const timeParam = time != null ? `&t=${time}` : '';
-            location.assign("/watch?v=" + id + timeParam);
+            locationController.navigate("/watch?v=" + id + timeParam);
             return true;
         } else {
             await this.waitForPlayerStartet();
@@ -202,7 +203,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(time != null) {
                 const currentTime = this.getTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - time) > 2) {// two seconds as acceptable delta
-                    location.assign(`/watch?v=${id}&t=${time}`);
+                    locationController.navigate(`/watch?v=${id}&t=${time}`);
                     return true;
                 }
             }
@@ -223,7 +224,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(vidTime != null) {
                 const currentTime = this.getTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - vidTime) > 2) {// two seconds as acceptable delta
-                    location.assign(`/watch?v=${vidId}&list=${plId}${plIdxParam}&t=${vidTime}`);
+                    locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}&t=${vidTime}`);
                     return true;
                 }
             }
@@ -232,7 +233,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         }
 
         const timeParam = vidTime != null ? `&t=${vidTime}` : '';
-        location.assign(`/watch?v=${vidId}&list=${plId}${plIdxParam}${timeParam}`);
+        locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}${timeParam}`);
         return true;
     }
 
