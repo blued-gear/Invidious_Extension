@@ -1,4 +1,4 @@
-import {PlayerController, PlaylistName, PublisherInfo, VideoLoadedInfo} from "../player-controller";
+import {ListenMode, PlayerController, PlaylistName, PublisherInfo, VideoLoadedInfo} from "../player-controller";
 import {
     PlaylistVideoStackItem,
     STACK_ITEM_EXTRA_PLAYLIST_NAME,
@@ -192,10 +192,12 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         return (link as HTMLAnchorElement).href;
     }
 
-    async openVideo(id: string, time: number | null): Promise<boolean> {
+    async openVideo(id: string, time: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
+        const listenParam = this.listenModeParam(listenMode);
+
         if(urlExtractor.videoId(undefined) !== id) {
             const timeParam = time != null ? `&t=${time}` : '';
-            locationController.navigate("/watch?v=" + id + timeParam);
+            locationController.navigate("/watch?v=" + id + timeParam + listenParam);
             return true;
         } else {
             await this.waitForPlayerStartet();
@@ -203,7 +205,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(time != null) {
                 const currentTime = this.getTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - time) > 2) {// two seconds as acceptable delta
-                    locationController.navigate(`/watch?v=${id}&t=${time}`);
+                    locationController.navigate(`/watch?v=${id}&t=${time}${listenParam}`);
                     return true;
                 }
             }
@@ -212,8 +214,9 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         }
     }
 
-    async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null): Promise<boolean> {
+    async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
         const plIdxParam = plIdx !== -1 ? `&index=${plIdx}` : '';
+        const listenParam = this.listenModeParam(listenMode);
 
         if(urlExtractor.playlistId(undefined) === plId
             && urlExtractor.videoId(undefined) === vidId
@@ -224,7 +227,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(vidTime != null) {
                 const currentTime = this.getTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - vidTime) > 2) {// two seconds as acceptable delta
-                    locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}&t=${vidTime}`);
+                    locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}&t=${vidTime}${listenParam}`);
                     return true;
                 }
             }
@@ -313,5 +316,17 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
                 }
             }, 100);
         });
+    }
+
+    private listenModeParam(mode: ListenMode): string {
+        switch(mode) {
+            case 'vid':
+                return '';
+            case 'aud':
+                return '&listen=1';
+            case 'keep':
+                const currentMode = urlExtractor.isListenMode(undefined);
+                return currentMode ? '&listen=1' : '';
+        }
     }
 }

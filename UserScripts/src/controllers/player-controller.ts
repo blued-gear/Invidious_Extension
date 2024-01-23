@@ -19,6 +19,11 @@ export type VideoLoadedInfo = {
     loaded: boolean
 }
 
+/**
+ * vid -> video; aud -> listen; keep -> same as in current url
+ */
+export type ListenMode = 'vid' | 'aud' | 'keep';
+
 export interface PlayerController {
 
     //region info extractors
@@ -46,9 +51,10 @@ export interface PlayerController {
      * @param id the video-id
      * @param time number of seconds to jump to after start (if video is already loaded it will reload with the right time);
      *              or <code>null</code> if unspecified
+     * @param listenMode sets the listen_mode of the opened vid
      * @return true if a page-reload was triggered
      */
-    openVideo(id: string, time: number | null): Promise<boolean>
+    openVideo(id: string, time: number | null, listenMode?: ListenMode): Promise<boolean>
 
     /**
      * @param plId the playlist-id
@@ -56,9 +62,10 @@ export interface PlayerController {
      * @param vidId the video-id
      * @param vidTime number of seconds to jump to after start (if video is already loaded it will reload with the right time);
      *              or <code>null</code> if unspecified
+     * @param listenMode sets the listen_mode of the opened pl
      * @return true if a page-reload was triggered
      */
-    openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null): Promise<boolean>
+    openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null, listenMode?: ListenMode): Promise<boolean>
 
     isVideoLoaded(): VideoLoadedInfo
     startVideo(): Promise<void>
