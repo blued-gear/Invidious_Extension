@@ -161,20 +161,24 @@ export class PlayerManager {
     private async stateContNone() {
         // history may be popped -> restore time
         const watchStack = await stackMgr.loadCurrentWatchStack();
-        const vid = watchStack.peek();
+        const item = watchStack.peek();
 
-        if(vid === null)
+        if(item === null)
             return;
-        if(vid.id !== urlExtractor.videoId(undefined))
+        if(item.id !== urlExtractor.videoId(undefined))
             return;
-        if(vid.timeCurrent === null)
+        if(item.timeCurrent === null)
             return;
 
         const urlTime = urlExtractor.videoStartTime(undefined);
-        if(urlTime !== null && (vid.timeCurrent - urlTime) < 2)
+        if(urlTime !== null && (item.timeCurrent - urlTime) < 2)
             return;
 
-        await this.openVideo(vid.id, vid.timeCurrent);
+        if(item instanceof PlaylistVideoStackItem) {
+            await this.openPlaylist(item.playlistId, item.playlistIdx, item.id, item.timeCurrent);
+        } else {
+            await this.openVideo(item.id, item.timeCurrent);
+        }
     }
 
     private loadState(): PlayerState {
