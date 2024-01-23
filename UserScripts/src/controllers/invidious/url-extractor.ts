@@ -97,6 +97,24 @@ export default class InvidiousUrlExtractorImpl implements UrlExtractor {
         return this.parseQueryParams(path).get('listen') === '1';
     }
 
+    videoStartTime(path: string | undefined): number | null {
+        if(path === undefined) {
+            if(!this.isOnPlayer())
+                return null;
+
+            path = location.search;
+        }
+
+        const tStr = this.parseQueryParams(path).get('t');
+        if(tStr === null)
+            return null;
+
+        const t = Number.parseInt(tStr);
+        if(Number.isNaN(t))
+            return null;
+        return t;
+    }
+
     //region special
     isOnPlaylistUnsubscribe(): boolean {
         return location.pathname === '/delete_playlist';

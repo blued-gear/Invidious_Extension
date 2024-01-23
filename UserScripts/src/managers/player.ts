@@ -170,6 +170,10 @@ export class PlayerManager {
         if(vid.timeCurrent === null)
             return;
 
+        const urlTime = urlExtractor.videoStartTime(undefined);
+        if(urlTime !== null && (vid.timeCurrent - urlTime) < 2)
+            return;
+
         await this.openVideo(vid.id, vid.timeCurrent);
     }
 

@@ -5,6 +5,7 @@ export interface UrlExtractor {
     isOnPlayer(): boolean
     videoId(path: string | undefined): string | null
     isListenMode(path: string | undefined): boolean
+    videoStartTime(path: string | undefined): number | null
 
     isPlayingPlaylist(): boolean
     playlistIndex(): number | null
