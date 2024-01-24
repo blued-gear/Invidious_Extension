@@ -111,3 +111,7 @@ export async function sleep(millis: number): Promise<void> {
         setTimeout(resolve, millis);
     });
 }
+
+export function delta(a: number, b: number): number {
+    return Math.abs(a - b);
+}

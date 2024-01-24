@@ -4,6 +4,7 @@ import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item
 import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
 import locationController, {NavigationInterceptor} from "../controllers/location-controller";
+import {delta} from "../util/utils";
 
 const STORAGE_KEY_STATE = STORAGE_PREFIX + "player::state";
 const STORAGE_KEY_REVERSE_PLAYLIST = STORAGE_PREFIX + "player::reversePlaylist";
@@ -171,7 +172,7 @@ export class PlayerManager {
             return;
 
         const urlTime = urlExtractor.videoStartTime(undefined);
-        if(urlTime !== null && (item.timeCurrent - urlTime) < 2)
+        if(urlTime !== null && delta(item.timeCurrent, urlTime) < 2)
             return;
 
         if(item instanceof PlaylistVideoStackItem) {
