@@ -96,14 +96,7 @@ watch(dlgOpen, (showing) => {
         <label for="stack_save_dlg-name">Stack Name</label>
       </span>
 
-      <Panel v-show="wouldOverwrite" header="Warning"
-             class="panelWarn"
-             :pt="{
-              // I know, inline-styles are ugly, but classes don't work somehow
-              root: { style: 'margin-top: 1rem;' },
-              header: { style: 'background-color: var(--yellow-500);' },
-              toggleableContent: { style: 'border: 2px solid var(--yellow-300); border-radius: 0 0 4px 4px; border-top: none; ' }
-           }">
+      <Panel v-show="wouldOverwrite" header="Warning" class="panelWarn">
         The name already exist and the stack will be overwritten.
       </Panel>
 
@@ -116,5 +109,17 @@ watch(dlgOpen, (showing) => {
 </template>
 
 <style scoped>
+:deep(.panelWarn.p-panel) {
+  margin-top: 1rem;
+}
 
+:deep(.panelWarn.p-panel .p-panel-header) {
+  background-color: var(--yellow-500);
+}
+
+:deep(.panelWarn.p-panel .p-panel-content) {
+  border: 2px solid var(--yellow-300);
+  border-radius: 0 0 4px 4px;
+  border-top: none;
+}
 </style>
