@@ -3,6 +3,7 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import AutoComplete from "primevue/autocomplete";
 import Panel from "primevue/panel";
+import ProgressSpinner from 'primevue/progressspinner';
 import {useToast} from 'primevue/usetoast';
 
 import stackMgr, {STACK_ID_TO_BE_SET, StackNameWithId} from "../../managers/stacks";
@@ -20,6 +21,7 @@ const dlgOpen = defineModel<boolean>({
 const selectedName = ref<string | null>(null);
 const existingStacks = ref<StackNameWithId[]>([]);
 const existingNames = ref<string[]>([]);
+const existingStacksLoaded = ref<boolean>(false);
 
 const wouldOverwrite = computed(() => existingNames.value.find(n => n === selectedName.value) != undefined);
 const nameValid = computed(() => selectedName.value !== null && selectedName.value !== "");
@@ -68,9 +70,12 @@ function onSave() {
 }
 
 function updateExistingStacks() {
+  existingStacksLoaded.value = false;
+
   stackMgr.listStacks().then(stacks => {
     existingStacks.value = stacks;
     onQueryNames();
+    existingStacksLoaded.value = true;
   });
 
   const loadedStack = stackMgr.getActiveStack();
@@ -89,20 +94,24 @@ watch(dlgOpen, (showing) => {
 <template>
   <Dialog v-model:visible="dlgOpen" header="Save Stack">
     <div class="w-full max-w-30rem">
-      <span class="p-float-label mt-5">
+      <div class="flex flex-row">
+        <span class="p-float-label flex-grow-1">
         <AutoComplete v-model="selectedName" :suggestions="existingNames" dropdown
                       @complete="onQueryNames"
                       input-id="stack_save_dlg-name" class="w-full"></AutoComplete>
         <label for="stack_save_dlg-name">Stack Name</label>
-      </span>
+        </span>
+
+        <ProgressSpinner v-show="!existingStacksLoaded" class="ml-2 w-2rem h-2rem"></ProgressSpinner>
+      </div>
 
       <Panel v-show="wouldOverwrite" header="Warning" class="panelWarn">
         The name already exist and the stack will be overwritten.
       </Panel>
 
-      <div class="flex mt-2">
+      <div class="flex mt-3">
         <div class="flex-grow-1"></div>
-        <Button :disabled="!nameValid" @click="onSave">Save</Button>
+        <Button :disabled="!nameValid || !existingStacksLoaded" @click="onSave">Save</Button>
       </div>
     </div>
   </Dialog>
