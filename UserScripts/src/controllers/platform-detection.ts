@@ -10,3 +10,16 @@ export function isInvidious(): boolean {
 
     return false;
 }
+
+export function isPiped(): boolean {
+    const links = document.querySelectorAll('html body div#app div.reset.flex.flex-col footer a');
+    for(let i = 0; i < links.length; i++) {
+        const elm = links.item(i);
+        if(!(elm instanceof HTMLAnchorElement))
+            continue;
+        if(elm.href === 'https://docs.piped.video/')
+            return true;
+    }
+
+    return false;
+}
