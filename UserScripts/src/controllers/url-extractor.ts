@@ -1,5 +1,6 @@
-import {isInvidious} from "./platform-detection";
+import {isInvidious, isPiped} from "./platform-detection";
 import InvidiousUrlExtractorImpl from "./invidious/url-extractor";
+import PipedUrlExtractorImpl from "./piped/url-extractor";
 
 export interface UrlExtractor {
     isOnPlayer(): boolean
@@ -22,6 +23,8 @@ export interface UrlExtractor {
 const instance: UrlExtractor = (function() {
     if(isInvidious())
         return new InvidiousUrlExtractorImpl();
+    if(isPiped())
+        return new PipedUrlExtractorImpl();
 
     throw new Error("UserScript was started on an unsupported platform");
 })();
