@@ -94,7 +94,8 @@ export default class InvidiousUrlExtractorImpl implements UrlExtractor {
             path = location.search;
         }
 
-        return this.parseQueryParams(path).get('listen') === '1';
+        const listen = this.parseQueryParams(path).get('listen');
+        return listen === '1' || listen === 'true';
     }
 
     videoStartTime(path: string | undefined): number | null {
