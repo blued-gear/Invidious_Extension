@@ -9,7 +9,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
         if(elm != null)
             return elm;
 
-        elm = this.createGeneralElement('duv', elmId);
+        elm = this.createGeneralElement('div', elmId);
 
         let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
         if(anchor == null)
