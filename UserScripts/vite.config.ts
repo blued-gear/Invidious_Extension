@@ -53,11 +53,15 @@ export default defineConfig({
           'https://invidious.fdn.fr/*',
           'https://anontube.lvkaszus.pl/*',
           'https://invidious.perennialte.ch/*',
-          'https://yt.cdaut.de/*'
+          'https://yt.cdaut.de/*',
+
+          'https://piped.adminforge.de/*',
+          'https://piped.video/*',
+          'https://piped.projectsegfau.lt/*'
         ],
         connect: [
-            "chocolatecakecodes.goip.de",
-            "localhost"
+          "chocolatecakecodes.goip.de",
+          "localhost"
         ],
       },
 
