@@ -149,7 +149,7 @@ async function onWarning(message: string, err: Error | undefined) {
 
 <template>
   <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Resolve Sync-Conflicts"
-          :style="{ width: '60vw', height: 'fit-content' }"
+          class="invExt" :style="{ width: '60vw', height: 'fit-content' }"
           :pt="{
             content: { 'class': 'h-full' }
           }">

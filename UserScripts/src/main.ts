@@ -6,10 +6,6 @@ import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
 import Tooltip from 'primevue/tooltip';
 
-import 'primevue/resources/themes/saga-blue/theme.css';
-import 'primeicons/primeicons.css';
-import 'primeflex/primeflex.min.css';
-
 import {GM_addElement} from "./monkey";
 
 import './style.scss';

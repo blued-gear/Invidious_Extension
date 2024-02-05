@@ -13,6 +13,7 @@ const dlgOpen = defineModel<boolean>({
 
 <template>
   <Dialog v-model:visible="dlgOpen" modal :closable="true" header="Login"
+          class="invExt"
           :style="{ width: '60vw', height: 'fit-content' }"
           :pt="{
             content: { 'class': 'h-full' }

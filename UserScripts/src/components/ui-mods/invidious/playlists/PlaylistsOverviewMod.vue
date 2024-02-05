@@ -221,7 +221,7 @@ function createUngroupedGroup(playlists: Playlists): PlGroup {
 
 <template>
   <Teleport v-if="uiTarget != null" :to="uiTarget">
-    <Accordion :multiple="true" :active-index="expandedGroups">
+    <Accordion :multiple="true" :active-index="expandedGroups" class="invExt">
       <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id">
         <template #header>
           <div class="flex align-items-center w-full">

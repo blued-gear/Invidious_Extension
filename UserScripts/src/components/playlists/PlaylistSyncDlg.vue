@@ -67,7 +67,7 @@ async function syncSubscribed(prog: ProgressController, direction: 'local' | 're
 
 <template>
   <Dialog v-model:visible="show" modal :closable="true" header="Sync Playlists"
-          :style="{ width: '60vw', height: '75vh' }"
+          class="invExt" :style="{ width: '60vw', height: '75vh' }"
           :pt="{
             content: { 'class': 'h-full' }
           }">

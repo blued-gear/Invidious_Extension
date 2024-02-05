@@ -190,7 +190,7 @@ watch(dlgOpen, async (newVal) => {
 
 <template>
   <Dialog v-model:visible="dlgOpen" modal :closable="false" header="Edit Stack"
-          style="width: 75vw; height: 80vh;">
+          class="invExt" style="width: 75vw; height: 80vh;">
     <div class="w-full h-full flex flex-column">
       <!-- region name -->
       <div class="flex flex-column gap-2">

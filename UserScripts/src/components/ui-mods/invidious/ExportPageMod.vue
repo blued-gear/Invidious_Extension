@@ -160,7 +160,7 @@ onBeforeMount(async () => {
 
 <template>
   <Teleport :to="uiTarget">
-    <div class="border-1 border-primary p-1">
+    <div class="invExt border-1 border-primary p-1">
       <h3 class="m-2">Invidious-Extension Settings Sync</h3>
 
       <div class="flex gap-3 ml-2 w-fit h-3rem">
@@ -184,13 +184,15 @@ onBeforeMount(async () => {
 
     <Toast group="export_page_mod-err_export_conflict">
       <template #message="slotProps">
-        <TimesCircleIcon class="p-toast-message-icon"></TimesCircleIcon>
+        <div class="invExt">
+          <TimesCircleIcon class="p-toast-message-icon"></TimesCircleIcon>
 
-        <div class="p-toast-message-text flex flex-column">
-          <span class="p-toast-summary">{{slotProps.message.summary}}</span>
-          <div class="p-toast-detail">{{slotProps.message.detail}}</div>
+          <div class="p-toast-message-text flex flex-column">
+            <span class="p-toast-summary">{{slotProps.message.summary}}</span>
+            <div class="p-toast-detail">{{slotProps.message.detail}}</div>
 
-          <Button @click="() => onExport(true)" class="align-self-end mt-2">Force Export</Button>
+            <Button @click="() => onExport(true)" class="align-self-end mt-2">Force Export</Button>
+          </div>
         </div>
       </template>
     </Toast>

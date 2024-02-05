@@ -188,6 +188,7 @@ defineExpose({
 
 <template>
   <Dialog v-model:visible="dlgOpen" modal :closable="true" :header="dlgHeader"
+          class="invExt"
           :style="{ width: '60vw', height: 'fit-content' }"
           :pt="{
             content: { 'class': 'h-full' }

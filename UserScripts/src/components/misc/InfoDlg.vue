@@ -16,7 +16,8 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
 
 <template>
   <Dialog v-model:visible="show" :closable="true" :blockScroll="true" header="Info"
-          content-class="h-full" style="width: 90vw; height: 80vh;">
+          class="invExt" content-class="h-full"
+          style="width: 90vw; height: 80vh;">
     <div ref="contentRef" class="w-full h-full">
       <TabView class="h-full">
         <TabPanel header="Info">

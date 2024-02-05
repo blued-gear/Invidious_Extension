@@ -106,7 +106,7 @@ function submit() {
 </script>
 
 <template>
-  <div>
+  <div class="invExt">
     <form @submit.prevent="submit" class="pt-3 w-max max-w-full">
       <div class="w-max max-w-full">
         <div class="field">

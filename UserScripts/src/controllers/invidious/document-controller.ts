@@ -51,4 +51,8 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
         const logoutBtn = document.querySelector('html body div.pure-g div#contents div.pure-g.navbar.h-box div.pure-u-1.user-field div.pure-u-1-4 form a.pure-menu-heading input');
         return logoutBtn != null;
     }
+
+    waitForUiReady(): Promise<void> {
+        return Promise.resolve();// SSR, so everything is ready immediatly
+    }
 }

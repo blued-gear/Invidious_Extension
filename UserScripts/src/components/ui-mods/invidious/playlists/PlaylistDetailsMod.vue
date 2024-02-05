@@ -137,7 +137,7 @@ async function internalPlId(plId: string): Promise<string> {
 
 <template>
   <Teleport :to="uiTarget">
-    <div class="flex gap-1">
+    <div class="invExt flex gap-1">
       <div v-if="isPlaylistSaved" class="groupsWrapper">
         <MultiSelectWithAdd :model="groupSelection" :closed-text="selectedGroupsText"
                             :empty-placeholder="'Groups'"

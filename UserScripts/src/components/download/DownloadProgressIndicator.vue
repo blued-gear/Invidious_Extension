@@ -175,7 +175,7 @@ onBeforeMount(() => {
 <template>
   <Teleport :to="elmTarget">
     <div ref="indicatorContainer" v-show="indicatorVisible"
-         class="fixed bottom-0 left-0 ml-1 w-fit h-fit"
+         class="invExt fixed bottom-0 left-0 ml-1 w-fit h-fit"
          @click.stop="onIndicatorClick">
       <VeProgress :progress="indicatorProgress" :color="indicatorColor"
                   :hideLegend="false" :legend="true" :size="50"

@@ -92,7 +92,7 @@ watch(dlgOpen, (showing) => {
 </script>
 
 <template>
-  <Dialog v-model:visible="dlgOpen" header="Save Stack">
+  <Dialog v-model:visible="dlgOpen" header="Save Stack" class="invExt">
     <div class="w-full max-w-30rem">
       <div class="flex flex-row">
         <span class="p-float-label flex-grow-1">

@@ -55,8 +55,9 @@ function onMenuOpen() {
 <template>
   <Teleport :to="btnTarget">
     <Button @click="e => vidMnu!!.toggle(e)" icon="pi pi-database" text rounded
-            aria-label="InvExt" v-tooltip="'InvExt'"></Button>
-    <TieredMenu ref="vidMnu" :model="vidMnuContent" popup @before-show="onMenuOpen"></TieredMenu>
+            aria-label="InvExt" v-tooltip="'InvExt'"
+            class="invExt"></Button>
+    <TieredMenu ref="vidMnu" :model="vidMnuContent" popup @before-show="onMenuOpen" class="invExt"></TieredMenu>
   </Teleport>
 
   <StackEditDlg v-model="stackEditorDlgOpen" :stack-id="stackToEditId"></StackEditDlg>
