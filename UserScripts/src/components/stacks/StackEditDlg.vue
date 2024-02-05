@@ -245,7 +245,7 @@ watch(dlgOpen, async (newVal) => {
       <!-- endregion add, remove -->
 
       <!-- region cancel, save -->
-      <div class="flex mt-4">
+      <div class="flex mt-4 pb-3">
         <Button @click="onCancel">Cancel</Button>
         <div class="flex-grow-1"></div>
         <Button @click="onSave">Save</Button>
