@@ -1,5 +1,6 @@
-import {isInvidious} from "./platform-detection";
+import {isInvidious, isPiped} from "./platform-detection";
 import InvidiousDocumentControllerImpl from "./invidious/document-controller";
+import PipedDocumentControllerImpl from "./piped/document-controller";
 
 export const ADDED_ELM_MARKER_ATTR = "inv_ext-0elm";
 
@@ -19,6 +20,8 @@ export interface DocumentController {
 const instance: DocumentController = (function() {
     if(isInvidious())
         return new InvidiousDocumentControllerImpl();
+    if(isPiped())
+        return new PipedDocumentControllerImpl();
 
     throw new Error("UserScript was started on an unsupported platform");
 })();
