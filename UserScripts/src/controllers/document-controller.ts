@@ -9,6 +9,11 @@ export interface DocumentController {
     createGeneralElement(tagName: string, id?: string): HTMLElement
 
     hasPlatformLogin(): boolean
+
+    /**
+     * the promise will resolve when the UI is loaded and can be modded
+     */
+    waitForUiReady(): Promise<void>
 }
 
 const instance: DocumentController = (function() {

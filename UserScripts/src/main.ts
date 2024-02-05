@@ -66,9 +66,7 @@ async function setupUi() {
     createApp(App)
         .use(PrimeVue).use(DialogService).use(ToastService).use(ConfirmationService)
         .directive('tooltip', Tooltip)
-        .mount((() => {
-            return GM_addElement(document.body, "div");
-        })());
+        .mount(GM_addElement(document.body, 'div', { id: 'invExt-app' }));
 }
 
 async function main() {
@@ -87,6 +85,7 @@ async function main() {
     }
 
     try {
+        await documentController.waitForUiReady();
         await setupUi();
     } catch(e) {
         const err = e as Error;

@@ -115,3 +115,7 @@ export async function sleep(millis: number): Promise<void> {
 export function delta(a: number, b: number): number {
     return Math.abs(a - b);
 }
+
+export function linkRawHref(elm: HTMLAnchorElement): string | null {
+    return elm.attributes.getNamedItem('href')?.value ?? null;
+}

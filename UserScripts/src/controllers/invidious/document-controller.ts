@@ -13,7 +13,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
 
         let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
         if(anchor == null)
-            throw new Error("unable to find menu-bar to insert button");
+            throw new Error("unable to find view-root to insert download_indicator");
 
         anchor.insertAdjacentElement('beforeend', elm);
 
