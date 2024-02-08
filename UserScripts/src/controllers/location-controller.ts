@@ -1,5 +1,6 @@
-import {isInvidious} from "./platform-detection";
+import {isInvidious, isPiped} from "./platform-detection";
 import InvidiousLocationControllerImpl from "./invidious/location-controller";
+import PipedLocationControllerImpl from "./piped/location-controller";
 
 /**
  * called when the page is about to change
@@ -20,6 +21,8 @@ export interface LocationController {
 const instance: LocationController = (() => {
     if(isInvidious())
         return new InvidiousLocationControllerImpl();
+    if(isPiped())
+        return new PipedLocationControllerImpl();
 
     throw new Error("UserScript was started on an unsupported platform");
 })();
