@@ -119,3 +119,11 @@ export function delta(a: number, b: number): number {
 export function linkRawHref(elm: HTMLAnchorElement): string | null {
     return elm.attributes.getNamedItem('href')?.value ?? null;
 }
+
+/**
+ * used for situations like the following:<br/>
+ * <code>const a = my?.obj ?? elseThrow(new Error("..."))</code>
+ */
+export function elseThrow<T>(err: Error): T {
+    throw err;
+}

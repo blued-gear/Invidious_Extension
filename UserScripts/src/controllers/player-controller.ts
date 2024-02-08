@@ -4,8 +4,9 @@ import {
     STACK_ITEM_EXTRA_PUBLISHER_NAME,
     VideoStackItem
 } from "../model/stacks/stack-item";
-import {isInvidious} from "./platform-detection";
+import {isInvidious, isPiped} from "./platform-detection";
 import InvidiousPlayerControllerImpl from "./invidious/player-controller";
+import PipedPlayerControllerImpl from "./piped/player-controller";
 
 export type PublisherInfo = {
     [STACK_ITEM_EXTRA_PUBLISHER_CHAN_ID]: string,
@@ -76,6 +77,8 @@ export interface PlayerController {
 const instance: PlayerController = (function() {
     if(isInvidious())
         return new InvidiousPlayerControllerImpl();
+    if(isPiped())
+        return new PipedPlayerControllerImpl();
 
     throw new Error("UserScript was started on an unsupported platform");
 })();
