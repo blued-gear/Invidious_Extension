@@ -210,7 +210,7 @@ export class PlayerManager {
         if(prevItemLink === null) return null;
 
         // if listen-mode is active set param to target-url
-        if(urlExtractor.isListenMode(undefined)) {
+        if(urlExtractor.isListenMode(undefined) && !urlExtractor.isListenMode(prevItemLink)) {
             prevItemLink = prevItemLink.replace('&listen=0', '');
             prevItemLink += '&listen=1';
         }
