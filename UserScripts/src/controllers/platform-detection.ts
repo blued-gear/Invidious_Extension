@@ -12,12 +12,12 @@ export function isInvidious(): boolean {
 }
 
 export function isPiped(): boolean {
-    const links = document.querySelectorAll('html body div#app div.reset.flex.flex-col footer a');
-    for(let i = 0; i < links.length; i++) {
-        const elm = links.item(i);
-        if(!(elm instanceof HTMLAnchorElement))
+    const meta = document.head.getElementsByTagName('link');
+    for(let i = 0; i < meta.length; i++) {
+        const elm = meta.item(i)!!;
+        if(elm.type !== 'application/opensearchdescription+xml')
             continue;
-        if(elm.href === 'https://docs.piped.video/')
+        if(elm.title === 'Piped')
             return true;
     }
 
