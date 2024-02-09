@@ -1,5 +1,6 @@
 import {ADDED_ELM_MARKER_ATTR, DocumentController} from "../document-controller";
-import {linkRawHref} from "../../util/utils";
+import {linkRawHref, sleep} from "../../util/utils";
+import {unsafeWindow} from "../../monkey";
 
 export default class PipedDocumentControllerImpl implements DocumentController {
 
@@ -60,7 +61,12 @@ export default class PipedDocumentControllerImpl implements DocumentController {
         return true;
     }
 
-    waitForUiReady(): Promise<void> {
+    async waitForUiReady() {
+        await this.waitForVueLoaded();
+        await this.waitForRouteLoaded();
+    }
+
+    private async waitForVueLoaded() {
         const target = document.getElementById('app')!!;
 
         function isReady(): boolean {
@@ -70,7 +76,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
         if(isReady())
             return Promise.resolve();
 
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             let observer: MutationObserver | null = null;
 
             const callback: MutationCallback = () => {
@@ -85,5 +91,16 @@ export default class PipedDocumentControllerImpl implements DocumentController {
                 childList: true
             });
         });
+    }
+
+    private async waitForRouteLoaded() {
+        function isReady(): boolean {
+            // noinspection JSUnresolvedReference
+            return (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route?.matched[0] != undefined;
+        }
+
+        while(!isReady()) {
+            await sleep(5);
+        }
     }
 }
