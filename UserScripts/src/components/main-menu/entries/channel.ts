@@ -2,6 +2,7 @@ import toast from "../../../workarounds/toast";
 import {TOAST_LIFE_INFO} from "../../../util/constants";
 import {MenuItem} from "primevue/menuitem";
 import urlExtractor from "../../../controllers/url-extractor";
+import locationController from "../../../controllers/location-controller";
 
 function openChannelUploadsPl() {
     const chanId = urlExtractor.channelId(undefined)!!;
@@ -15,7 +16,7 @@ function openChannelUploadsPl() {
     //TODO there may be more patterns
 
     if(plId !== null) {
-        window.location.assign(`/playlist?list=${plId}`);
+        locationController.navigate(`/playlist?list=${plId}`);
     } else {
         toast.add({
             summary: "Unable to detect the uploads-playlist",
