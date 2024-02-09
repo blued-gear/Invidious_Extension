@@ -81,9 +81,7 @@ export default class PipedLocationControllerImpl implements LocationController {
             const replacement = this.findRoutReplacement();
             if(replacement !== null) {
                 this.inInterception = true;
-                return {
-                    path: replacement
-                };
+                return replacement;
             } else {
                 await runBeforeNavigateCBs();
                 return true;
