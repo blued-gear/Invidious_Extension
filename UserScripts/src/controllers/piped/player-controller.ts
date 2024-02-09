@@ -198,12 +198,19 @@ export default class PipedPlayerControllerImpl implements PlayerController {
                 continue;
             }
 
-            await player.play();
+            try {
+                await player.play();
+            } catch(e) {
+                console.warn("unable to start playback", e)
+            }
+
             return;
         }
     }
 
     async waitForPlayerStartet() {
+        let attemptedPlaybackStart = false;
+
         while(true) {
             await sleep(10);
 
@@ -212,10 +219,13 @@ export default class PipedPlayerControllerImpl implements PlayerController {
                 continue;
 
             const player = this.videoPlayer()?.getMediaElement();
-            if(loaded.loaded && player != null && !player.paused)
+            if(loaded.loaded && player != null && player.currentTime > 0)
                 return;
 
-            await this.startVideo();
+            if(!attemptedPlaybackStart) {
+                attemptedPlaybackStart = true;
+                await this.startVideo();
+            }
         }
     }
 
