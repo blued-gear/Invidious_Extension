@@ -1,18 +1,26 @@
-import {LocationController, NavigationInterceptor} from "../location-controller";
+import {
+    LocationController,
+    NavigationInterceptor,
+    OnAfterNavigatedCallback,
+    OnBeforeNavigatedCallback
+} from "../location-controller";
 import {unsafeWindow} from "../../monkey";
 import documentController from "../document-controller";
-import {logException} from "../../util/utils";
+import {logException, sleep} from "../../util/utils";
 
 // noinspection JSUnresolvedReference
 export default class PipedLocationControllerImpl implements LocationController {
 
     private readonly navigationInterceptors = new Set<NavigationInterceptor>();
+    private readonly beforeNavigateCBs = new Set<OnBeforeNavigatedCallback>();
+    private readonly afterNavigateCBs = new Set<OnAfterNavigatedCallback>();
     private inInterception: boolean = false;
 
     constructor() {
         (async () => {
             await documentController.waitForUiReady();
             this.installNavigationInterceptor();
+            this.installLocationChangedHandler();
         })().catch((err) => logException(err, "PipedLocationControllerImpl::installNavigationInterceptor() failed"));
     }
 
@@ -32,11 +40,41 @@ export default class PipedLocationControllerImpl implements LocationController {
         this.navigationInterceptors.delete(interceptor);
     }
 
+    addBeforeNavigationCallback(cb: OnBeforeNavigatedCallback) {
+        this.beforeNavigateCBs.add(cb);
+    }
+
+    removeBeforeNavigationCallback(cb: OnBeforeNavigatedCallback) {
+        this.beforeNavigateCBs.delete(cb);
+    }
+
+    addAfterNavigationCallback(fireImmediately: boolean, cb: OnAfterNavigatedCallback) {
+        this.afterNavigateCBs.add(cb);
+
+        if(fireImmediately)
+            cb();
+    }
+
+    removeAfterNavigationCallback(cb: OnAfterNavigatedCallback) {
+        this.afterNavigateCBs.add(cb);
+    }
+
     private installNavigationInterceptor() {
+        const runBeforeNavigateCBs = async () => {
+            for (const cb of this.beforeNavigateCBs) {
+                try {
+                    await cb();
+                } catch(e) {
+                    logException(e as Error, "PipedLocationControllerImpl::beforeNavigateCBs: a callback threw an exception");
+                }
+            }
+        };
+
         // see https://router.vuejs.org/guide/advanced/navigation-guards.html
-        this.router().beforeEach((): any | boolean => {
+        this.router().beforeEach(async (): Promise<any | boolean> => {
             if(this.inInterception) {
                 this.inInterception = false;
+                await runBeforeNavigateCBs();
                 return true;
             }
 
@@ -46,9 +84,27 @@ export default class PipedLocationControllerImpl implements LocationController {
                 return {
                     path: replacement
                 };
+            } else {
+                await runBeforeNavigateCBs();
+                return true;
             }
+        });
+    }
 
-            return true;
+    private installLocationChangedHandler() {
+        this.router().afterEach(() => {
+            (async () => {
+                // the components will not pick up the change immediately, so wait a bit
+                await sleep(1000);
+
+                this.afterNavigateCBs.forEach((cb) => {
+                    try {
+                        cb();
+                    } catch(e) {
+                        logException(e as Error, "PipedLocationControllerImpl::afterNavigateCBs: a callback threw an exception");
+                    }
+                });
+            })();
         });
     }
 
