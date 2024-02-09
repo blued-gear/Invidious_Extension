@@ -2,10 +2,11 @@ import {STORAGE_PREFIX} from "../util/constants";
 import WatchStack from "../model/stacks/watchstack";
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerMng from "./player";
-import {generateUniqueId} from "../util/utils";
+import {generateUniqueId, logException} from "../util/utils";
 import extensionDataSync from "../sync/extension-data";
 import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
+import locationController from "../controllers/location-controller";
 
 export interface StackNameWithId {
     id: string,
@@ -27,17 +28,15 @@ export class StackManager {//TODO use internal IDs for playlists
     }
 
     private constructor() {
-        window.addEventListener('beforeunload', () => {
+        locationController.addBeforeNavigationCallback(async () => {
             if(urlExtractor.isOnPlayer()) {
-                const exec = async () => {
+                try {
                     await this.updateCurrentStack();
-                };
-
-                exec().catch((err) => {
-                    console.error("error in updating watch_stack on pagehide", err);
-                });
+                } catch(e) {
+                    logException(e as Error, "error in updating watch_stack before page_unload");
+                }
             }
-        }, false);
+        });
     }
 
     async updateCurrentWatchStack() {
@@ -162,6 +161,7 @@ export class StackManager {//TODO use internal IDs for playlists
         const popped = this.updateStackPopped(stack);
 
         if(!popped) {
+            await playerController.waitForPlayerStartet();
             const currentVid = playerController.currentVideoItem();
 
             if (currentVid.equals(stack.peek(), true))
