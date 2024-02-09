@@ -107,7 +107,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
         const vidId = urlExtractor.videoId(listSegment[nextIdx].url);
         const plId = this.playlistId();
         const listenParam = this.listenModeParam('keep');
-        return `/watch?v=${vidId}&list=${plId}&index=${nextIdx}${listenParam}`;
+        return `/watch?v=${vidId}&list=${plId}&index=${nextIdx + 1}${listenParam}`;
     }
 
     getPrevPlaylistLink(): string | null {
@@ -127,7 +127,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
         const vidId = urlExtractor.videoId(listSegment[nextIdx].url);
         const plId = this.playlistId();
         const listenParam = this.listenModeParam('keep');
-        return `/watch?v=${vidId}&list=${plId}&index=${nextIdx}${listenParam}`;
+        return `/watch?v=${vidId}&list=${plId}&index=${nextIdx + 1}${listenParam}`;
     }
 
     async openVideo(id: string, time: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
