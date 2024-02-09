@@ -23,6 +23,7 @@ import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
 import playlistsMgr from "./managers/playlists";
 import runEnhancers from "./enhancers/enhancers";
 import documentController from "./controllers/document-controller";
+import locationController from "./controllers/location-controller";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -31,20 +32,30 @@ async function runRestoreLogin() {
     sharedStates.invidiousLogin.value = documentController.hasPlatformLogin();
 }
 
-async function runStartupHooks() {
-    const results = await Promise.allSettled([
+function runStartupHooks() {
+    Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
         playerMgr.pickupState(),
         playlistsMgr.init(),
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
         syncInvidiousData(),
         runEnhancers()
-    ]);
+    ]).then((results) => {
+        const errs = results.filter(r => r.status === 'rejected')
+            .map(r => (r as PromiseRejectedResult).reason as Error);
 
-    const errs = results.filter(r => r.status === 'rejected')
-        .map(r => (r as PromiseRejectedResult).reason as Error);
-    if(errs.length !== 0)
-        throw new AggregateError(errs, "at least one startup-hook has failed");
+        if(errs.length !== 0) {
+            const ex = new AggregateError(errs, "at least one startup-hook has failed");
+            logException(ex, "error in one or more startup-hook");
+
+            toast.add({
+                summary: "Failed to run some startup-hooks\n(Data may be inconsistent)",
+                detail: ex.message,
+                severity: 'error',
+                life: TOAST_LIFE_ERROR
+            });
+        }
+    });
 }
 
 async function syncInvidiousData() {
@@ -99,19 +110,9 @@ async function main() {
         });
     }
 
-    try {
-        await runStartupHooks();
-    } catch(e) {
-        const err = e as Error;
-        logException(err, "error in one or more startup-hook");
-
-        toast.add({
-            summary: "Failed to run some startup-hooks\n(Data may be inconsistent)",
-            detail: err.message,
-            severity: 'error',
-            life: TOAST_LIFE_ERROR
-        });
-    }
+    locationController.addAfterNavigationCallback(true, () => {
+        runStartupHooks();
+    });
 }
 
 main().catch(e => logException(e, "uncaught error in main"));
