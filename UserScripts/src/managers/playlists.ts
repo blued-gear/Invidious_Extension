@@ -533,27 +533,34 @@ export class PlaylistsManager {
         prog.setState(ProgressState.RUNNING);
         prog.setProgress(0);
 
-        for(let i = 0; i < toDelete.length; i++) {
-            const internalPlId = toDelete[i];
-            let domainPlId: string;
-            if(internalPlId.startsWith('??-')) {
-                domainPlId = internalPlId.substring('??-'.length);
-            } else {
-                const id = await this.plIdForId(internalPlId);
-                if(id !== null) {
-                    domainPlId = id;
+        try {
+            for (let i = 0; i < toDelete.length; i++) {
+                const internalPlId = toDelete[i];
+                let domainPlId: string;
+                if (internalPlId.startsWith('??-')) {
+                    domainPlId = internalPlId.substring('??-'.length);
                 } else {
-                    console.warn(`syncDeletedPls(): unknown PL (${internalPlId})`);
-                    continue;
+                    const id = await this.plIdForId(internalPlId);
+                    if (id !== null) {
+                        domainPlId = id;
+                    } else {
+                        console.warn(`syncDeletedPls(): unknown PL (${internalPlId})`);
+                        continue;
+                    }
                 }
+
+                prog.setMessage(`deleting playlists (${domainPlId})`);
+
+                await playlistController.deleteCreatedPlaylist(domainPlId);
+                await this.deletePlId(internalPlId);
+
+                prog.setProgress(Math.min(roundToDecimal(i / toDelete.length, 3), 0.99));
             }
+        } catch(e) {
+            prog.setState(ProgressState.ERR);
+            prog.done(true);
 
-            prog.setMessage(`deleting playlists (${domainPlId})`);
-
-            await playlistController.deleteCreatedPlaylist(domainPlId);
-            await this.deletePlId(internalPlId);
-
-            prog.setProgress(Math.min(roundToDecimal(i / toDelete.length, 3), 0.99));
+            throw e;
         }
 
         prog.setMessage("deleting playlists");
@@ -567,15 +574,22 @@ export class PlaylistsManager {
         prog.setState(ProgressState.RUNNING);
         prog.setProgress(0);
 
-        for(let i = 0; i < toAdd.length; i++) {
-            const info = toAdd[i];
-            prog.setMessage(`adding playlists (${info.name})`);
+        try {
+            for (let i = 0; i < toAdd.length; i++) {
+                const info = toAdd[i];
+                prog.setMessage(`adding playlists (${info.name})`);
 
-            const domainPlId = await playlistController.createCreatedPlaylist(info.name, info.description);
-            this.storeKnownPlId(info.id, domainPlId);
-            await playlistController.updatePlaylist(domainPlId, info.videos, prog.fork());
+                const domainPlId = await playlistController.createCreatedPlaylist(info.name, info.description);
+                this.storeKnownPlId(info.id, domainPlId);
+                await playlistController.updatePlaylist(domainPlId, info.videos, prog.fork());
 
-            prog.setProgress(Math.min(roundToDecimal(i / toAdd.length, 3), 0.99));
+                prog.setProgress(Math.min(roundToDecimal(i / toAdd.length, 3), 0.99));
+            }
+        } catch(e) {
+            prog.setState(ProgressState.ERR);
+            prog.done(true);
+
+            throw e;
         }
 
         prog.setMessage("adding playlists");
@@ -589,23 +603,30 @@ export class PlaylistsManager {
         prog.setState(ProgressState.RUNNING);
         prog.setProgress(0);
 
-        for(let i = 0; i < toUpdate.length; i++) {
-            const info = toUpdate[i];
-            prog.setMessage(`updating playlists (${info.name})`);
+        try {
+            for (let i = 0; i < toUpdate.length; i++) {
+                const info = toUpdate[i];
+                prog.setMessage(`updating playlists (${info.name})`);
 
-            const domainPlId = await this.plIdForId(info.id);
-            if(domainPlId === null) {
-                console.warn(`syncUpdatedPls(): unknown PL (${info.id})`);
-                continue;
+                const domainPlId = await this.plIdForId(info.id);
+                if (domainPlId === null) {
+                    console.warn(`syncUpdatedPls(): unknown PL (${info.id})`);
+                    continue;
+                }
+
+                await playlistController.updatePlaylist(domainPlId, info.videos, prog.fork());
+                await playlistController.setPlDetails(domainPlId, {
+                    name: info.name,
+                    description: info.description
+                });
+
+                prog.setProgress(Math.min(roundToDecimal(i / toUpdate.length, 3), 0.99));
             }
+        } catch(e) {
+            prog.setState(ProgressState.ERR);
+            prog.done(true);
 
-            await playlistController.updatePlaylist(domainPlId, info.videos, prog.fork());
-            await playlistController.setPlDetails(domainPlId, {
-                name: info.name,
-                description: info.description
-            });
-
-            prog.setProgress(Math.min(roundToDecimal(i / toUpdate.length, 3), 0.99));
+            throw e;
         }
 
         prog.setMessage("updating playlists");
