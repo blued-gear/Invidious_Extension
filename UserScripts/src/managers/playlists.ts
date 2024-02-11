@@ -456,8 +456,8 @@ export class PlaylistsManager {
             const internalPlId = await this.storePlId(plId);
             data.playlists.push({
                 id: internalPlId,
-                name: details.name!!,
-                description: details.description!!,
+                name: details.name,
+                description: details.description,
                 videos: items
             });
 

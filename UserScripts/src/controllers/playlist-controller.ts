@@ -1,6 +1,7 @@
-import {isInvidious} from "./platform-detection";
+import {isInvidious, isPiped} from "./platform-detection";
 import InvidiousPlaylistControllerImpl from "./invidious/playlist-controller";
 import ProgressController from "../util/progress-controller";
+import PipedPlaylistControllerImpl from "./piped/playlist-controller";
 
 export interface PlaylistUiElm {
     element: HTMLElement,
@@ -14,14 +15,21 @@ export interface PlaylistContainers {
     createdPlaylistsContainer: HTMLElement | undefined,
     savedPlaylistsContainer: HTMLElement | undefined
 }
+
 export interface PlaylistItemIdx {
     /** the index of the video in the playlist */
     index: number,
     /** the expected video-id at the given index */
     videoId: string
 }
+
 export type PlaylistHook = (id: string) => Promise<void>;
-export interface PlaylistDetails {
+
+export interface PlaylistDetailsGet {
+    name: string,
+    description: string
+}
+export interface PlaylistDetailsSet {
     name?: string,
     description?: string
 }
@@ -95,19 +103,21 @@ export interface PlaylistController {
      * get the details of a playlist (name, description)
      * @param plId the (domain-specific) ID of the playlist
      */
-    getPlDetails(plId: string): Promise<PlaylistDetails>
+    getPlDetails(plId: string): Promise<PlaylistDetailsGet>
     /**
      * sets the details of a playlist (name, description); only defined detail will be updated
      * @param plId the (domain-specific) ID of the playlist
      * @param details the details to set
      */
-    setPlDetails(plId: string, details: PlaylistDetails): Promise<void>
+    setPlDetails(plId: string, details: PlaylistDetailsSet): Promise<void>
     //endregion
 }
 
 const instance: PlaylistController = (function() {
     if(isInvidious())
-        return new InvidiousPlaylistControllerImpl();
+        return new InvidiousPlaylistControllerImpl()
+    if(isPiped())
+        return new PipedPlaylistControllerImpl();
 
     throw new Error("UserScript was started on an unsupported platform");
 })();

@@ -1,7 +1,8 @@
 import {
     PlaylistContainers,
     PlaylistController,
-    PlaylistDetails,
+    PlaylistDetailsGet,
+    PlaylistDetailsSet,
     PlaylistHook,
     PlaylistItemIdx,
     Playlists,
@@ -17,9 +18,7 @@ interface PlaylistItem {
     vidId: string,
     itemId: string
 }
-interface InvidiousPlaylistDetails extends PlaylistDetails {
-    name: string,
-    description: string
+interface InvidiousPlaylistDetails extends PlaylistDetailsGet {
     privacy: string
 }
 
@@ -308,7 +307,7 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
         };
     }
 
-    async setPlDetails(plId: string, details: PlaylistDetails) {
+    async setPlDetails(plId: string, details: PlaylistDetailsSet) {
         const currentDetails = await this.getPlDetails(plId);
 
         const newName = details.name ?? currentDetails.name;
