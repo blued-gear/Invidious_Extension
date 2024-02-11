@@ -189,12 +189,14 @@ export class PlaylistsManager {
             return existingId;
 
         const newId = generateUniqueId(Object.keys(this.idToPlId!!));
-        this.storeKnownPlId(newId, id);
+        await this.storeKnownPlId(newId, id);
 
         return newId;
     }
 
-    private storeKnownPlId(internalId: string, domainId: string) {
+    private async storeKnownPlId(internalId: string, domainId: string) {
+        await this.loadPlIdMapping(false);
+
         this.idToPlId!![internalId] = domainId;
         this.plIdToId!![domainId] = internalId;
     }
@@ -580,7 +582,7 @@ export class PlaylistsManager {
                 prog.setMessage(`adding playlists (${info.name})`);
 
                 const domainPlId = await playlistController.createCreatedPlaylist(info.name, info.description);
-                this.storeKnownPlId(info.id, domainPlId);
+                await this.storeKnownPlId(info.id, domainPlId);
                 await playlistController.updatePlaylist(domainPlId, info.videos, prog.fork());
 
                 prog.setProgress(Math.min(roundToDecimal(i / toAdd.length, 3), 0.99));
@@ -776,7 +778,7 @@ export class PlaylistsManager {
 
             const internalId = await this.idForPlIdForeign(pl);
             if(internalId !== null)
-                this.storeKnownPlId(internalId, pl);
+                await this.storeKnownPlId(internalId, pl);
             else
                 await this.storePlId(pl);
 
