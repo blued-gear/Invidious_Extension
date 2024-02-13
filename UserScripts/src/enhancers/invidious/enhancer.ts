@@ -3,18 +3,12 @@ import {elementListToArray, nodeListToArray} from "../../util/utils";
 import {INVIDIOUS_PLAYLIST_ID_PREFIX} from "../../controllers/invidious/playlist-controller";
 import documentController, {ADDED_ELM_MARKER_ATTR} from "../../controllers/document-controller";
 import {pipedJsonRequest} from "../../util/piped";
+import {formatDate} from "../../util/formatters";
 
 /**
  * runs misc enhancements for the general Invidious UI
  */
 class InvidiousEnhancer {
-
-    private dateFormatter = new Intl.DateTimeFormat('sv-SE', {// for reason of the locale see https://stackoverflow.com/questions/25050034/get-iso-8601-using-intl-datetimeformat
-        hour12: false,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit"
-    });
 
     async run() {
         this.fixInvidiousSizing();
@@ -91,7 +85,10 @@ class InvidiousEnhancer {
         if(uploadDateTime == undefined)
             return null;
 
-        return this.dateFormatter.format(Date.parse(uploadDateTime));
+        const date = Date.parse(uploadDateTime);
+        if(Number.isNaN(date))
+            return null;
+        return formatDate(date);
     }
     //endregion
 
