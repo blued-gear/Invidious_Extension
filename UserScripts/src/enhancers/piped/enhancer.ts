@@ -2,7 +2,7 @@ import urlExtractor from "../../controllers/url-extractor";
 import {linkRawHref, nodeListToArray, sleep} from "../../util/utils";
 import {ADDED_ELM_MARKER_ATTR} from "../../controllers/document-controller";
 import {formatDate} from "../../util/formatters";
-import PipedUrlExtractorImpl from "../../controllers/piped/url-extractor";
+import {pipedApiHost} from "../../controllers/piped/special-functions";
 
 /**
  * runs misc enhancements for the general Invidious UI
@@ -72,8 +72,7 @@ class PipedEnhancer {
     }
 
     private async loadVideoUploadDate(id: string): Promise<string | null> {
-        const pipedUrlExtractor = urlExtractor as PipedUrlExtractorImpl;
-        const resp = await fetch(`${pipedUrlExtractor.pipedApiHost()}/streams/${id}`);
+        const resp = await fetch(`${pipedApiHost()}/streams/${id}`);
         if(!resp.ok)
             return null;
 

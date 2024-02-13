@@ -1,5 +1,4 @@
 import {UrlExtractor} from "../url-extractor";
-import {unsafeWindow} from "../../monkey";
 
 // noinspection DuplicatedCode
 export default class PipedUrlExtractorImpl implements UrlExtractor {
@@ -109,26 +108,6 @@ export default class PipedUrlExtractorImpl implements UrlExtractor {
             return null;
 
         return idx;
-    }
-    //endregion
-
-    //region Piped extras
-    /**
-     * @return the host of the Piped-API (with 'https://')
-     */
-    pipedApiHost(): string {
-        // noinspection JSUnresolvedReference
-        const mixins: any[] = (unsafeWindow as any).app.__vue_app__._context.mixins;
-        for(let mixin of mixins) {
-            const func: Function | undefined = mixin.methods.authApiUrl;
-            if(func != undefined) {
-                // noinspection JSUnresolvedReference
-                const activeComponent: any = (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route.matched[0].instances.default;
-                return func.apply(activeComponent);
-            }
-        }
-
-        throw new Error("pipedApiHost() unable to find method for extracting host");
     }
     //endregion
 

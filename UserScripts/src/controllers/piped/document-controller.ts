@@ -1,6 +1,6 @@
 import {ADDED_ELM_MARKER_ATTR, DocumentController} from "../document-controller";
 import {linkRawHref, sleep} from "../../util/utils";
-import {unsafeWindow} from "../../monkey";
+import {currentComponent} from "./special-functions";
 
 export default class PipedDocumentControllerImpl implements DocumentController {
 
@@ -95,8 +95,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
 
     private async waitForRouteLoaded() {
         function isReady(): boolean {
-            // noinspection JSUnresolvedReference
-            return (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route?.matched[0] != undefined;
+            return currentComponent() != undefined;
         }
 
         while(!isReady()) {

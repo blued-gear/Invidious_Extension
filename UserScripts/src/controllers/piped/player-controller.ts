@@ -1,9 +1,9 @@
 import {ListenMode, PlayerController, PlaylistName, PublisherInfo, VideoLoadedInfo} from "../player-controller";
 import {PlaylistVideoStackItem, VideoStackItem, VideoStackItemProps} from "../../model/stacks/stack-item";
-import {unsafeWindow} from "../../monkey";
 import urlExtractor from "../url-extractor";
 import {delta, elseThrow, sleep} from "../../util/utils";
 import locationController from "../location-controller";
+import {currentComponent} from "./special-functions";
 
 // noinspection JSUnresolvedReference
 export default class PipedPlayerControllerImpl implements PlayerController {
@@ -256,7 +256,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     private playerComponent(): any {
-        return (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route.matched[0].instances.default._;
+        return currentComponent()._;
     }
 
     private videoPlayer(): any {

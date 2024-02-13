@@ -11,9 +11,9 @@ import {
 import ProgressController, {ProgressState} from "../../util/progress-controller";
 import locationController from "../location-controller";
 import urlExtractor from "../url-extractor";
-import PipedUrlExtractorImpl from "./url-extractor";
-import {elementListToArray, linkRawHref, logException, roundToDecimal} from "../../util/utils";
+import {elementListToArray, linkRawHref, logException, roundToDecimal, sleep} from "../../util/utils";
 import {unsafeWindow} from "../../monkey";
+import {currentComponent, pipedApiHost, pipedAuthToken} from "./special-functions";
 
 // noinspection JSUnresolvedReference
 export default class PipedPlaylistControllerImpl implements PlaylistController {
@@ -580,24 +580,4 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         }
     }
     //endregion
-}
-
-function pipedApiHost(): string {
-    const pipedUrlExtractor = urlExtractor as PipedUrlExtractorImpl;
-    return pipedUrlExtractor.pipedApiHost();
-}
-
-function pipedAuthToken(): string {
-    // noinspection JSUnresolvedReference
-    const mixins: any[] = (unsafeWindow as any).app.__vue_app__._context.mixins;
-    for(let mixin of mixins) {
-        const func: Function | undefined = mixin.methods.getAuthToken;
-        if(func != undefined) {
-            // noinspection JSUnresolvedReference
-            const activeComponent: any = (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route.matched[0].instances.default;
-            return func.apply(activeComponent);
-        }
-    }
-
-    throw new Error("pipedApiHost() unable to find method for extracting host");
 }
