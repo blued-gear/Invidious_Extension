@@ -34,6 +34,11 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
     private subscribeHookInstalled = false;
     private unsubscribeHookInstalled = false;
 
+    waitForElementsLoaded(): Promise<void> {
+        // SSR, so everything is there on load
+        return Promise.resolve();
+    }
+
     findPlaylistContainers(): PlaylistContainers {
         if(this.plContainersCache === null) {
             this.plContainersCache = this.scrapePlaylistContainers();

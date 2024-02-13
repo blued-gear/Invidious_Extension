@@ -35,6 +35,18 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         return /^[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+$/.test(id);
     }
 
+    async waitForElementsLoaded() {
+        await sleep(10);// should be enough that saved playlist were loaded
+
+        const expectedPlaylists = await this.fetchCreatedPlaylists();
+        const expectedPlaylistsCount = expectedPlaylists.length;
+        const componentData = currentComponent()._.data;
+
+        while (componentData.playlists == null || componentData.playlists.length != expectedPlaylistsCount) {
+            await sleep(10);
+        }
+    }
+
     findPlaylistContainers(): PlaylistContainers {
         const ret: PlaylistContainers = { createdPlaylistsContainer: undefined, savedPlaylistsContainer: undefined };
 
@@ -402,6 +414,23 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         });
         if(!resp.ok)
             throw new Error("addVideoToPl(): api call failed");
+    }
+
+    private async fetchCreatedPlaylists(): Promise<any> {
+        const url = `${pipedApiHost()}/user/playlists`;
+
+        const resp = await fetch(url, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': pipedAuthToken()
+            }
+        });
+        if(!resp.ok)
+            throw new Error("fetchCreatedPlaylists(): api call failed");
+
+        return await resp.json();
     }
 
     private async delPlItem(plId: string, index: number): Promise<boolean> {

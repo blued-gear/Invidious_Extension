@@ -37,6 +37,10 @@ export interface PlaylistDetailsSet {
 export interface PlaylistController {
 
     //region playlist-overview extractors
+    /**
+     * after the promise is resolved, all relevant UI elements were loaded and can be used for further processing
+     */
+    waitForElementsLoaded(): Promise<void>
     findPlaylistContainers(): PlaylistContainers
     findPlaylists(): Playlists
     /** return true if on pl-details of self-created pl */

@@ -56,6 +56,7 @@ export class PlaylistsManager {
     private constructor() {}
 
     async init() {
+        this.playlistScanned.reset();
         await this.indexPlaylists();
         await this.saveChanges();
     }
@@ -823,6 +824,7 @@ export class PlaylistsManager {
             return;
         }
 
+        await playlistController.waitForElementsLoaded();
         const {created, saved} = playlistController.findPlaylists();
         this.playlistScanned.signal();
 
