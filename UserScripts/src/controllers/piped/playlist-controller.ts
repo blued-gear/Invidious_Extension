@@ -233,6 +233,26 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         this.unsubscribeHooks.push(hook);
     }
 
+    //region Piped extras
+    isPlSubscribed(plId: string): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => {
+            const db: IDBDatabase = (unsafeWindow as any).db;
+            const tx = db.transaction("playlist_bookmarks", "readwrite");
+            const store = tx.objectStore("playlist_bookmarks");
+
+            const req = store.openCursor(plId);
+
+            req.onsuccess = () => {
+                const result = req.result;
+                resolve(result != null);
+            };
+            req.onerror = () => {
+                reject(new Error("isPlSubscribed(): failed to read from IndexDB"));
+            };
+        });
+    }
+    //endregion
+
     private async fetchPlData(id: string): Promise<any> {
         const resp = await fetch(`${pipedApiHost()}/playlists/${id}`);
         if(!resp.ok)
@@ -402,24 +422,6 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         });
 
         return resp.ok;
-    }
-
-    private isPlSubscribed(plId: string): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            const db: IDBDatabase = (unsafeWindow as any).db;
-            const tx = db.transaction("playlist_bookmarks", "readwrite");
-            const store = tx.objectStore("playlist_bookmarks");
-
-            const req = store.openCursor(plId);
-
-            req.onsuccess = () => {
-                const result = req.result;
-                resolve(result != null);
-            };
-            req.onerror = () => {
-                reject(new Error("isPlSubscribed(): failed to read from IndexDB"));
-            };
-        });
     }
 
     private installPlSubscribeHooks() {
