@@ -1,21 +1,18 @@
 <script setup lang="ts">
-import {Teleport} from "vue/dist/vue";
 import MultiSelectWithAdd from "../../../misc/MultiSelectWithAdd.vue";
 import {computed, onBeforeMount, ref} from "vue";
 import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import {useToast} from "primevue/usetoast";
-
 import playlistsMgr from "../../../../managers/playlists";
 import PlaylistsGroup from "../../../../model/PlaylistsGroup";
 import {arrayFold} from "../../../../util/array-utils";
-import {logException, sleep} from "../../../../util/utils";
+import {logException} from "../../../../util/utils";
 import urlExtractor from "../../../../controllers/url-extractor";
-import documentController from "../../../../controllers/document-controller";
 import playlistController from "../../../../controllers/playlist-controller";
 import PipedPlaylistControllerImpl from "../../../../controllers/piped/playlist-controller";
+import TeleportHelper from "../util/TeleportHelper.vue";
 
-const targetElmId = "invExt-playlistDetailsMod";
-async function createUiTarget(): Promise<HTMLElement | null> {
+function findAnchor(): HTMLElement | null {
   let anchor = document.querySelector('html body div#app div.reset div.flex-1 div div.mt-1.flex.items-center div > strong')?.parentElement;
   if(anchor == null)
     return null;
@@ -25,20 +22,11 @@ async function createUiTarget(): Promise<HTMLElement | null> {
   anchorParent.classList.remove('justify-between');
   (anchorParent.firstElementChild as HTMLElement).style.flexGrow = '1';
 
-  let elm = document.getElementById(targetElmId);
-  if(elm == null) {
-    elm = documentController.createGeneralElement('div', targetElmId);
-    elm.style.display = 'inline-block';
-  }
-
-  anchor.insertAdjacentElement('beforebegin', elm);
-
-  return elm;
+  return anchor;
 }
 
 const toast = useToast();
 
-const uiTarget = ref<HTMLElement | null>(null);
 const isPlaylistSaved = ref<boolean>(false);
 const groups = ref<PlaylistsGroup[]>([]);
 const groupSelection = ref<Record<string, boolean>>({});
@@ -133,28 +121,15 @@ async function computeIsSaved() {
   return false;
 }
 
-async function waitForUiTarget(): Promise<HTMLElement | null> {
-  for(let tries = 0; tries < 1000; tries++) {
-    const elm = await createUiTarget();
-    if(elm !== null)
-      return elm;
-
-    await sleep(100);
-  }
-
-  console.error("unable to find div to insert playlistDetails_mod");
-  return null;
-}
-
 onBeforeMount(async () => {
   loadGroups();
   isPlaylistSaved.value = await computeIsSaved();
-  uiTarget.value = await waitForUiTarget();
 });
 </script>
 
 <template>
-  <Teleport v-if="uiTarget" :to="uiTarget">
+  <TeleportHelper element-id="invExt-playlistDetailsMod" element-class="inline-block" insert-position="beforebegin"
+                  :anchor="findAnchor">
     <div class="invExt flex gap-1 mr-5">
       <div v-if="isPlaylistSaved" class="groupsWrapper">
         <MultiSelectWithAdd :model="groupSelection" :closed-text="selectedGroupsText"
@@ -162,7 +137,7 @@ onBeforeMount(async () => {
                             @update="onSelectionChanged" @new-option="onNewGroup"></MultiSelectWithAdd>
       </div>
     </div>
-  </Teleport>
+  </TeleportHelper>
 </template>
 
 <style scoped>

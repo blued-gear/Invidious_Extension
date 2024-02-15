@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {onBeforeMount, Ref, ref, Teleport} from "vue";
-import {logException, nodeListToArray, sleep} from "../../../../util/utils";
+import {onBeforeMount, ref} from "vue";
+import {logException, nodeListToArray} from "../../../../util/utils";
 import playlistsMng from "../../../../managers/playlists";
 import PlaylistsGroup, {ID_UNGROUPED} from "../../../../model/PlaylistsGroup";
 import Accordion from "primevue/accordion";
@@ -8,39 +8,21 @@ import AccordionTab from 'primevue/accordiontab';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import playlistController, {Playlists, PlaylistUiElm} from "../../../../controllers/playlist-controller";
-import documentController from "../../../../controllers/document-controller";
+import TeleportHelper from "../util/TeleportHelper.vue";
 
 interface PlGroup {
   group: PlaylistsGroup,
   createdPlaylists: PlaylistUiElm[],
   savedPlaylists: PlaylistUiElm[]
 }
-interface PlElmContainer {
-  pl: PlaylistUiElm,
-  elm: Ref<HTMLElement>
-}
 
 const toast = useToast();
 
-const targetElmId = "invExt-playlistsOverviewMod";
-
-const uiTarget = ref<HTMLElement | null>(null);
 const groupedPlaylists = ref<PlGroup[]>([]);
 const expandedGroups = ref<number[]>([]);
 
-async function createUiTarget(): Promise<HTMLElement | null> {
-  let anchor = document.querySelector('html body div#app div.reset div.flex-1 h2.my-4.font-bold');
-  if(anchor == null)
-    throw new Error("unable to find div to insert playlistsOverview_mod");
-
-  let elm = document.getElementById(targetElmId);
-  if(elm == null) {
-    elm = documentController.createGeneralElement('div', targetElmId);
-  }
-
-  anchor.insertAdjacentElement('afterend', elm);
-
-  return elm;
+function findAnchor(): HTMLElement | null {
+  return document.querySelector('html body div#app div.reset div.flex-1 h2.my-4.font-bold');
 }
 
 /**
@@ -177,26 +159,11 @@ function bindPlElements(elm: Element | undefined, pl: PlaylistUiElm) {
   elm.appendChild(pl.element);
 }
 
-async function waitForUiTarget(): Promise<HTMLElement | null> {
-  for(let tries = 0; tries < 1000; tries++) {
-    const elm = await createUiTarget();
-    if(elm !== null)
-      return elm;
-
-    await sleep(100);
-  }
-
-  console.error("unable to find div to insert playlistDetails_mod");
-  return null;
-}
-
 onBeforeMount(() => {
   (async () => {
     await playlistsMng.waitForInit();
 
     const playlists = playlistController.findPlaylists();
-
-    uiTarget.value = await waitForUiTarget();
 
     if(!clearUi())
       return;
@@ -229,7 +196,8 @@ function createUngroupedGroup(playlists: Playlists): PlGroup {
 </script>
 
 <template>
-  <Teleport v-if="uiTarget != null" :to="uiTarget">
+  <TeleportHelper element-id="invExt-playlistsOverviewMod" insert-position="afterend"
+                  :anchor="findAnchor">
     <Accordion :multiple="true" :active-index="expandedGroups" class="invExt">
       <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id">
         <template #header>
@@ -254,7 +222,7 @@ function createUngroupedGroup(playlists: Playlists): PlGroup {
         </div>
       </AccordionTab>
     </Accordion>
-  </Teleport>
+  </TeleportHelper>
 </template>
 
 <style scoped>
