@@ -18,6 +18,8 @@ import {currentComponent, pipedApiHost, pipedAuthToken} from "./special-function
 // noinspection JSUnresolvedReference
 export default class PipedPlaylistControllerImpl implements PlaylistController {
 
+    private plContainers: PlaylistContainers | null = null;
+    private plElements: Playlists | null = null;
     private readonly subscribeHooks: PlaylistHook[] = [];
     private readonly unsubscribeHooks: PlaylistHook[] = [];
 
@@ -48,6 +50,9 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
     }
 
     findPlaylistContainers(): PlaylistContainers {
+        if(this.plContainers !== null)
+            return this.plContainers;
+
         const ret: PlaylistContainers = { createdPlaylistsContainer: undefined, savedPlaylistsContainer: undefined };
 
         const containers = elementListToArray(document.getElementsByClassName("video-grid")) as HTMLElement[];
@@ -59,10 +64,14 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
             }
         }
 
+        this.plContainers = ret;
         return ret;
     }
 
     findPlaylists(): Playlists {
+        if(this.plElements)
+            return this.plElements;
+
         function mapPl(elm: Element): PlaylistUiElm | null {
             let id: string | null;
             if(elm instanceof HTMLAnchorElement) {
@@ -92,10 +101,13 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         }
 
         const containers = this.findPlaylistContainers();
-        return {
+        const ret: Playlists = {
             created: mapPls(elementListToArray(containers.createdPlaylistsContainer!!.children)),
             saved: mapPls(elementListToArray(containers.savedPlaylistsContainer!!.children))
         };
+
+        this.plElements = ret;
+        return ret;
     }
 
     async getPlDetails(plId: string): Promise<PlaylistDetailsGet> {

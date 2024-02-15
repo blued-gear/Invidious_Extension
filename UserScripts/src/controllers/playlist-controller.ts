@@ -56,6 +56,8 @@ export interface PlaylistController {
     subscribeToPlaylist(id: string): Promise<void>
     unsubscribeFromPlaylist(id: string): Promise<void>
 
+    //TODO getPLs()
+
     /**
      * Creates an empty playlist.
      * The visibility will be set to "private".
