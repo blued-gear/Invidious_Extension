@@ -69,6 +69,13 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
         return plEditBtn != undefined;
     }
 
+    async getCreatedPlaylists(): Promise<string[]> {
+        return this.findPlaylists().created.map(pl => pl.plId);
+    }
+    async getSavedPlaylists(): Promise<string[]> {
+        return this.findPlaylists().saved.map(pl => pl.plId);
+    }
+
     addPlaylistSubscribeHook(hook: PlaylistHook): void {
         this.setupPlSubscribeHook();
         this.subscribeHooks.push(hook);

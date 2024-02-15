@@ -53,10 +53,19 @@ export interface PlaylistController {
     //endregion
 
     //region playlist manipulators
+    /**
+     * returns the domain-specific IDs of own created playlists
+     * (only available on Playlist-Overview page)
+     */
+    getCreatedPlaylists(): Promise<string[]>
+    /**
+     * returns the domain-specific IDs of own subscribed playlists
+     * (only available on Playlist-Overview page)
+     */
+    getSavedPlaylists(): Promise<string[]>
+
     subscribeToPlaylist(id: string): Promise<void>
     unsubscribeFromPlaylist(id: string): Promise<void>
-
-    //TODO getPLs()
 
     /**
      * Creates an empty playlist.

@@ -442,7 +442,7 @@ export class PlaylistsManager {
         prog.setProgress(0.01);
         prog.setState(ProgressState.RUNNING);
 
-        const playlists = playlistController.findPlaylists().created.map(elm => elm.plId);
+        const playlists = await playlistController.getCreatedPlaylists();
         const data: StoredCreatedPls = {
             playlists: [],
             time: Date.now()
@@ -493,7 +493,7 @@ export class PlaylistsManager {
         prog.setState(ProgressState.RUNNING);
 
         prog.setMessage("syncing created playlists from remote\n(loading local playlists)");
-        const localPls = playlistController.findPlaylists().created.map(itm => itm.plId);
+        const localPls = await playlistController.getCreatedPlaylists();
         for(let i = 0; i < localPls.length; i++) {
             const domainId = localPls[i];
             const internalId = await this.idForPlId(domainId) ?? `??-${domainId}`;
@@ -737,7 +737,7 @@ export class PlaylistsManager {
         prog.setProgress(0.1);
         prog.setState(ProgressState.RUNNING);
 
-        const playlists = playlistController.findPlaylists().saved.map(pl => pl.plId);
+        const playlists = await playlistController.getSavedPlaylists();
         const data: StoredSubscribedPls = {
             playlists: playlists,
             time: Date.now()
@@ -766,7 +766,7 @@ export class PlaylistsManager {
         prog.setState(ProgressState.RUNNING);
 
         const expectedPls = data.playlists;
-        const actualPls = playlistController.findPlaylists().saved.map(pl => pl.plId);
+        const actualPls = await playlistController.getSavedPlaylists();
 
         const toAdd = setDifference(expectedPls, actualPls);
         const toDel = setDifference(actualPls, expectedPls);
@@ -825,13 +825,14 @@ export class PlaylistsManager {
         }
 
         await playlistController.waitForElementsLoaded();
-        const {created, saved} = playlistController.findPlaylists();
+        const created = await playlistController.getCreatedPlaylists();
+        const saved = await playlistController.getSavedPlaylists();
         this.playlistScanned.signal();
 
         for(let pl of [ ...created, ...saved ]) {
-            const id = await this.idForPlId(pl.plId);
+            const id = await this.idForPlId(pl);
             if(id === null) {
-                await this.storePlId(pl.plId);
+                await this.storePlId(pl);
             }
         }
     }

@@ -110,6 +110,16 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         return ret;
     }
 
+    async getCreatedPlaylists(): Promise<string[]> {
+        const playlistsData = await this.fetchCreatedPlaylists();
+        return playlistsData.map((pl: any) => pl.id as string);
+    }
+
+    async getSavedPlaylists(): Promise<string[]> {
+        const playlistsData = await this.loadSavedPlaylists();
+        return playlistsData.map((pl: any) => pl.playlistId as string);
+    }
+
     async getPlDetails(plId: string): Promise<PlaylistDetailsGet> {
         const data = await this.fetchPlData(plId);
         return {
@@ -443,6 +453,30 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
             throw new Error("fetchCreatedPlaylists(): api call failed");
 
         return await resp.json();
+    }
+
+    private loadSavedPlaylists(): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const ret: any[] = [];
+
+            const db: IDBDatabase = (unsafeWindow as any).db;
+            const tx = db.transaction("playlist_bookmarks", "readonly");
+            const store = tx.objectStore("playlist_bookmarks");
+
+            const cursor = store.openCursor();
+            cursor.onsuccess = () => {
+                const res = cursor.result;
+                if(res != null) {
+                    ret.push(res.value);
+                    res.continue();
+                } else {
+                    resolve(ret);
+                }
+            };
+            cursor.onerror = (e) => {
+                reject(new Error("loadSavedPlaylists(): error while reading from IndexDB", { cause: e }));
+            };
+        });
     }
 
     private async delPlItem(plId: string, index: number): Promise<boolean> {
