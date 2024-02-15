@@ -26,6 +26,10 @@ export default class InvidiousLocationControllerImpl implements LocationControll
         location.assign(url);
     }
 
+    reload() {
+        location.reload();
+    }
+
     interceptNavigation(interceptor: NavigationInterceptor) {
         if(this.navigationInterceptors.size === 0)
             unsafeWindow.addEventListener('beforeunload', this.navigationListener);

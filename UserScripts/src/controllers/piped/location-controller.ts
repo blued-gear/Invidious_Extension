@@ -32,6 +32,10 @@ export default class PipedLocationControllerImpl implements LocationController {
         this.router().push(url);
     }
 
+    reload() {
+        location.reload();
+    }
+
     interceptNavigation(interceptor: NavigationInterceptor): void {
         this.navigationInterceptors.add(interceptor);
     }

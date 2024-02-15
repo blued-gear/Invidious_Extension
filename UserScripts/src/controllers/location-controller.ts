@@ -26,6 +26,11 @@ export interface LocationController {
     navigate(url: string): void
 
     /**
+     * reloads the current page
+     */
+    reload(): void
+
+    /**
      * The given callback will be invoked when the location is about to change.
      * If the navigation-target should be changed, the callback can return the desired location.
      * @param interceptor the callback

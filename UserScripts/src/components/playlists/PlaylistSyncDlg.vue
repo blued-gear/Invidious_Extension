@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import {ref, watch} from "vue";
 import Dialog from "primevue/dialog";
 import Button from "primevue/button";
 import Panel from 'primevue/panel';
@@ -9,15 +9,18 @@ import playlistMng from "../../managers/playlists";
 import {useToast} from "primevue/usetoast";
 import {logException} from "../../util/utils";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
+import locationController from "../../controllers/location-controller";
 
 const toast = useToast();
 
 const show = defineModel<boolean>();
 const started = ref(false);
+const running = ref(false);
 const progView = ref<typeof MultiProgress | undefined>(undefined);
 
 function onStart(direction: 'local' | 'remote' | null) {
   started.value = true;
+  running.value = true;
   const progController: ProgressController = progView.value!!.getController();
 
   progController.setState(ProgressState.RUNNING);
@@ -29,6 +32,8 @@ function onStart(direction: 'local' | 'remote' | null) {
 
     progController.setMessage("syncing subscribed playlists");
     await syncSubscribed(progController.fork(), direction);
+
+    running.value = false;
   })();
 
   progController.setState(ProgressState.FINISHED);
@@ -63,10 +68,17 @@ async function syncSubscribed(prog: ProgressController, direction: 'local' | 're
     });
   }
 }
+
+watch(show, (newVal) => {
+  if(!newVal && started.value && !running.value) {
+    // reload after sync so changes are visible
+    locationController.reload();
+  }
+});
 </script>
 
 <template>
-  <Dialog v-model:visible="show" modal :closable="true" header="Sync Playlists"
+  <Dialog v-model:visible="show" modal :closable="!running" header="Sync Playlists"
           class="invExt" :style="{ width: '60vw', height: '75vh' }"
           :pt="{
             content: { 'class': 'h-full' }
