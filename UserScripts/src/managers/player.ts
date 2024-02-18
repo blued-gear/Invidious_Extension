@@ -1,5 +1,6 @@
 import {STORAGE_PREFIX} from "../util/constants";
 import stackMgr from './stacks';
+import playlistsManager from "./playlists";
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
 import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
@@ -103,7 +104,7 @@ export class PlayerManager {
      */
     async openStackItem(item: VideoStackItem): Promise<boolean> {
         if(item instanceof PlaylistVideoStackItem) {
-            return this.openPlaylist(item.playlistId, item.playlistIdx, item.id, item.timeCurrent);
+            return await this.openStackPl(item);
         } else {
             return this.openVideo(item.id, item.timeCurrent);
         }
@@ -176,10 +177,16 @@ export class PlayerManager {
             return;
 
         if(item instanceof PlaylistVideoStackItem) {
-            await this.openPlaylist(item.playlistId, item.playlistIdx, item.id, item.timeCurrent);
+            await this.openStackPl(item);
         } else {
             await this.openVideo(item.id, item.timeCurrent);
         }
+    }
+
+    private async openStackPl(item: PlaylistVideoStackItem): Promise<boolean> {
+        const plId = await playlistsManager.plIdForId(item.playlistId, false) //TODO maybe fast=true
+            ?? item.playlistId;
+        return this.openPlaylist(plId, item.playlistIdx, item.id, item.timeCurrent);
     }
 
     private loadState(): PlayerState {

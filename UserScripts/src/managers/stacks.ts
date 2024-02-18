@@ -7,6 +7,7 @@ import extensionDataSync from "../sync/extension-data";
 import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
 import locationController from "../controllers/location-controller";
+import playlistsManager from "./playlists";
 
 export interface StackNameWithId {
     id: string,
@@ -20,7 +21,7 @@ export const STORAGE_KEY_STACKS_PREFIX = "stacks::";
 const STORAGE_KEY_ACTIVE_STACK = STORAGE_PREFIX + "stack::active";
 const STORAGE_KEY_CURRENT_STACK = STORAGE_PREFIX + "stack::watch_stack";
 
-export class StackManager {//TODO use internal IDs for playlists
+export class StackManager {
 
     private static _INSTANCE = new StackManager();
     static get INSTANCE() {
@@ -162,7 +163,7 @@ export class StackManager {//TODO use internal IDs for playlists
 
         if(!popped) {
             await playerController.waitForPlayerStartet();
-            const currentVid = playerController.currentVideoItem();
+            const currentVid = await this.stackPlToIntern(playerController.currentVideoItem());
 
             if (currentVid.equals(stack.peek(), true))
                 return;// already up-to-date
@@ -226,6 +227,25 @@ export class StackManager {//TODO use internal IDs for playlists
             return false;
 
         return vid.playlistId === lastVid.playlistId;
+    }
+
+    /**
+     * chnages the id of the playlist of the top item to an internal id
+     * @param item item with domain pl_id
+     * @private
+     */
+    private async stackPlToIntern(item: VideoStackItem): Promise<VideoStackItem> {
+        if(!(item instanceof PlaylistVideoStackItem))
+            return item;
+
+        const internalPlId = await playlistsManager.idForPlId(item.playlistId, false);
+        if(internalPlId === null)
+            return item;
+
+        return new PlaylistVideoStackItem({
+            ...item,
+            playlistId: internalPlId
+        });
     }
 
     private async generateStackId(): Promise<string> {
