@@ -297,7 +297,6 @@ async function computeFingerprint(data: string): Promise<string> {
 
     const json = JSON.parse(data);
     excludedProps.forEach(prop => deleteProp(prop, json));
-    const trimmedData = JSON.stringify(json);
 
-    return await hashObject(trimmedData);
+    return await hashObject(json);
 }
