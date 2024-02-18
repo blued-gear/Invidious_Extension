@@ -111,6 +111,13 @@ export default class PipedUrlExtractorImpl implements UrlExtractor {
     }
     //endregion
 
+    //region Piped specific
+    isOnSettings(): boolean {
+        return location.pathname === '/preferences'
+            || location.pathname === '/preferences/';
+    }
+    //endregion
+
     //region helpers
     private parseQueryParams(path: string): URLSearchParams {
         const qmIdx = path.indexOf('?');
