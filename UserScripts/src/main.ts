@@ -19,11 +19,13 @@ import useSyncConflictService from "./components/sync-conflict/sync-conflict-ser
 import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
 import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
-import invidiousDataSync, {SyncResult} from "./sync/invidious-data";
+import invidiousDataSync, {SyncResult as IvSyncResult} from "./sync/invidious-data";
+import pipedDataSync, {SyncResult as PipedSyncResult} from "./sync/piped-data";
 import playlistsMgr from "./managers/playlists";
 import runEnhancers from "./enhancers/enhancers";
 import documentController from "./controllers/document-controller";
 import locationController from "./controllers/location-controller";
+import {isInvidious, isPiped} from "./controllers/platform-detection";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -39,6 +41,7 @@ function runStartupHooks() {
         playlistsMgr.init(),
         useSyncConflictService().sync().then(() => console.info("sync after startup finished")),
         syncInvidiousData(),
+        syncPipedData(),
         runEnhancers()
     ]).then((results) => {
         const errs = results.filter(r => r.status === 'rejected')
@@ -59,17 +62,35 @@ function runStartupHooks() {
 }
 
 async function syncInvidiousData() {
+    if(!isInvidious())
+        return;
+
     if(sharedStates.loggedIn.value && sharedStates.invidiousLogin.value && await invidiousDataSync.isBackgroundSyncEnabled()) {
         const res = await invidiousDataSync.sync(true);
         console.info("Invidious-Settings sync after startup finished");
 
-        if(res === SyncResult.IMPORTED) {
+        if(res === IvSyncResult.IMPORTED) {
             toast.add({
                 summary: "Invidious-Settings were updated by background-sync",
                 severity: 'info',
                 life: TOAST_LIFE_INFO
             });
         }
+    }
+}
+async function syncPipedData() {
+    if(!isPiped())
+        return;
+
+    const res = await pipedDataSync.autoSync();
+    console.info("Piped-Settings sync after startup finished");
+
+    if(res === PipedSyncResult.IMPORTED) {
+        toast.add({
+            summary: "Piped-Settings were updated by background-sync",
+            severity: 'info',
+            life: TOAST_LIFE_INFO
+        });
     }
 }
 

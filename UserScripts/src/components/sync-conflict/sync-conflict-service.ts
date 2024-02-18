@@ -11,6 +11,12 @@ import {
     STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES as KEY_PL_SUBSCRIBED_TIMES
 } from "../../managers/playlists";
 import {STORAGE_KEY_STACKS_PREFIX as KEY_PREFIX_STACKS} from "../../managers/stacks";
+import {
+    STORAGE_KEY_DATA as KEY_PIPED_SETTINGS_DATA,
+    STORAGE_KEY_DO_BACKGROUND_SYNC as KEY_PIPED_SETTINGS_BG,
+    STORAGE_KEY_LAST_SYNC_TIME as KEY_PIPED_SETTINGS_TIME,
+    STORAGE_KEY_PREFIX as KEY_PREFIX_PIPED_SETTINGS
+} from "../../sync/piped-data";
 
 export type ConflictException = SyncConflictException;
 /**
@@ -137,6 +143,19 @@ class SyncConflictService {
             return "Created Playlists";
         if(key === KEY_PL_ID_MAPPING)
             return "Playlist metadata";
+
+        if(key.startsWith(KEY_PREFIX_PIPED_SETTINGS)) {
+            switch(key) {
+                case KEY_PIPED_SETTINGS_BG:
+                    return "Piped Settings: do background sync";
+                case KEY_PIPED_SETTINGS_TIME:
+                    return "Piped Settings: last sync-time";
+                case KEY_PIPED_SETTINGS_DATA:
+                    return "Piped Settings: data";
+                default:
+                    return null;
+            }
+        }
 
         return null;
     }
