@@ -2,7 +2,6 @@ import {GM} from "../monkey";
 import Login from "./login";
 import {SERVER_SYNC_INVIDIOUS_URL, STORAGE_PREFIX, STR_DECODER, STR_ENCODER} from "../util/constants";
 import {Base64} from "js-base64";
-import {arrayBufferToHex} from "../util/utils";
 import {apiFetch, expectHttpErr} from "../util/fetch-utils";
 import {deleteProp} from "../util/json-path";
 import InvDataUpdateDto from "./dto/inv-data-update-dto";
@@ -12,6 +11,7 @@ import {StatusCodes} from "http-status-codes";
 import SyncTimeWithHashDto from "./dto/synctime-with-hash-dto";
 import DataGetDto from "./dto/data-get-dto";
 import {base64FromArrayBuffer} from "../workarounds/base64";
+import {hashObject} from "../util/hash";
 
 const STORAGE_KEY_LAST_SYNC_TIMES = STORAGE_PREFIX + "sync-invidious::lastSyncTimes";
 const STORAGE_KEY_DO_BACKGROUND_SYNC = STORAGE_PREFIX + "sync-invidious::doBackgroundSync";
@@ -299,6 +299,5 @@ async function computeFingerprint(data: string): Promise<string> {
     excludedProps.forEach(prop => deleteProp(prop, json));
     const trimmedData = JSON.stringify(json);
 
-    const digest = await crypto.subtle.digest('SHA-256', STR_ENCODER.encode(trimmedData));
-    return arrayBufferToHex(digest).toLowerCase();
+    return await hashObject(trimmedData);
 }
