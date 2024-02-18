@@ -1,9 +1,8 @@
 import {SERVER_DOWNLOAD_URL, STORAGE_PREFIX} from "../util/constants";
-import {GM} from "../monkey";
 import {DownloadJobState, FileType} from "./dto/enums";
 import {TagValueDto} from "./dto/tag-value-dto";
 import {DownloadProgressDto} from "./dto/download-progress-dto";
-import {logException} from "../util/utils";
+import {logException, sleep} from "../util/utils";
 import {DownloadRequestDto} from "./dto/download-request-dto";
 import {apiFetch} from "../util/fetch-utils";
 import sharedStates from "../util/shared-states";
@@ -30,11 +29,7 @@ export class DownloadQueue {
     }
 
     private constructor() {
-        setInterval(() => {
-            this.updateProgresses().catch(e => {
-                logException(e, "DownloadQueue: error in updateProgresses()");
-            });
-        }, JOB_UPDATE_INTERVAL);
+        this.startUpdateLoop();
     }
 
     private readonly listeners: ProgressListener[] = [];
@@ -72,7 +67,7 @@ export class DownloadQueue {
 
         const currentJobs = await this.runningJobs();
         currentJobs.push(job);
-        await GM.setValue(STORAGE_KEY_JOBS, currentJobs);
+        await this.setRunningJobs(currentJobs);
         this.jobUpdateFails[jobState.id] = 0;
 
         this.notifyListenersNewJob(job);
@@ -95,7 +90,14 @@ export class DownloadQueue {
     }
 
     async runningJobs(): Promise<DownloadJob[]> {
-        return GM.getValue(STORAGE_KEY_JOBS, []);
+        const dataSer = sessionStorage.getItem(STORAGE_KEY_JOBS);
+        if(dataSer === null)
+            return [];
+        return JSON.parse(dataSer);
+    }
+
+    async setRunningJobs(data: DownloadJob[]) {
+        sessionStorage.setItem(STORAGE_KEY_JOBS, JSON.stringify(data));
     }
 
     addListener(listener: ProgressListener) {
@@ -106,18 +108,34 @@ export class DownloadQueue {
         this.listeners.splice(this.listeners.indexOf(listener), 1);
     }
 
+    private startUpdateLoop() {
+        (async () => {
+            // noinspection InfiniteLoopJS
+            while(true) {
+                try {
+                    await sleep(JOB_UPDATE_INTERVAL);
+                    await this.updateProgresses();
+                } catch(e) {
+                    logException(e as Error, "DownloadQueue: error in updateProgresses()");
+                }
+            }
+        })().catch(e => {
+            logException(e, "DownloadQueue: error in updateProgresses()");
+        });
+    }
+
     private async updateProgresses() {
         const jobs = await this.runningJobs();
         if(jobs.length === 0)
             return;
 
         if(!sharedStates.loggedIn.value) {
-            console.warn("logged out while download were running; dropping them");
+            console.warn("logged out while downloads were running; dropping them");
 
             jobs.map(job => (jobCopy(job, 'CANCELLED')))
                 .forEach(job => this.notifyListenersProgressUpdate(job));
 
-            await GM.setValue(STORAGE_KEY_JOBS, []);
+            await this.setRunningJobs([]);
             return;
         }
 
@@ -156,7 +174,7 @@ export class DownloadQueue {
             .map(res => (res as PromiseFulfilledResult<DownloadJob>).value);
 
         const runningJobs = successfulUpdates.filter(job => jobIsRunning(job));
-        await GM.setValue(STORAGE_KEY_JOBS, runningJobs);
+        await this.setRunningJobs(runningJobs);
 
         const endedJobs = successfulUpdates.filter(job => !jobIsRunning(job));
         endedJobs.forEach(job => delete this.jobUpdateFails[job.id]);
@@ -195,7 +213,7 @@ export class DownloadQueue {
         const jobIdx = currentJobs.findIndex(job => job.id === jobId);
         const job = currentJobs[jobIdx];
         currentJobs.splice(jobIdx, 1);
-        await GM.setValue(STORAGE_KEY_JOBS, currentJobs);
+        await this.setRunningJobs(currentJobs);
 
         delete this.jobUpdateFails[jobId];
 
