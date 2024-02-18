@@ -30,6 +30,11 @@ const indicatorProgress = computed(() => {
   const runningProgs = jobs.value
       .filter(job => jobIsRunning(job))
       .map(job => job.progress);
+
+  if(runningProgs.length === 0) {
+    return (jobs.value.length > 0) ? 100 : 0;
+  }
+
   const progSum = runningProgs.reduce((acc, cur) => acc + cur, 0);
 
   const prog = (progSum / runningProgs.length) * 100;
