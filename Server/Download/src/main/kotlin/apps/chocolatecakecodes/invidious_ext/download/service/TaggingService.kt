@@ -35,8 +35,11 @@ class TaggingService {
             val tag = file.id3v2Tag
 
             val version = tag.version?.substring(0, 1)?.toIntOrNull()
-            if (version == null || version < 4)
-                return upgradeV2Tag(tag)
+            if (version == null || version < 4) {
+                val newTag = upgradeV2Tag(tag)
+                file.id3v2Tag = newTag
+                return newTag
+            }
 
             return tag
         } else {
