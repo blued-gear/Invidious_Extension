@@ -12,6 +12,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
+        elm.classList.add('invExt');
 
         let anchor = document.querySelector('html');
         if(anchor == null)

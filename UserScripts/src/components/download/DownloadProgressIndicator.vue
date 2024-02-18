@@ -175,7 +175,7 @@ onBeforeMount(() => {
 <template>
   <Teleport :to="elmTarget">
     <div ref="indicatorContainer" v-show="indicatorVisible"
-         class="invExt fixed bottom-0 left-0 ml-1 w-fit h-fit"
+         class="fixed bottom-0 left-0 ml-1 w-fit h-fit"
          @click.stop="onIndicatorClick">
       <VeProgress :progress="indicatorProgress" :color="indicatorColor"
                   :hideLegend="false" :legend="true" :size="50"
@@ -185,7 +185,8 @@ onBeforeMount(() => {
         </template>
       </VeProgress>
 
-      <OverlayPanel ref="jobsPanel" class="fixed top-auto bottom-0 mb-2 h-6rem w-10 min-w-min">
+      <OverlayPanel ref="jobsPanel" append-to="#invExt-downloadProgressIndicator"
+                    class="fixed top-auto bottom-0 mb-2 h-6rem w-10 min-w-min">
         <div class="flex flex-column gap-2 p-1 overflow-auto h-4rem">
           <div v-for="job of jobs" :key="job.id" class="flex gap-1 align-items-center">
             <Button icon="pi pi-times" rounded
