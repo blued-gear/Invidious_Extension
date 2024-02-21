@@ -11,9 +11,7 @@ import {
 import {formatTime} from "../../util/utils";
 
 const props = defineProps({
-  item: {type: VideoStackItem, required: true},
-  /** list of keys for VideoStackItem::extra which should be shown; if empty all will be shown */
-  allowedExtras: {type: Array<string>, default() {return []}}
+  item: {type: VideoStackItem, required: true}
 });
 
 const hasThumb = computed(() => props.item.thumbUrl !== null);
