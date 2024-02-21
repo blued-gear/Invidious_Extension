@@ -24,6 +24,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             thumbUrl: this.getThumbUrl(),
             timeTotal: this.getTimeTotal(),
             timeCurrent: this.getTimeCurrent(),
+            listenMode: this.getListenMode(),
             extras: {
                 ...this.getPublisher(),
                 ...this.getPlaylistName()
@@ -100,6 +101,10 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             return null;
 
         return this.parseTime(timeCurElm.textContent!!);
+    }
+
+    getListenMode(): boolean {
+        return urlExtractor.isListenMode(undefined);
     }
 
     getTimeTotal(): number | null {

@@ -18,6 +18,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
             thumbUrl: this.getThumbUrl(),
             timeTotal: this.getTimeTotal(),
             timeCurrent: this.getTimeCurrent(),
+            listenMode: this.getListenMode(),
             extras: {
                 ...this.getPublisher(),
                 ...this.getPlaylistName()
@@ -51,6 +52,10 @@ export default class PipedPlayerControllerImpl implements PlayerController {
             return null;
 
         return Math.floor(num);
+    }
+
+    getListenMode(): boolean {
+        return this.videoPlayer()?.isAudioOnly() ?? false;
     }
 
     getTimeTotal(): number | null {
@@ -270,6 +275,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
             case 'aud':
                 return '&listen=1';
             case 'keep':
+            case undefined:
                 const currentMode = urlExtractor.isListenMode(undefined);
                 return currentMode ? '&listen=1' : '';
         }
