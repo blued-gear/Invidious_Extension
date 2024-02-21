@@ -12,6 +12,7 @@ export default class InvidiousLocationControllerImpl implements LocationControll
     private readonly navigationInterceptors = new Set<NavigationInterceptor>();
     private readonly beforeNavigateCBs = new Set<OnBeforeNavigatedCallback>();
     private readonly navigationListener: () => void;
+    private navigationListenerInstalled: boolean = false;
     private navigationChangedCount: number = 0;
 
     constructor() {
@@ -31,26 +32,23 @@ export default class InvidiousLocationControllerImpl implements LocationControll
     }
 
     interceptNavigation(interceptor: NavigationInterceptor) {
-        if(this.navigationInterceptors.size === 0)
-            unsafeWindow.addEventListener('beforeunload', this.navigationListener);
-            // why this specific event: https://developer.chrome.com/static/docs/web-platform/page-lifecycle-api/image/page-lifecycle-api-state.svg
-
         this.navigationInterceptors.add(interceptor);
+        this.updateNavigationListenerInstallation();
     }
 
     removeNavigationInterceptor(interceptor: NavigationInterceptor) {
         this.navigationInterceptors.delete(interceptor);
-
-        if(this.navigationInterceptors.size === 0)
-            unsafeWindow.removeEventListener('beforeunload', this.navigationListener);
+        this.updateNavigationListenerInstallation();
     }
 
     addBeforeNavigationCallback(cb: OnBeforeNavigatedCallback) {
         this.beforeNavigateCBs.add(cb);
+        this.updateNavigationListenerInstallation();
     }
 
     removeBeforeNavigationCallback(cb: OnBeforeNavigatedCallback) {
         this.beforeNavigateCBs.delete(cb);
+        this.updateNavigationListenerInstallation();
     }
 
     addAfterNavigationCallback(fireImmediately: boolean, cb: OnAfterNavigatedCallback) {
@@ -80,6 +78,17 @@ export default class InvidiousLocationControllerImpl implements LocationControll
                 setTimeout(() => { this.navigate(newTarget) }, 0);
                 break;
             }
+        }
+    }
+
+    private updateNavigationListenerInstallation() {
+        if(this.navigationListenerInstalled && this.navigationInterceptors.size === 0 && this.beforeNavigateCBs.size === 0) {
+            unsafeWindow.removeEventListener('beforeunload', this.navigationListener);
+            this.navigationListenerInstalled = false;
+        } else if(!this.navigationListenerInstalled) {
+            unsafeWindow.addEventListener('beforeunload', this.navigationListener);
+            // why this specific event: https://developer.chrome.com/static/docs/web-platform/page-lifecycle-api/image/page-lifecycle-api-state.svg
+            this.navigationListenerInstalled = true;
         }
     }
 }
