@@ -23,19 +23,21 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
         <TabPanel header="Info">
           <div class="w-full" :style="`height: ${contentHeight}px;`">
             <div>
-              A Userscript with Backend to extend the functionality of Invidious
+              A Userscript with Backend to extend the functionality of Piped &amp; Invidious
               and enable syncing between instances.
             </div>
+            <div class="text-sm">Pleas note that the support for Invidious is discontinued.</div>
 
             <div class="mt-3">
               Features:
-              <ul>
+              <ul style="padding: 1rem; margin: 0; list-style: unset;"><!-- list-styles are modified in Piped -->
                 <li>Stacks: save the currently playing video with timestamp (+ last played videos) to reopen it later</li>
                 <li>group playlists in the playlist-overview</li>
                 <li>download as video or mp3 (with simple ID3-tagger)</li>
-                <li>sync extension-specific data between browsers</li>
-                <li>sync Invidious settings between accounts</li>
-                <li>sync subscribed playlists between accounts</li>
+                <li>sync playlists between instances</li>
+                <li>show exact upload-dates of videos in playlist-detail and recommended-videos</li>
+                <li>sync extension-specific data between browsers (e2e encrypted)</li>
+                <li>sync Invidious / Piped settings between instances</li>
               </ul>
             </div>
 
