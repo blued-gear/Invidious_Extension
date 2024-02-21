@@ -131,7 +131,8 @@ async function main() {
         });
     }
 
-    locationController.addAfterNavigationCallback(true, () => {
+    locationController.addAfterNavigationCallback(true, async () => {
+        await documentController.waitForUiReady();
         runStartupHooks();
     });
 }
