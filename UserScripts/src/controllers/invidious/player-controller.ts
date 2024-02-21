@@ -103,7 +103,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
         return this.parseTime(timeCurElm.textContent!!);
     }
 
-    getListenMode(): boolean {
+    private getListenMode(): boolean {
         return urlExtractor.isListenMode(undefined);
     }
 
@@ -200,7 +200,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
     async openVideo(id: string, time: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
         const listenParam = this.listenModeParam(listenMode);
 
-        if(urlExtractor.videoId(undefined) !== id) {
+        if(urlExtractor.videoId(undefined) !== id || !this.currentListenModeMatches(listenMode)) {
             const timeParam = time != null ? `&t=${time}` : '';
             locationController.navigate("/watch?v=" + id + timeParam + listenParam);
             return true;
@@ -225,7 +225,8 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
 
         if(urlExtractor.playlistId(undefined) === plId
             && urlExtractor.videoId(undefined) === vidId
-            && (plIdx === -1 || urlExtractor.playlistIndex() === plIdx)) {
+            && (plIdx === -1 || urlExtractor.playlistIndex() === plIdx)
+            && this.currentListenModeMatches(listenMode)) {
             // set time if necessary
             await this.waitForPlayerStartet();
 
@@ -332,6 +333,18 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             case 'keep':
                 const currentMode = urlExtractor.isListenMode(undefined);
                 return currentMode ? '&listen=1' : '';
+        }
+    }
+
+    private currentListenModeMatches(mode: ListenMode): boolean {
+        switch(mode) {
+            case undefined:
+            case "keep":
+                return true;
+            case "vid":
+                return !urlExtractor.isListenMode(undefined);
+            case "aud":
+                return urlExtractor.isListenMode(undefined);
         }
     }
 }

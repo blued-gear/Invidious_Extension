@@ -54,7 +54,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
         return Math.floor(num);
     }
 
-    getListenMode(): boolean {
+    private getListenMode(): boolean {
         return this.videoPlayer()?.isAudioOnly() ?? false;
     }
 
@@ -138,7 +138,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     async openVideo(id: string, time: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
         const listenParam = this.listenModeParam(listenMode);
 
-        if(urlExtractor.videoId(undefined) !== id) {
+        if(urlExtractor.videoId(undefined) !== id || !this.currentListenModeMatches(listenMode)) {
             locationController.navigate("/watch?v=" + id + listenParam);
         }
 
@@ -155,7 +155,8 @@ export default class PipedPlayerControllerImpl implements PlayerController {
 
         if(this.playlistId() !== plId
             || this.videoId() !== vidId
-            || (plIdx !== -1 && this.playlistIndex() !== plIdx)) {
+            || (plIdx !== -1 && this.playlistIndex() !== plIdx)
+            || !this.currentListenModeMatches(listenMode)) {
             locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}${listenParam}`);
         }
 
@@ -278,6 +279,18 @@ export default class PipedPlayerControllerImpl implements PlayerController {
             case undefined:
                 const currentMode = urlExtractor.isListenMode(undefined);
                 return currentMode ? '&listen=1' : '';
+        }
+    }
+
+    private currentListenModeMatches(mode: ListenMode): boolean {
+        switch(mode) {
+            case undefined:
+            case "keep":
+                return true;
+            case "vid":
+                return !urlExtractor.isListenMode(undefined);
+            case "aud":
+                return urlExtractor.isListenMode(undefined);
         }
     }
 }
