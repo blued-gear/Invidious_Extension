@@ -31,13 +31,18 @@ export default class PipedDocumentControllerImpl implements DocumentController {
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
+        elm.style.marginTop = '-0.5rem';
+
+        const container = this.createGeneralElement('div');
+        container.classList.add('invExt');
+        container.appendChild(elm);
 
         let anchor =
-            document.querySelector('html body div#app div.reset.flex.flex-col div.flex-1 nav.relative.w-full.flex.flex-wrap.items-center.justify-center');
+            document.querySelector('html body div#app div.reset.flex.flex-col div.flex-1 nav.relative.w-full.flex.flex-wrap.items-center.justify-center > ul');
         if(anchor == null)
             throw new Error("unable to find menu-bar to insert button");
 
-        anchor.insertAdjacentElement('beforeend', elm);
+        anchor.insertAdjacentElement('afterbegin', container);
 
         return elm;
     }
