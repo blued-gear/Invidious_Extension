@@ -47,3 +47,4 @@ bin/
 /Server/Sync/tomcat.8080/
 /Server/Download/tomcat.8080/
 /local.properties
+/recyclebin/
