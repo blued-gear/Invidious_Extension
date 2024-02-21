@@ -2,7 +2,7 @@ import {STORAGE_PREFIX} from "../util/constants";
 import stackMgr from './stacks';
 import playlistsManager from "./playlists";
 import {PlaylistVideoStackItem, VideoStackItem} from "../model/stacks/stack-item";
-import playerController from "../controllers/player-controller";
+import playerController, {ListenMode} from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
 import locationController, {NavigationInterceptor} from "../controllers/location-controller";
 import {delta} from "../util/utils";
@@ -106,7 +106,7 @@ export class PlayerManager {
         if(item instanceof PlaylistVideoStackItem) {
             return await this.openStackPl(item);
         } else {
-            return this.openVideo(item.id, item.timeCurrent);
+            return this.openVideo(item.id, item.timeCurrent, item.listenMode ? 'aud' : 'vid');
         }
     }
 
@@ -114,10 +114,11 @@ export class PlayerManager {
      * @param id the video-id
      * @param time number of seconds to jump to after start (if video is already loaded it will reload with the right time);
      *              or <code>null</code> if unspecified
+     * @param listenMode sets the listen_mode of the opened vid
      * @return if a page-reload was triggered
      */
-    async openVideo(id: string, time: number | null): Promise<boolean> {
-        return playerController.openVideo(id, time);
+    async openVideo(id: string, time: number | null, listenMode?: ListenMode): Promise<boolean> {
+        return playerController.openVideo(id, time, listenMode);
     }
 
     /**
@@ -126,10 +127,11 @@ export class PlayerManager {
      * @param vidId the video-id
      * @param vidTime number of seconds to jump to after start (if video is already loaded it will reload with the right time);
      *              or <code>null</code> if unspecified
+     * @param listenMode sets the listen_mode of the opened vid
      * @return if a page-reload was triggered
      */
-    async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null): Promise<boolean> {
-        return playerController.openPlaylist(plId, plIdx, vidId, vidTime);
+    async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null, listenMode?: ListenMode): Promise<boolean> {
+        return playerController.openPlaylist(plId, plIdx, vidId, vidTime, listenMode);
     }
 
     /**
@@ -179,14 +181,14 @@ export class PlayerManager {
         if(item instanceof PlaylistVideoStackItem) {
             await this.openStackPl(item);
         } else {
-            await this.openVideo(item.id, item.timeCurrent);
+            await this.openVideo(item.id, item.timeCurrent, item.listenMode ? 'aud' : 'vid');
         }
     }
 
     private async openStackPl(item: PlaylistVideoStackItem): Promise<boolean> {
         const plId = await playlistsManager.plIdForId(item.playlistId, false) //TODO maybe fast=true
             ?? item.playlistId;
-        return this.openPlaylist(plId, item.playlistIdx, item.id, item.timeCurrent);
+        return this.openPlaylist(plId, item.playlistIdx, item.id, item.timeCurrent, item.listenMode ? 'aud' : 'vid');
     }
 
     private loadState(): PlayerState {
