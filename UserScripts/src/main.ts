@@ -35,6 +35,8 @@ async function runRestoreLogin() {
 }
 
 function runStartupHooks() {
+    sharedStates.stackPopRunning = false;// reset on every page-reload
+
     Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
         playerMgr.pickupState(),

@@ -8,6 +8,7 @@ import playerController from "../controllers/player-controller";
 import urlExtractor from "../controllers/url-extractor";
 import locationController from "../controllers/location-controller";
 import playlistsManager from "./playlists";
+import sharedStates from "../util/shared-states";
 
 export interface StackNameWithId {
     id: string,
@@ -157,6 +158,9 @@ export class StackManager {
     }
 
     private async updateCurrentStack() {
+        if(sharedStates.stackPopRunning)
+            return;
+
         const stack = await this.loadCurrentWatchStack();
 
         const popped = this.updateStackPopped(stack);

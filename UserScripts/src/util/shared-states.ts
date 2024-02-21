@@ -3,6 +3,8 @@ import Login from "../sync/login";
 
 class SharedStates {
 
+    stackPopRunning: boolean = false;
+
     readonly login = ref<Login | null>(null);
     readonly invidiousLogin = ref<boolean>(false);
 

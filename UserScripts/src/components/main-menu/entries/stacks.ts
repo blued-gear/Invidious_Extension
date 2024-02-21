@@ -6,6 +6,7 @@ import toast from "../../../workarounds/toast";
 import {MenuItem} from "primevue/menuitem";
 import {logException} from "../../../util/utils";
 import urlExtractor from "../../../controllers/url-extractor";
+import sharedStates from "../../../util/shared-states";
 
 export const stackToEditId = ref<string>(STACK_ID_CURRENT);
 export const stackEditorDlgOpen = ref(false);
@@ -16,6 +17,8 @@ const watchStackPopable = ref<boolean>(false);
 
 function popWatchStack() {
     const exec = async () => {
+        sharedStates.stackPopRunning = true;
+
         const stack = await stackMgr.loadCurrentWatchStack();
         stack.pop();
         await stackMgr.saveStack(stack);
