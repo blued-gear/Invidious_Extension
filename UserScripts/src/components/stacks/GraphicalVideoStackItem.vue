@@ -39,6 +39,10 @@ const hasPlName = computed(() => hasPl.value && (STACK_ITEM_EXTRA_PLAYLIST_NAME 
         Watch-Time: {{formatTime(props.item.timeCurrent!!)}} of {{formatTime(props.item.timeTotal!!)}}
       </div>
 
+      <div class="text-xm font-light">
+        Listen-Mode: {{props.item.listenMode ? "yes" : "no"}}
+      </div>
+
       <div v-if="hasPl">
         Playlist-Index: {{(props.item as PlaylistVideoStackItem).playlistIdx}}
 

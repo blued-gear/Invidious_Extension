@@ -4,6 +4,7 @@ import InputText from "primevue/inputtext";
 import Skeleton from 'primevue/skeleton';
 import GraphicalVideoStackItem from "./GraphicalVideoStackItem.vue";
 import OrderList from "../misc/OrderList.vue";
+import Checkbox from "primevue/checkbox";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
 import {computed, ref, watch} from "vue";
@@ -26,6 +27,7 @@ const props = defineProps({
 const stack = ref<WatchStack | undefined>(undefined);
 const addVidId = ref("");
 const addPlId = ref("");
+const listenMode = ref(false);
 const lastSelected = ref<VideoStackItem | null>(null);
 const curSelected = ref<VideoStackItem[]>([]);
 
@@ -70,6 +72,7 @@ function onSelectionChanged(sel: VideoStackItem[]) {
 
   if(addVidId.value === "" || jumpedFromLastSel) {
     addVidId.value = selected.id;
+    listenMode.value = selected.listenMode;
   }
 
   if(selected instanceof PlaylistVideoStackItem) {
@@ -104,18 +107,20 @@ function onAdd() {
       extras: {},
       id: addVidId.value,
       title: "~~to be fetched~~",//TODO find a better source
-      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
+      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,//TODO find a better source
       timeCurrent: null,
-      timeTotal: null
+      timeTotal: null,
+      listenMode: listenMode.value
     });
   } else {
     item = new PlaylistVideoStackItem({
       extras: {},
       id: addVidId.value,
       title: "~~to be fetched~~",//TODO find a better source
-      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,
+      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,//TODO find a better source
       timeCurrent: null,
       timeTotal: null,
+      listenMode: listenMode.value,
       playlistId: addPlId.value,
       playlistIdx: -1
     });
@@ -180,6 +185,7 @@ watch(dlgOpen, async (newVal) => {
   if(newVal) {
     addVidId.value = "";
     addPlId.value = "";
+    listenMode.value = false;
 
     await loadData();
   } else {
@@ -231,6 +237,11 @@ watch(dlgOpen, async (newVal) => {
             <span class="p-float-label">
             <InputText id="stack_edit_dlg-add-pl" v-model="addPlId" />
             <label for="stack_edit_dlg-add-pl">Playlist-ID</label>
+          </span>
+
+          <span class="w-max">
+            <Checkbox inputId="stack_edit_dlg-add-listen" v-model="listenMode" binary />
+            <label for="stack_edit_dlg-add-listen" class="ml-2">Listen-Mode</label>
           </span>
 
           <Button @click="onAdd" :disabled="stack === undefined || addVidId === ''" class="w-max">Add</Button>
