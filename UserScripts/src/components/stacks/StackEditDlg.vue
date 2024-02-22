@@ -8,11 +8,15 @@ import Checkbox from "primevue/checkbox";
 import stackMgr from "../../managers/stacks";
 import WatchStack from "../../model/stacks/watchstack";
 import {computed, ref, watch} from "vue";
-import {PlaylistVideoStackItem, VideoStackItem} from "../../model/stacks/stack-item";
+import {PlaylistVideoStackItem, STACK_ITEM_EXTRA_PLAYLIST_NAME, VideoStackItem} from "../../model/stacks/stack-item";
 import Dialog from "primevue/dialog";
 import {TOAST_LIFE_ERROR} from "../../util/constants";
 import {useToast} from "primevue/usetoast";
 import {MoveAction, moveItemsStack} from "../../util/coll-item-move";
+import {logException} from "../../util/utils";
+import {pipedJsonRequest} from "../../util/piped";
+import playlistsManager from "../../managers/playlists";
+import playlistController from "../../controllers/playlist-controller";
 
 const toast = useToast();
 
@@ -30,6 +34,7 @@ const addPlId = ref("");
 const listenMode = ref(false);
 const lastSelected = ref<VideoStackItem | null>(null);
 const curSelected = ref<VideoStackItem[]>([]);
+const modificationRunning = ref<boolean>(false);
 
 const stackItems = computed<VideoStackItem[]>(() => {
   if(stack.value === undefined)
@@ -51,6 +56,7 @@ const stackName = computed<string>({
 });
 
 async function loadData() {
+  modificationRunning.value = true;
   stack.value = undefined;// reset so that no old values will be shown
 
   const val = await stackMgr.loadStack(props.stackId!!);
@@ -58,6 +64,7 @@ async function loadData() {
     throw new Error("invalid id passed to Stack-Editor (stack not found)");
 
   stack.value = WatchStack.createFromCopy(val.id, val);
+  modificationRunning.value = false;
 }
 
 function onSelectionChanged(sel: VideoStackItem[]) {
@@ -101,33 +108,72 @@ function onAdd() {
       idx = 0;
   }
 
-  let item: VideoStackItem;
-  if(addPlId.value === "") {
-    item = new VideoStackItem({
-      extras: {},
-      id: addVidId.value,
-      title: "~~to be fetched~~",//TODO find a better source
-      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,//TODO find a better source
-      timeCurrent: null,
-      timeTotal: null,
-      listenMode: listenMode.value
-    });
-  } else {
-    item = new PlaylistVideoStackItem({
-      extras: {},
-      id: addVidId.value,
-      title: "~~to be fetched~~",//TODO find a better source
-      thumbUrl: `/vi/${addVidId.value}/maxres.jpg`,//TODO find a better source
-      timeCurrent: null,
-      timeTotal: null,
-      listenMode: listenMode.value,
-      playlistId: addPlId.value,
-      playlistIdx: -1
-    });
-  }
+  (async () => {
+    modificationRunning.value = true;
 
-  stack.value!!.add(item, idx);
-  curSelected.value = [item];
+    const vidId = addVidId.value;
+    const vidInfo = await pipedJsonRequest(`/streams/${vidId}`);
+    const title = vidInfo.title;
+    // noinspection JSUnresolvedReference
+    const thumbUrl = vidInfo.thumbnailUrl;
+
+    let item: VideoStackItem;
+    if(addPlId.value === "") {
+      item = new VideoStackItem({
+        extras: {},
+        id: vidId,
+        title: title,
+        thumbUrl: thumbUrl,
+        timeCurrent: null,
+        timeTotal: null,
+        listenMode: listenMode.value
+      });
+    } else {
+      const plId = addPlId.value;
+
+      let plName: string | undefined = undefined;
+      try {
+        const plInfo = await playlistController.getPlDetails(plId);
+        plName = plInfo.name;
+      } catch(e) {
+        console.warn("GraphicalVideoStackItem::onAdd(): unable to get pl-details", e);
+      }
+
+      const internalPlId = await playlistsManager.idForPlId(plId, true);
+
+      const extras: Record<string, any> = {};
+      if(plName != undefined)
+        extras[STACK_ITEM_EXTRA_PLAYLIST_NAME] = plName;
+
+      item = new PlaylistVideoStackItem({
+        extras: extras,
+        id: vidId,
+        title: title,
+        thumbUrl: thumbUrl,
+        timeCurrent: null,
+        timeTotal: null,
+        listenMode: listenMode.value,
+        playlistId: internalPlId ?? plId,
+        playlistIdx: -1
+      });
+    }
+
+    stack.value!!.add(item, idx);
+    curSelected.value = [item];
+
+    modificationRunning.value = false;
+  })().catch((e) => {
+    modificationRunning.value = false;
+
+    logException(e as Error, "StackEditDlg: error while saving stack");
+
+    toast.add({
+      summary: "Add failed",
+      detail: "Something went wrong. Reason:\n" + (e?.toString() ?? "Unknown"),
+      severity: 'error',
+      life: TOAST_LIFE_ERROR
+    });
+  });
 }
 
 function onDel() {
@@ -158,6 +204,8 @@ function onCancel() {
 function onSave() {
   const exec = async () => {
     try {
+      modificationRunning.value = true;
+
       await stackMgr.saveStack(stack.value!! as WatchStack);
 
       toast.add({
@@ -166,9 +214,12 @@ function onSave() {
         life: TOAST_LIFE_ERROR
       });
 
+      modificationRunning.value = false;
       dlgOpen.value = false;
     } catch(err) {
-      console.error("StackEditDlg: error while saving stack", err);
+      modificationRunning.value = false;
+
+      logException(err as Error, "StackEditDlg: error while saving stack");
 
       toast.add({
         summary: "Save failed",
@@ -189,6 +240,7 @@ watch(dlgOpen, async (newVal) => {
 
     await loadData();
   } else {
+    modificationRunning.value = false;
     stack.value = undefined;
   }
 });
@@ -201,7 +253,7 @@ watch(dlgOpen, async (newVal) => {
       <!-- region name -->
       <div class="flex flex-column gap-2">
         <label for="stack_edit_dlg-stack_name">Stack Name</label>
-        <InputText id="stack_edit_dlg-stack_name" v-model="stackName" />
+        <InputText id="stack_edit_dlg-stack_name" v-model="stackName" :disabled="modificationRunning" />
       </div>
       <!-- endregion name -->
 
@@ -231,26 +283,26 @@ watch(dlgOpen, async (newVal) => {
         <!-- region add -->
         <div class="w-max p-4 pl-1 flex align-items-baseline gap-4 border-1 border-300 flex-column sm:flex-row">
           <span class="p-float-label">
-            <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" />
+            <InputText id="stack_edit_dlg-add-vid" v-model="addVidId" :disabled="modificationRunning" />
             <label for="stack_edit_dlg-add-vid">Video-ID</label>
           </span>
             <span class="p-float-label">
-            <InputText id="stack_edit_dlg-add-pl" v-model="addPlId" />
+            <InputText id="stack_edit_dlg-add-pl" v-model="addPlId" :disabled="modificationRunning" />
             <label for="stack_edit_dlg-add-pl">Playlist-ID</label>
           </span>
 
           <span class="w-max">
-            <Checkbox inputId="stack_edit_dlg-add-listen" v-model="listenMode" binary />
+            <Checkbox inputId="stack_edit_dlg-add-listen" v-model="listenMode" binary :disabled="modificationRunning" />
             <label for="stack_edit_dlg-add-listen" class="ml-2">Listen-Mode</label>
           </span>
 
-          <Button @click="onAdd" :disabled="stack === undefined || addVidId === ''" class="w-max">Add</Button>
+          <Button @click="onAdd" :disabled="stack === undefined || addVidId === '' || modificationRunning" class="w-max">Add</Button>
         </div>
         <!-- endregion add -->
 
         <div class="w-full h-1rem"></div>
         <div>
-          <Button @click="onDel" :disabled="stack === undefined || lastSelected === null" class="w-max">Remove</Button>
+          <Button @click="onDel" :disabled="stack === undefined || lastSelected === null || modificationRunning" class="w-max">Remove</Button>
         </div>
       </div>
       <!-- endregion add, remove -->
@@ -259,7 +311,7 @@ watch(dlgOpen, async (newVal) => {
       <div class="flex mt-4 pb-3">
         <Button @click="onCancel">Cancel</Button>
         <div class="flex-grow-1"></div>
-        <Button @click="onSave">Save</Button>
+        <Button @click="onSave" :disabled="modificationRunning">Save</Button>
       </div>
       <!-- endregion cancel, save -->
     </div>
