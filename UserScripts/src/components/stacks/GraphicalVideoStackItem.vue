@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed} from "vue";
+import {computed, onBeforeMount, ref} from "vue";
 
 import {
   PlaylistVideoStackItem,
@@ -8,7 +8,8 @@ import {
   STACK_ITEM_EXTRA_PUBLISHER_NAME,
   VideoStackItem
 } from "../../model/stacks/stack-item";
-import {formatTime} from "../../util/utils";
+import {formatTime, logException} from "../../util/utils";
+import playlistsManager from "../../managers/playlists";
 
 const props = defineProps({
   item: {type: VideoStackItem, required: true}
@@ -19,6 +20,28 @@ const hasPublisher = computed(() => props.item.extras[STACK_ITEM_EXTRA_PUBLISHER
 const hasTimes = computed(() => props.item.timeTotal !== null && props.item.timeCurrent !== null);
 const hasPl = computed(() => props.item instanceof PlaylistVideoStackItem);
 const hasPlName = computed(() => hasPl.value && (STACK_ITEM_EXTRA_PLAYLIST_NAME in props.item!!.extras));
+
+const plId = ref("");
+
+async function resolvePlId() {
+  const item = props.item;
+  plId.value = "~unknown~";
+
+  if(!(item instanceof PlaylistVideoStackItem))
+    return;
+
+  try {
+    const itemPlId = item.playlistId;
+    const resolvedPlId = await playlistsManager.plIdForId(itemPlId);
+    plId.value = resolvedPlId ?? itemPlId;
+  } catch(e) {
+    logException(e as Error, "GraphicalVideoStackItem::resolvePlId() failed");
+  }
+}
+
+onBeforeMount(() => {
+  resolvePlId();
+});
 </script>
 
 <template>
@@ -48,7 +71,7 @@ const hasPlName = computed(() => hasPl.value && (STACK_ITEM_EXTRA_PLAYLIST_NAME 
 
         <span v-if="hasPlName">
           &nbsp;@&nbsp;
-          <a :href="'/playlist?list=' + (props.item as PlaylistVideoStackItem).playlistId">
+          <a :href="'/playlist?list=' + plId">
             {{props.item.extras[STACK_ITEM_EXTRA_PLAYLIST_NAME]}}
           </a>
         </span>
