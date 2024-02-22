@@ -36,6 +36,7 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
                 <li>download as video or mp3 (with simple ID3-tagger)</li>
                 <li>sync playlists between instances</li>
                 <li>show exact upload-dates of videos in playlist-detail and recommended-videos</li>
+                <li>play a playlist backwards</li>
                 <li>sync extension-specific data between browsers (e2e encrypted)</li>
                 <li>sync Invidious / Piped settings between instances</li>
               </ul>
