@@ -1,5 +1,10 @@
 import {ListenMode, PlayerController, PlaylistName, PublisherInfo, VideoLoadedInfo} from "../player-controller";
-import {PlaylistVideoStackItem, VideoStackItem, VideoStackItemProps} from "../../model/stacks/stack-item";
+import {
+    PlaylistVideoStackItem,
+    STACK_ITEM_EXTRA_PLAYLIST_NAME,
+    VideoStackItem,
+    VideoStackItemProps
+} from "../../model/stacks/stack-item";
 import urlExtractor from "../url-extractor";
 import {delta, elseThrow, sleep} from "../../util/utils";
 import locationController from "../location-controller";
@@ -92,7 +97,13 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     getPlaylistName(): PlaylistName | null {
-        return this.playerComponent().data.playlist?.name ?? null;
+        const name = this.playerComponent().data.playlist?.name;
+        if(name == null)
+            return null;
+
+        return {
+            [STACK_ITEM_EXTRA_PLAYLIST_NAME]: name
+        };
     }
 
     getNextPlaylistLink(): string | null {
