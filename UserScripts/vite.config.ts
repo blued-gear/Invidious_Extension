@@ -20,6 +20,14 @@ export default defineConfig({
         "run-at": "document-idle",
         sandbox: "JavaScript",
         "inject-into": "auto",
+        resource: {
+          'themeLight': 'https://unpkg.com/primevue/resources/themes/lara-light-blue/theme.css',
+          'themeDark': 'https://unpkg.com/primevue/resources/themes/lara-dark-blue/theme.css'
+        },
+        connect: [
+          "chocolatecakecodes.goip.de",
+          "localhost"
+        ],
         match: [
           'https://yewtu.be/*',
           'https://vid.puffyan.us/*',
@@ -58,11 +66,7 @@ export default defineConfig({
           'https://piped.adminforge.de/*',
           'https://piped.video/*',
           'https://piped.projectsegfau.lt/*'
-        ],
-        connect: [
-          "chocolatecakecodes.goip.de",
-          "localhost"
-        ],
+        ]
       },
 
       clientAlias: "monkey",
@@ -73,9 +77,6 @@ export default defineConfig({
         externalGlobals: {
           //vue: cdn.jsdelivr('Vue', 'dist/vue.global.prod.js')
           vue: cdn.jsdelivr('Vue', 'dist/vue.global.js')
-        },
-        externalResource: {
-          'primeflex/primeflex.min.css': cdn.jsdelivr()
         }
       },
     }),

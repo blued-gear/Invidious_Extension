@@ -31,7 +31,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
-        elm.style.marginTop = '-0.5rem';
+        elm.style.marginTop = '-0.75rem';
 
         const container = this.createGeneralElement('div');
         container.classList.add('invExt');
@@ -65,6 +65,14 @@ export default class PipedDocumentControllerImpl implements DocumentController {
         }
 
         return true;
+    }
+
+    isDarkMode(): boolean | null {
+        const appElm = document.querySelector('#app .reset');
+        if(appElm == null)
+            return null;
+
+        return appElm.classList.contains('dark');
     }
 
     async waitForUiReady() {

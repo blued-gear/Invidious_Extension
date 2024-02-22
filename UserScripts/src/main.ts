@@ -26,6 +26,7 @@ import runEnhancers from "./enhancers/enhancers";
 import documentController from "./controllers/document-controller";
 import locationController from "./controllers/location-controller";
 import {isInvidious, isPiped} from "./controllers/platform-detection";
+import {setupTheme, updateTheme} from "./theme-switcher";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -36,6 +37,8 @@ async function runRestoreLogin() {
 
 function runStartupHooks() {
     sharedStates.stackPopRunning = false;// reset on every page-reload
+
+    updateTheme();
 
     Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
@@ -97,6 +100,8 @@ async function syncPipedData() {
 }
 
 async function setupUi() {
+    setupTheme();
+
     createApp(App)
         .use(PrimeVue).use(DialogService).use(ToastService).use(ConfirmationService)
         .directive('tooltip', Tooltip)

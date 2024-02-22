@@ -12,6 +12,11 @@ export interface DocumentController {
     hasPlatformLogin(): boolean
 
     /**
+     * @return {boolean} true if dark_mode is enabled, false if not and null if it could not be determined
+     */
+    isDarkMode(): boolean | null
+
+    /**
      * the promise will resolve when the UI is loaded and can be modded
      */
     waitForUiReady(): Promise<void>

@@ -127,3 +127,14 @@ export function linkRawHref(elm: HTMLAnchorElement): string | null {
 export function elseThrow<T>(err: Error): T {
     throw err;
 }
+
+/**
+ * removes the section between <code>start</code> (inclusive) and <code>end</code> (exclusive) of the given start
+ * @param str the string to cut
+ * @param start index of the first char to be removed
+ * @param end index of the first char to be included again
+ * @return {string} the cut string
+ */
+export function stringRemoveSection(str: string, start: number, end: number): string {
+    return str.substring(0, start) + str.substring(end);
+}

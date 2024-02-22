@@ -52,6 +52,10 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
         return logoutBtn != null;
     }
 
+    isDarkMode(): boolean | null {
+        return document.body.classList.contains('dark-theme');
+    }
+
     waitForUiReady(): Promise<void> {
         return Promise.resolve();// SSR, so everything is ready immediatly
     }
