@@ -72,7 +72,7 @@ function onSelectionChanged(optionName: string, newVal: boolean) {
         <div v-for="(optionVal, optionName, idx) in props.model"
              class="flex gap-1">
           <Checkbox :key="optionName" :id="'multiSelectWithAdd-option-' + idx"
-                    :model-value="optionVal" @input="val => onSelectionChanged(optionName, val)"
+                    :model-value="optionVal" @input="(val: boolean) => onSelectionChanged(optionName, val)"
                     :binary="true"></Checkbox>
           <label :for="'multiSelectWithAdd-option-' + idx">{{optionName}}</label>
         </div>

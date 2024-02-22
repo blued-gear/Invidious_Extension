@@ -1,7 +1,7 @@
 import {GM_getResourceText} from './monkey';
 import documentController from "./controllers/document-controller";
-import {logException, stringRemoveSection} from "./util/utils";
-import matchBracket from "find-matching-bracket/index";
+import {logException} from "./util/utils";
+import {removeCssLayers} from "./workarounds/primevue-css-fix";
 
 const styleElmId = 'invExt-style-theme';
 
@@ -53,22 +53,6 @@ export function updateTheme(): boolean {//return false;
 
 function loadCss(name: string): string {
     let css = GM_getResourceText(name);
-
-    // remove @layer, as it break in UserScripts
-    const layerMarker = '@layer primevue {';
-    let layerIdx = css.indexOf(layerMarker);
-    while(layerIdx !== -1) {
-        const closingBracketIdx = matchBracket(css, layerIdx + layerMarker.length - 1, false);
-        if(closingBracketIdx < 0) {
-            console.error("theme-switcher: unable to process css (brackets of @layer does not match)");
-            break;
-        }
-
-        css = stringRemoveSection(css, closingBracketIdx, closingBracketIdx + 1)
-        css = stringRemoveSection(css, layerIdx, layerIdx + layerMarker.length);
-
-        layerIdx = css.indexOf(layerMarker);
-    }
-
+    css = removeCssLayers(css);
     return css;
 }

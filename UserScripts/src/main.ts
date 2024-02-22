@@ -27,6 +27,7 @@ import documentController from "./controllers/document-controller";
 import locationController from "./controllers/location-controller";
 import {isInvidious, isPiped} from "./controllers/platform-detection";
 import {setupTheme, updateTheme} from "./theme-switcher";
+import fixPrimeVueCss from "./workarounds/primevue-css-fix";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -106,6 +107,8 @@ async function setupUi() {
         .use(PrimeVue).use(DialogService).use(ToastService).use(ConfirmationService)
         .directive('tooltip', Tooltip)
         .mount(GM_addElement(document.body, 'div', { id: 'invExt-app' }));
+
+    fixPrimeVueCss();
 }
 
 async function main() {
