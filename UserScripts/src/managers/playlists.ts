@@ -7,6 +7,7 @@ import urlExtractor from "../controllers/url-extractor";
 import playlistController from "../controllers/playlist-controller";
 import SignalLatch from "../util/signal-latch";
 import ProgressController, {ProgressState} from "../util/progress-controller";
+import {isPiped} from "../controllers/platform-detection";
 
 export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 export const STORAGE_KEY_PL_ID_MAPPING = "playlists::pl_id_mapping";
@@ -365,7 +366,7 @@ export class PlaylistsManager {
             prog.done(true);
             return;
         }
-        if(!sharedStates.invidiousLogin.value) {
+        if(!sharedStates.invidiousLogin.value && !isPiped()) {// !isPiped() -> Piped also supports local saved playlists
             prog.setState(ProgressState.FINISHED);
             prog.setMessage("skip: no Login");
             prog.done(true);
@@ -660,7 +661,7 @@ export class PlaylistsManager {
             prog.done(true);
             return;
         }
-        if(!sharedStates.invidiousLogin.value) {
+        if(!sharedStates.invidiousLogin.value && !isPiped()) {// !isPiped() -> Piped also supports local saved playlists
             prog.setState(ProgressState.FINISHED);
             prog.setMessage("skip: no Login");
             prog.done(true);
