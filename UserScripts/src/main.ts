@@ -32,14 +32,14 @@ import fixPrimeVueCss from "./workarounds/primevue-css-fix";
 async function runRestoreLogin() {
     const login = await restoreLogin();
     await setLoginWhereNeeded(login, false);
-
-    sharedStates.invidiousLogin.value = documentController.hasPlatformLogin();
 }
 
 function runStartupHooks() {
     sharedStates.stackPopRunning = false;// reset on every page-reload
 
     updateTheme();
+
+    sharedStates.invidiousLogin.value = documentController.hasPlatformLogin();
 
     Promise.allSettled([
         stackMgr.updateCurrentWatchStack(),
