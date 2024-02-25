@@ -65,7 +65,28 @@ export default defineConfig({
 
           'https://piped.adminforge.de/*',
           'https://piped.video/*',
-          'https://piped.projectsegfau.lt/*'
+          'https://piped.projectsegfau.lt/*',
+          'https://piped.video/*',
+          'https://piped.syncpundit.io/*',
+          'https://piped.mha.fi/*',
+          'https://piped.garudalinux.org/*',
+          'https://watch.leptons.xyz/*',
+          'https://piped.lunar.icu/*',
+          'https://piped.r4fo.com/*',
+          'https://piped.in.projectsegfau.lt/*',
+          'https://piped.us.projectsegfau.lt/*',
+          'https://piped.privacydev.net/*',
+          'https://piped.smnz.de/*',
+          'https://pd.vern.cc/*',
+          'https://piped.astartes.nl/*',
+          'https://piped.drgns.space/*',
+          'https://pi.ggtyler.dev/*',
+          'https://piped.seitan-ayoub.lol/*',
+          'https://yt.owo.si/*',
+          'https://piped.12a.app/*',
+          'https://piped.minionflo.net/*',
+          'https://piped.ngn.tf/*',
+          'https://piped.ducks.party/*'
         ]
       },
 

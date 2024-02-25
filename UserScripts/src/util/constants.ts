@@ -12,7 +12,10 @@ export const SERVER_DOWNLOAD_URL = SERVER_BASE_URL + "/download";
 
 export const PIPED_HOSTS = [
     "https://pipedapi-libre.kavin.rocks",
-    "https://pipedapi.adminforge.de"
+    "https://pipedapi.adminforge.de",
+    "https://api.piped.projectsegfau.lt",
+    "https://api.piped.privacydev.net",
+    "https://pipedapi.12a.app"
 ];
 
 export const STR_ENCODER = new TextEncoder();
