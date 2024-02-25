@@ -34,7 +34,10 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
                 <li>Stacks: save the currently playing video with timestamp (+ last played videos) to reopen it later</li>
                 <li>group playlists in the playlist-overview</li>
                 <li>download as video or mp3 (with simple ID3-tagger)</li>
-                <li>sync playlists between instances</li>
+                <li>
+                  sync playlists between instances
+                  <div class="text-sm">Warning: sync between account and local saved playlist on the same Piped domain is only partial supported</div>
+                </li>
                 <li>show exact upload-dates of videos in playlist-detail and recommended-videos</li>
                 <li>play a playlist backwards</li>
                 <li>sync extension-specific data between browsers (e2e encrypted)</li>

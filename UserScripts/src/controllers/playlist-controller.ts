@@ -1,7 +1,9 @@
 import {isInvidious, isPiped} from "./platform-detection";
 import InvidiousPlaylistControllerImpl from "./invidious/playlist-controller";
 import ProgressController from "../util/progress-controller";
-import PipedPlaylistControllerImpl from "./piped/playlist-controller";
+import documentController from "./document-controller";
+import PipedAccountPlaylistControllerImpl from "./piped/playlist-controller-account";
+import PipedLocalPlaylistControllerImpl from "./piped/playlist-controller-local";
 
 export interface PlaylistUiElm {
     element: HTMLElement,
@@ -128,11 +130,18 @@ export interface PlaylistController {
     //endregion
 }
 
-const instance: PlaylistController = (function() {
-    if(isInvidious())
-        return new InvidiousPlaylistControllerImpl()
-    if(isPiped())
-        return new PipedPlaylistControllerImpl();
+const instance: PlaylistController = await (async function() {
+    if(isInvidious()) {
+        return new InvidiousPlaylistControllerImpl();
+    }
+    if(isPiped()) {
+        await documentController.waitForUiReady();
+        if(documentController.hasPlatformLogin()) {
+            return new PipedAccountPlaylistControllerImpl();
+        } else {
+            return new PipedLocalPlaylistControllerImpl();
+        }
+    }
 
     throw new Error("UserScript was started on an unsupported platform");
 })();

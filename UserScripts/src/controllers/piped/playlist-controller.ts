@@ -13,38 +13,56 @@ import locationController from "../location-controller";
 import urlExtractor from "../url-extractor";
 import {elementListToArray, linkRawHref, logException, roundToDecimal, sleep} from "../../util/utils";
 import {unsafeWindow} from "../../monkey";
-import {currentComponent, pipedApiHost, pipedAuthToken} from "./special-functions";
+import {currentComponent} from "./special-functions";
 
-// noinspection JSUnresolvedReference
-export default class PipedPlaylistControllerImpl implements PlaylistController {
+export interface FullPlData {
+    name: string,
+    uploader: string,
+    uploaderUrl: string,
+    thumbnailUrl: string,
+    uploaderAvatar: string,
+    videos: number,// number of videos
+    description: string | undefined
+}
+
+export interface CreatedPlDataSummary {
+    id: string,
+    name: string,
+    thumbnail: string,
+    videos: number// number of videos
+}
+
+interface BookmarkedPlDataSummary {
+    name: string,
+    playlistId: string,
+    thumbnail: string,
+    uploader: string,
+    uploaderAvatar: string,
+    uploaderUrl: string,
+    videos: number// number of videos
+}
+
+export default abstract class PipedPlaylistController implements PlaylistController {
 
     private plContainers: PlaylistContainers | null = null;
     private plElements: Playlists | null = null;
     private readonly subscribeHooks: PlaylistHook[] = [];
     private readonly unsubscribeHooks: PlaylistHook[] = [];
 
-    constructor() {
+    protected constructor() {
         locationController.addAfterNavigationCallback(true, () => this.installPlSubscribeHooks());
     }
 
-    //TODO maybe use JS-methods instead of just the API for writes
-
-    isOnOwnPlaylistDetails(): boolean {
-        const id = urlExtractor.playlistId(undefined);
-        if(id == null)
-            return false;
-
-        return /^[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+-[a-z0-9]+$/.test(id);
-    }
+    abstract isOnOwnPlaylistDetails(): boolean
 
     async waitForElementsLoaded() {
         await sleep(10);// should be enough that saved playlist were loaded
 
-        const expectedPlaylists = await this.fetchCreatedPlaylists();
+        const expectedPlaylists = await this.loadCreatedPlaylists();
         const expectedPlaylistsCount = expectedPlaylists.length;
         const componentData = currentComponent()._.data;
 
-        while (componentData.playlists == null || componentData.playlists.length != expectedPlaylistsCount) {
+        while (componentData.playlists == null || componentData.playlists.length < expectedPlaylistsCount) {
             await sleep(10);
         }
     }
@@ -111,7 +129,7 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
     }
 
     async getCreatedPlaylists(): Promise<string[]> {
-        const playlistsData = await this.fetchCreatedPlaylists();
+        const playlistsData = await this.loadCreatedPlaylists();
         return playlistsData.map((pl: any) => pl.id as string);
     }
 
@@ -121,7 +139,7 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
     }
 
     async getPlDetails(plId: string): Promise<PlaylistDetailsGet> {
-        const data = await this.fetchPlData(plId);
+        const data = await this.loadPlData(plId);
         return {
             name: data.name,
             description: data.description ?? ''
@@ -138,22 +156,7 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         return id;
     }
 
-    async deleteCreatedPlaylist(id: string) {
-        const url = `${pipedApiHost()}/user/playlists/delete`;
-        const body: any = { playlistId: id };
-
-        const resp = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok)
-            throw new Error("deleteCreatedPlaylist(): api call failed");
-    }
+    abstract deleteCreatedPlaylist(id: string): Promise<void>
 
     async addVideoToPl(plId: string, vidId: string) {
         await this.addPlItems(plId, [vidId]);
@@ -208,13 +211,13 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
 
         return new Promise<void>((resolve) => {
             (async () => {
-                const plInfo = await this.fetchPlData(id);
+                const plInfo = await this.loadPlData(id);
 
                 const db: IDBDatabase = (unsafeWindow as any).db;
                 const tx = db.transaction("playlist_bookmarks", "readwrite");
                 const store = tx.objectStore("playlist_bookmarks");
 
-                const req = store.put({
+                const req = store.put(<BookmarkedPlDataSummary>{
                     playlistId: id,
                     name: plInfo.name,
                     uploader: plInfo.uploader,
@@ -280,184 +283,16 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
                 const result = req.result;
                 resolve(result != null);
             };
-            req.onerror = () => {
-                reject(new Error("isPlSubscribed(): failed to read from IndexDB"));
+            req.onerror = (e) => {
+                reject(new Error("isPlSubscribed(): failed to read from IndexDB", { cause: e }));
             };
         });
     }
     //endregion
 
-    private async fetchPlData(id: string): Promise<any> {
-        const resp = await fetch(`${pipedApiHost()}/playlists/${id}`);
-        if(!resp.ok)
-            throw new Error("unable to fetch playlist data from piped-api");
-
-        return resp.json();
-    }
-
-    private async getPlItemsUpto(plId: string, maxCount: number, prog: ProgressController | null): Promise<string[]> {
-        if(prog !== null) {
-            prog.setMessage("loading all playlist items");
-            prog.setState(ProgressState.RUNNING);
-            prog.setProgress(0);
-        }
-
-        function mapVidId(itm: any): string {
-            return urlExtractor.videoId(itm.url)!!;
-        }
-
-        try {
-            const videos: string[] = [];
-
-            const initialData = await this.fetchPlData(plId);
-            const countTotal: number = initialData.videos;
-            let countFetched: number = 0;
-            let nextPage: string | null;
-
-            videos.push(...initialData.relatedStreams.map(mapVidId));
-            countFetched += initialData.relatedStreams.length;
-            nextPage = initialData.nextpage;
-
-            const apiHost = pipedApiHost();
-            while (nextPage != null) {
-                if (countFetched >= maxCount)
-                    break;
-
-                if (prog !== null) {
-                    prog.setProgress(roundToDecimal(countFetched / countTotal, 2));
-                }
-
-                const npResp = await fetch(`${apiHost}/nextpage/playlist/${plId}?${encodeURIComponent(nextPage)}`);
-                if (!npResp.ok)
-                    throw new Error("unable to fetch playlist nextPage from piped-api");
-
-                const npData = await npResp.json();
-                videos.push(...npData.relatedStreams.map(mapVidId));
-                countFetched += npData.relatedStreams.length;
-                nextPage = npData.nextpage;
-            }
-
-            if(prog !== null) {
-                prog.setState(ProgressState.FINISHED);
-                prog.setProgress(1);
-                prog.done(false);
-            }
-
-            return videos;
-        } catch(e) {
-            if(prog !== null) {
-                prog.setState(ProgressState.ERR);
-                prog.done(true);
-            }
-
-            throw e;
-        }
-    }
-
-    private async createOwnPlaylist(name: string): Promise<string> {
-        const url = `${pipedApiHost()}/user/playlists/create`;
-        const body: any = { name: name };
-
-        const resp = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok)
-            throw new Error("createOwnPlaylist(): api call failed");
-
-        const respData = await resp.json();
-        return respData.playlistId;
-    }
-
-    private async setOwnPlaylistDescription(plId: string, desc: string) {
-        //QUIRK Piped does not accept blank descriptions
-        if(desc.length === 0)
-            desc = "\u00A0";
-
-        const url = `${pipedApiHost()}/user/playlists/description`;
-        const body: any = {
-            playlistId: plId,
-            description: desc
-        };
-
-        const resp = await fetch(url, {
-            method: 'PATCH',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok)
-            throw new Error("setOwnPlaylistDescription(): api call failed");
-    }
-
-    private async setOwnPlaylistName(plId: string, name: string) {
-        const url = `${pipedApiHost()}/user/playlists/rename`;
-        const body: any = {
-            playlistId: plId,
-            newName: name
-        };
-
-        const resp = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok)
-            throw new Error("setOwnPlaylistName(): api call failed");
-    }
-
-    private async addPlItems(plId: string, vidIds: string[]) {
-        const url = `${pipedApiHost()}/user/playlists/add`;
-        const body: any = {
-            playlistId: plId,
-            videoIds: vidIds
-        };
-
-        const resp = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok)
-            throw new Error("addVideoToPl(): api call failed");
-    }
-
-    private async fetchCreatedPlaylists(): Promise<any> {
-        const url = `${pipedApiHost()}/user/playlists`;
-
-        const resp = await fetch(url, {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            }
-        });
-        if(!resp.ok)
-            throw new Error("fetchCreatedPlaylists(): api call failed");
-
-        return await resp.json();
-    }
-
-    private loadSavedPlaylists(): Promise<any> {
+    private loadSavedPlaylists(): Promise<BookmarkedPlDataSummary[]> {
         return new Promise((resolve, reject) => {
-            const ret: any[] = [];
+            const ret: BookmarkedPlDataSummary[] = [];
 
             const db: IDBDatabase = (unsafeWindow as any).db;
             const tx = db.transaction("playlist_bookmarks", "readonly");
@@ -477,26 +312,6 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
                 reject(new Error("loadSavedPlaylists(): error while reading from IndexDB", { cause: e }));
             };
         });
-    }
-
-    private async delPlItem(plId: string, index: number): Promise<boolean> {
-        const url = `${pipedApiHost()}/user/playlists/remove`;
-        const body: any = {
-            playlistId: plId,
-            index: index
-        };
-
-        const resp = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-
-        return resp.ok;
     }
 
     private installPlSubscribeHooks() {
@@ -601,7 +416,7 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
         prog.setMessage("removing mismatching items");
 
         try {
-            const plSize: number = (await this.fetchPlData(plId)).videos;
+            const plSize: number = (await this.loadPlData(plId)).videos;
             const delCount = plSize - startIdx - 1;
 
             prog.setMessage(`removing mismatching items (0 / ${delCount})`);
@@ -654,5 +469,23 @@ export default class PipedPlaylistControllerImpl implements PlaylistController {
             throw e;
         }
     }
+    //endregion
+
+    //region protected abstracts
+    protected abstract loadPlData(id: string): Promise<FullPlData>
+
+    protected abstract loadCreatedPlaylists(): Promise<CreatedPlDataSummary[]>
+
+    protected abstract createOwnPlaylist(name: string): Promise<string>
+
+    protected abstract setOwnPlaylistDescription(plId: string, desc: string): Promise<void>
+
+    protected abstract setOwnPlaylistName(plId: string, name: string): Promise<void>
+
+    protected abstract getPlItemsUpto(plId: string, maxCount: number, prog: ProgressController | null): Promise<string[]>
+
+    protected abstract addPlItems(plId: string, vidIds: string[]): Promise<void>
+
+    protected abstract delPlItem(plId: string, index: number): Promise<boolean>
     //endregion
 }
