@@ -120,23 +120,21 @@ function submit() {
 
         <div class="field">
             <span class="p-float-label">
-            <Password id="signUp-password" v-model="password" toggleMask aria-describedby="signUp-password_err"
-                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"
-                      :pt="{ 'input': { class: 'w-full' } }" />
-            <label for="signUp-password">Password</label>
+            <Password id="invExt-signUp-password" v-model="password" toggleMask aria-describedby="invExt-signUp-password_err"
+                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"/>
+            <label for="invExt-signUp-password">Password</label>
           </span>
-          <small id="signUp-password_err" class="p-error ml-2">{{ passwordErr || '&nbsp;' }}</small>
+          <small id="invExt-signUp-password_err" class="p-error ml-2">{{ passwordErr || '&nbsp;' }}</small>
         </div>
 
         <div class="field">
             <span class="p-float-label">
-            <Password id="signUp-password2" v-model="password2" toggleMask :feedback="false"
-                      aria-describedby="signUp-password2_err"
-                      :class="{ 'p-invalid': password2Err !== null, 'w-full': true }"
-                      :pt="{ 'input': { class: 'w-full' } }" />
-            <label for="signUp-password2">Repeat Password</label>
+            <Password id="invExt-signUp-password2" v-model="password2" toggleMask :feedback="false"
+                      aria-describedby="invExt-signUp-password2_err"
+                      :class="{ 'p-invalid': password2Err !== null, 'w-full': true }"/>
+            <label for="invExt-signUp-password2">Repeat Password</label>
           </span>
-          <small id="signUp-password2_err" class="p-error ml-2">{{ password2Err || '&nbsp;' }}</small>
+          <small id="invExt-signUp-password2_err" class="p-error ml-2">{{ password2Err || '&nbsp;' }}</small>
         </div>
       </div>
 
@@ -156,5 +154,13 @@ function submit() {
 </template>
 
 <style scoped>
+:deep(.p-password input) {
+  width: 100%;
+  color: var(--text-color);
+}
 
+:deep(.p-password .p-icon) {
+  align-self: center;
+  margin-left: 0.5rem;
+}
 </style>

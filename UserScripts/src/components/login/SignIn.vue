@@ -92,23 +92,22 @@ function submit() {
       <div class="w-max max-w-full">
         <div class="field">
           <span class="p-float-label">
-            <InputText id="signIn-username" v-model="username"
-                       aria-describedby="signIn-username_err"
+            <InputText id="invExt-signIn-username" v-model="username"
+                       aria-describedby="invExt-signIn-username_err"
                        :class="{ 'p-invalid': usernameErr !== null, 'w-full': true }"/>
             <label for="signIn-username">Username</label>
           </span>
-          <small id="signIn-username_err" class="p-error ml-2">{{ usernameErr || '&nbsp;' }}</small>
+          <small id="invExt-signIn-username_err" class="p-error ml-2">{{ usernameErr || '&nbsp;' }}</small>
         </div>
 
         <div class="field">
           <span class="p-float-label">
-            <Password id="signIn-password" v-model="password" toggleMask :feedback="false"
-                      aria-describedby="signIn-password_err"
-                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"
-                      :pt="{ 'input': { class: 'w-full' } }"/>
+            <Password id="invExt-signIn-password" v-model="password" toggleMask :feedback="false"
+                      aria-describedby="invExt-signIn-password_err"
+                      :class="{ 'p-invalid': passwordErr !== null, 'w-full': true }"/>
             <label for="signIn-password">Password</label>
           </span>
-          <small id="signIn-password_err" class="p-error ml-2">{{ passwordErr || '&nbsp;' }}</small>
+          <small id="invExt-signIn-password_err" class="p-error ml-2">{{ passwordErr || '&nbsp;' }}</small>
         </div>
       </div>
 
@@ -121,5 +120,13 @@ function submit() {
 </template>
 
 <style scoped>
+:deep(.p-password input) {
+  width: 100%;
+  color: var(--text-color);
+}
 
+:deep(.p-password .p-icon) {
+  align-self: center;
+  margin-left: 0.5rem;
+}
 </style>
