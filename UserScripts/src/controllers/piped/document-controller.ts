@@ -61,7 +61,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
             if(!(elm instanceof HTMLAnchorElement))
                 continue;
             if(linkRawHref(elm) === '/login')
-                return true;
+                return false;
         }
 
         return true;
