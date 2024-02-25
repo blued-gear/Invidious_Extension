@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     val kotlinVersion = "1.9.22"
-    val micronautVersion = "4.2.1"
+    val micronautVersion = "4.3.3"
 
     id("org.jetbrains.kotlin.jvm") version kotlinVersion
     id("org.jetbrains.kotlin.kapt") version kotlinVersion
@@ -15,7 +15,7 @@ plugins {
 
     id("com.github.johnrengelman.shadow") version "8.1.1"
 
-    id("com.jaredsburrows.license") version "0.9.3"
+    id("com.jaredsburrows.license") version "0.9.7"
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"

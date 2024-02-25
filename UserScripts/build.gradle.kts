@@ -7,7 +7,7 @@ import java.nio.file.Files
 import java.util.*
 
 plugins {
-    id("io.github.pereduromega.npm.plugin") version "1.3.0"
+    id("io.github.pereduromega.npm.plugin") version "1.4.0"
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"
