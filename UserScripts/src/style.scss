@@ -37,4 +37,12 @@
     @extend .pi-stop;
   }
 
+  .pipedMainMnuElm {
+
+  }
+  @media(min-width: 768px) {
+    .pipedMainMnuElm {
+      margin-top: -0.75rem;
+    }
+  }
 }

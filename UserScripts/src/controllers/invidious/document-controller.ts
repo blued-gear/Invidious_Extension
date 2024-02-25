@@ -10,6 +10,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
+        elm.classList.add('invExt');
 
         let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
         if(anchor == null)
@@ -28,6 +29,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
+        elm.classList.add('invExt');
 
         let anchor = document.querySelector('html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
         if(anchor == null)

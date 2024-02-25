@@ -224,5 +224,7 @@ defineExpose({
 </template>
 
 <style scoped>
-
+:deep(input) {
+  color: var(--text-color);
+}
 </style>
