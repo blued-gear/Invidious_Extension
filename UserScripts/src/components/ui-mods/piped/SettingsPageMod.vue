@@ -126,7 +126,8 @@ function onExport(force: boolean) {
   });
 }
 
-function onChangeBackgroundSync(enabled: boolean) {
+function onChangeBackgroundSync(event: Event) {
+  const enabled = (event.target as HTMLInputElement).checked;
   const exec = async () => {
     await pipedDataSync.setBackgroundSyncEnabled(enabled);
     backgroundSyncEnabled.value = await pipedDataSync.isBackgroundSyncEnabled();

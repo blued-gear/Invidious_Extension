@@ -135,7 +135,8 @@ function onExport(force: boolean) {
   });
 }
 
-function onChangeBackgroundSync(enabled: boolean) {
+function onChangeBackgroundSync(event: Event) {
+  const enabled = (event.target as HTMLInputElement).checked;
   const exec = async () => {
     await invidiousDataSync.setBackgroundSyncEnabled(enabled);
     backgroundSyncEnabled.value = await invidiousDataSync.isBackgroundSyncEnabled();
