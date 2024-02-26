@@ -431,8 +431,9 @@ export default abstract class PipedPlaylistController implements PlaylistControl
                     throw new Error(`PipedPlaylistControllerImpl::removeVideosFromIdx(): unable to delete video at index ${i}`);
                 }
 
-                prog.setProgress(roundToDecimal(i / delCount, 2));
-                prog.setMessage(`removing mismatching items (${i} / ${delCount})`);
+                const delPos = startIdx - (i - startIdx);
+                prog.setProgress(roundToDecimal(delPos / delCount, 2));
+                prog.setMessage(`removing mismatching items (${delPos} / ${delCount})`);
             }
         } catch(e) {
             prog.setState(ProgressState.ERR);
