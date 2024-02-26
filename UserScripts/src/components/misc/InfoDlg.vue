@@ -26,7 +26,7 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
               A Userscript with Backend to extend the functionality of Piped &amp; Invidious
               and enable syncing between instances.
             </div>
-            <div class="text-sm">Pleas note that the support for Invidious is discontinued.</div>
+            <div class="text-sm">Please note that the support for Invidious is discontinued.</div>
 
             <div class="mt-3">
               Features:
