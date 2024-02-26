@@ -41,3 +41,24 @@ export function arrayDistinct<T>(arr: T[], keySelector: (itm: T) => any = ((itm:
 
     return ret;
 }
+
+/**
+ * splits the given array into chunks which will have a length of at most <code>chunkSize</code>
+ * @param arr the array to split
+ * @param chunkSize the max size of a chunk
+ * @return {[][]} array of chunks
+ */
+export function arrayChunk<T>(arr: T[], chunkSize: number): T[][] {
+    if(chunkSize < 1)
+        throw new Error("IllegalArgument: chunkSize must be > 0");
+
+    const chunks: T[][] = [];
+
+    // https://stackoverflow.com/a/8495740
+    for(let i = 0; i < arr.length; i += chunkSize) {
+        const chunk = arr.slice(i, i + chunkSize);
+        chunks.push(chunk);
+    }
+
+    return chunks;
+}

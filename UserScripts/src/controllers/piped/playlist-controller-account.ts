@@ -1,8 +1,9 @@
 import ProgressController, {ProgressState} from "../../util/progress-controller";
 import urlExtractor from "../url-extractor";
-import {roundToDecimal} from "../../util/utils";
+import {roundToDecimal, sleep} from "../../util/utils";
 import {pipedApiHost, pipedAuthToken} from "./special-functions";
 import PipedPlaylistController, {CreatedPlDataSummary} from "./playlist-controller";
+import {arrayChunk} from "../../util/array-utils";
 
 interface PlVideo {
     url: string
@@ -143,23 +144,28 @@ export default class PipedAccountPlaylistControllerImpl extends PipedPlaylistCon
     }
 
     protected async addPlItems(plId: string, vidIds: string[]) {
-        const url = `${pipedApiHost()}/user/playlists/add`;
-        const body: any = {
-            playlistId: plId,
-            videoIds: vidIds
-        };
+        const vidIdsChuncked = arrayChunk(vidIds, 20);// chunk vidIds or else Piped might encounter a gateway_timeout
+        for(let vids of vidIdsChuncked) {
+            const url = `${pipedApiHost()}/user/playlists/add`;
+            const body: any = {
+                playlistId: plId,
+                videoIds: vids
+            };
 
-        const resp = await fetch(url, {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': pipedAuthToken()
-            },
-            body: JSON.stringify(body)
-        });
-        if(!resp.ok)
-            throw new Error("addVideoToPl(): api call failed");
+            const resp = await fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': pipedAuthToken()
+                },
+                body: JSON.stringify(body)
+            });
+            if(!resp.ok)
+                throw new Error("addVideoToPl(): api call failed");
+
+            await sleep(500);// give the server some time to breath
+        }
     }
 
     protected async delPlItem(plId: string, index: number): Promise<boolean> {
