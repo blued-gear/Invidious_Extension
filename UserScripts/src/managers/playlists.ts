@@ -264,7 +264,6 @@ export class PlaylistsManager {
         if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING)) {
             this.idToPlId = {};
             this.plIdToId = {};
-            this.idMappingChanged = true;
 
             return {
                 idToPlId: this.idToPlId,
@@ -277,7 +276,6 @@ export class PlaylistsManager {
 
         this.idToPlId = {};
         this.plIdToId = {};
-        this.idMappingChanged = true;
 
         for(const id of Object.keys(data)) {
             const plId = data[id][domain];
