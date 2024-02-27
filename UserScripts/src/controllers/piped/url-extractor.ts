@@ -107,7 +107,7 @@ export default class PipedUrlExtractorImpl implements UrlExtractor {
         if (Number.isNaN(idx))
             return null;
 
-        return idx;
+        return idx - 1;// Piped indexes are 1-based
     }
     //endregion
 

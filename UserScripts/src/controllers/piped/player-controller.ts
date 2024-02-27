@@ -161,7 +161,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
-        const plIdxParam = plIdx !== -1 ? `&index=${plIdx}` : '';
+        const plIdxParam = plIdx !== -1 ? `&index=${plIdx + 1}` : '';// Piped indexes are 1-based
         const listenParam = this.listenModeParam(listenMode);
 
         if(this.playlistId() !== plId
@@ -255,7 +255,11 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     private playlistIndex(): number | null {
-        return this.playerComponent().data.index ?? urlExtractor.playlistIndex();
+        const idx = this.playerComponent().data.index;
+        if(idx != null)
+            return idx - 1;// Piped indexes are 1-based
+
+        return urlExtractor.playlistIndex();
     }
 
     private async jumpToTime(expectedVid: string, time: number) {
