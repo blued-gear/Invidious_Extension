@@ -53,6 +53,7 @@ export class PlaylistsManager {
     private playlistScanned = new SignalLatch();
     private idToPlId: Record<string, string> | null = null;
     private plIdToId: Record<string, string> | null = null;
+    private idMappingChanged: boolean = false;
 
     private constructor() {}
 
@@ -73,7 +74,9 @@ export class PlaylistsManager {
      * flushes all buffered changes to synced storage
      */
     async saveChanges() {
-        await this.storePlIdMapping();
+        if(this.idMappingChanged) {
+            await this.storePlIdMapping();
+        }
     }
 
     //region pl-groups
@@ -201,6 +204,8 @@ export class PlaylistsManager {
 
         this.idToPlId!![internalId] = domainId;
         this.plIdToId!![domainId] = internalId;
+
+        this.idMappingChanged = true;
     }
 
     /**
@@ -236,6 +241,8 @@ export class PlaylistsManager {
 
         delete this.idToPlId!![id];
         delete this.plIdToId!![plId];
+
+        this.idMappingChanged = true;
     }
 
     private async loadPlIdMapping(fast: boolean): Promise<{idToPlId: Record<string, string>, plIdToId: Record<string, string>}> {
@@ -257,6 +264,7 @@ export class PlaylistsManager {
         if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING)) {
             this.idToPlId = {};
             this.plIdToId = {};
+            this.idMappingChanged = true;
 
             return {
                 idToPlId: this.idToPlId,
@@ -269,6 +277,7 @@ export class PlaylistsManager {
 
         this.idToPlId = {};
         this.plIdToId = {};
+        this.idMappingChanged = true;
 
         for(const id of Object.keys(data)) {
             const plId = data[id][domain];
@@ -341,6 +350,8 @@ export class PlaylistsManager {
         }
 
         await extensionDataSync.setEntry(STORAGE_KEY_PL_ID_MAPPING, data);
+
+        this.idMappingChanged = false;
     }
     //endregion
 
