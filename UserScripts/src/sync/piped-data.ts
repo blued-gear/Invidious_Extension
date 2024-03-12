@@ -1,11 +1,12 @@
 import {unsafeWindow} from "../monkey";
-import {STORAGE_PREFIX} from "../util/constants";
+import {STORAGE_PREFIX, TOAST_LIFE_INFO} from "../util/constants";
 import extensionDataSync from "../sync/extension-data";
 import SyncTimeWithHashDto from "./dto/synctime-with-hash-dto";
 import locationController from "../controllers/location-controller";
 import {hashObject} from "../util/hash";
 
 const STORAGE_KEY_LAST_SYNC_TIMES = STORAGE_PREFIX + 'lastSyncTimes';
+const SETTINGS_VAL_VERSION = "2";
 
 export const STORAGE_KEY_PREFIX = 'piped::settings::';
 export const STORAGE_KEY_DO_BACKGROUND_SYNC = STORAGE_KEY_PREFIX + 'doBackgroundSync';
@@ -19,7 +20,7 @@ export enum SyncResult {
     IMPORTED,
     /** data was exported to remote */
     EXPORTED,
-    /** export failed because remote as a more recent version */
+    /** export failed because remote has a more recent version */
     CONFLICT,
     /** auto_sync is disabled or was already executed */
     SKIPPED
@@ -27,6 +28,13 @@ export enum SyncResult {
 
 type LastSyncTimes = Record<string, number>;
 type PipedSettings = Record<string, string>;
+type ChannelGroups = object[];
+
+interface AllSettings {
+    version: string,
+    settings: PipedSettings,
+    channelGroups: ChannelGroups
+}
 
 export class PipedDataSync {
 
@@ -91,16 +99,40 @@ export class PipedDataSync {
     }
 
     async importData(): Promise<SyncResult> {
-        const data = await getEntryRemote<PipedSettings | null>(STORAGE_KEY_DATA, null);
+        let data = await getEntryRemote<AllSettings | null>(STORAGE_KEY_DATA, null);
         if(data === null)
             return SyncResult.NONE;
+
+        if(data.version !== SETTINGS_VAL_VERSION) {
+            switch(data.version) {
+                case undefined: {
+                    data = {
+                        version: SETTINGS_VAL_VERSION,
+                        settings: data as unknown as PipedSettings,
+                        channelGroups: []
+                    };
+
+                    if(data.settings != undefined) {
+                        console.warn(`PipedDataSync::importData() importing old settings-version (version: 0)`);
+                    } else {
+                        console.warn(`PipedDataSync::importData() unable to import old settings-version (version: ${data.version})`);
+                        return SyncResult.NONE;
+                    }
+
+                    break;
+                }
+                default:
+                    console.warn(`PipedDataSync::importData() unable to import old settings-version (version: ${data.version})`);
+                    return SyncResult.NONE;
+            }
+        }
 
         await this.applySettings(data);
 
         const remoteSyncTime = await this.getLastSynctimeRemote();
         await this.setLastSynctime(remoteSyncTime.syncTime);
 
-        locationController.reload();
+        setTimeout(function() { locationController.reload(); }, TOAST_LIFE_INFO / 2);
 
         return SyncResult.IMPORTED;
     }
@@ -134,7 +166,7 @@ export class PipedDataSync {
         localStorage.setItem(STORAGE_KEY_LAST_SYNC_TIMES, JSON.stringify(entries));
     }
 
-    private async doExport(data: PipedSettings, force: boolean, fingerprint: string): Promise<SyncResult> {
+    private async doExport(data: AllSettings, force: boolean, fingerprint: string): Promise<SyncResult> {
         if(!force && Object.keys(data).length === 0)
             return SyncResult.NONE;
 
@@ -155,34 +187,101 @@ export class PipedDataSync {
         return SyncResult.EXPORTED;
     }
 
-    private async loadSettings(): Promise<PipedSettings> {
+    private async loadSettings(): Promise<AllSettings> {
+        return {
+            version: SETTINGS_VAL_VERSION,
+            settings: await this.loadPipedSettings(),
+            channelGroups: await this.loadChannelGroups()
+        }
+    }
+
+    private async loadPipedSettings(): Promise<PipedSettings> {
         const data = unsafeWindow.localStorage;
         const filtered: PipedSettings = {};
 
         Object.keys(data)
             .filter((key) => {
                 return !key.startsWith(STORAGE_PREFIX)
-                        && !key.startsWith('authToken')
-                        && key !== 'authInstance'
-                        && key !== 'auth_instance_url'
-                        && key !== 'instance'
+                    && !key.startsWith('authToken')
+                    && key !== 'authInstance'
+                    && key !== 'auth_instance_url'
+                    && key !== 'instance'
             }).forEach((key) => {
-                filtered[key] = data[key];
-            });
+            filtered[key] = data[key];
+        });
 
         return filtered;
     }
 
-    /**
-     * call locationController.reload() after storing settings
-     */
-    private async applySettings(data: PipedSettings) {
-        Object.keys(data).forEach((key) => {
-            unsafeWindow.localStorage.setItem(key, data[key]);
+    private async loadChannelGroups(): Promise<ChannelGroups> {
+        return new Promise((resolve, reject) => {
+            const channelGroups: ChannelGroups = [];
+            const db: IDBDatabase = (unsafeWindow as any).db;
+
+            const tx = db.transaction("channel_groups", "readonly");
+            const store = tx.objectStore("channel_groups");
+            const cursorReq = store.index("groupName").openCursor();
+
+            cursorReq.onsuccess = e => {
+                const cursor = cursorReq.result;
+                if (cursor != null) {
+                    const group = cursor.value;
+                    channelGroups.push({
+                        groupName: group.groupName,
+                        channels: JSON.parse(group.channels),
+                    });
+
+                    cursor.continue();
+                } else {
+                    resolve(channelGroups);
+                }
+            };
+            cursorReq.onerror = (e) => {
+                reject(new Error("loadChannelGroups(): error while reading from IndexDB", { cause: e }));
+            };
         });
     }
 
-    private async computeFingerprint(data: PipedSettings): Promise<string> {
+    /**
+     * call locationController.reload() after applying settings
+     */
+    private async applySettings(data: AllSettings) {
+        await this.applyPipedSettings(data.settings);
+        await this.applyChannelGroups(data.channelGroups)
+    }
+
+    private async applyPipedSettings(settings: PipedSettings) {
+        Object.keys(settings).forEach((key) => {
+            unsafeWindow.localStorage.setItem(key, settings[key]);
+        });
+    }
+
+    private async applyChannelGroups(groups: ChannelGroups) {
+        // just add/update groups, but do not delete excess
+        for(let group of groups) {
+            await this.createOrUpdateChannelGroup(group)
+        }
+    }
+
+    private async createOrUpdateChannelGroup(group: any) {
+        return new Promise<void>((resolve, reject) => {
+            const db: IDBDatabase = (unsafeWindow as any).db;
+            const tx = db.transaction("channel_groups", "readwrite");
+            const store = tx.objectStore("channel_groups");
+
+            const req = store.put({
+                groupName: group.groupName,
+                channels: JSON.stringify(group.channels),
+            });
+
+            req.onsuccess = () => resolve();
+            req.onerror = (e) => {
+                reject(new Error("createOrUpdateChannelGroup(): error while writing to IndexDB", { cause: e }));
+            };
+        });
+    }
+
+    private async computeFingerprint(data: AllSettings): Promise<string> {
         return await hashObject(data);
     }
 }
