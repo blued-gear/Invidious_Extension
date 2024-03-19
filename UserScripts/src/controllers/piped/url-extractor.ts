@@ -116,6 +116,11 @@ export default class PipedUrlExtractorImpl implements UrlExtractor {
         return location.pathname === '/preferences'
             || location.pathname === '/preferences/';
     }
+
+    isOnSubscriptions(): boolean {
+        return location.pathname === '/subscriptions'
+            || location.pathname === '/subscriptions/';
+    }
     //endregion
 
     //region helpers

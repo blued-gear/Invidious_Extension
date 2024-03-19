@@ -22,9 +22,11 @@ import mnuChannel, {updateMenu as updateChannelMenu} from "./entries/channel";
 import mnuLogin, {loginDlgOpen, updateMenu as updateLoginMenu} from "./entries/login";
 import mnuDownload from "./entries/download";
 import mnuPlaylists, {playlistSyncDlgOpen, updateMenu as updatePlaylistsMenu} from "./entries/playlists";
+import mnuSubs, {subsSyncDlgOpen, updateMenu as updateSubsMenu} from "./entries/subscriptions";
 import mnuPlayer, {updateMenu as updatePlayerMenu} from "./entries/player";
 import mnuOther, {infoDlgOpen, updateMenu as updateOtherMenu} from "./entries/other";
 import DocumentController from "../../controllers/document-controller";
+import SubscriptionSyncDlg from "../subscriptions/SubscriptionSyncDlg.vue";
 
 // in the menu-bar beside the settings-button
 const btnTarget = DocumentController.getOrCreateElmForMainMenu();
@@ -37,6 +39,7 @@ const vidMnuContent = computed<MenuItem[]>(() => [
     ...mnuStacks(),
     ...mnuChannel(),
     ...mnuPlaylists(),
+    ...mnuSubs(),
     ...mnuPlayer(),
     ...mnuLogin(),
     ...mnuOther()
@@ -46,6 +49,7 @@ function onMenuOpen() {
   updateStacksMenu();
   updateChannelMenu();
   updatePlaylistsMenu();
+  updateSubsMenu();
   updatePlayerMenu();
   updateLoginMenu();
   updateOtherMenu();
@@ -63,6 +67,7 @@ function onMenuOpen() {
   <StackEditDlg v-model="stackEditorDlgOpen" :stack-id="stackToEditId"></StackEditDlg>
   <StackSaveDlg v-model="stackSaveDlgOpen"></StackSaveDlg>
   <PlaylistSyncDlg v-model="playlistSyncDlgOpen"></PlaylistSyncDlg>
+  <SubscriptionSyncDlg v-model="subsSyncDlgOpen"></SubscriptionSyncDlg>
   <LoginDlg v-model="loginDlgOpen"></LoginDlg>
   <DownloadDlg ref="downloadDlgRef"></DownloadDlg>
   <InfoDlg v-model="infoDlgOpen"></InfoDlg>
