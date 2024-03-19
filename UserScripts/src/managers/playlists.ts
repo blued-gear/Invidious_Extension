@@ -244,6 +244,9 @@ export class PlaylistsManager {
 
         const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
         const domains = data[id];
+        if(domains == null)
+            return null;
+
         return Object.values(domains).filter(plId => plId != null && plId !== '').at(0) ?? null;
     }
 
