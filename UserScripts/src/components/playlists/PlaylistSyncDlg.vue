@@ -34,11 +34,10 @@ function onStart(direction: 'local' | 'remote' | null) {
     await syncSubscribed(progController.fork(), direction);
 
     running.value = false;
+    progController.setState(ProgressState.FINISHED);
+    progController.setProgress(1);
+    progController.done(true);
   })();
-
-  progController.setState(ProgressState.FINISHED);
-  progController.setProgress(1);
-  progController.done(true);
 }
 
 async function syncCreated(prog: ProgressController, direction: 'local' | 'remote' | null) {
