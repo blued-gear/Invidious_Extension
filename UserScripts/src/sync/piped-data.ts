@@ -6,7 +6,7 @@ import locationController from "../controllers/location-controller";
 import {hashObject} from "../util/hash";
 
 const STORAGE_KEY_LAST_SYNC_TIMES = STORAGE_PREFIX + 'lastSyncTimes';
-const SETTINGS_VAL_VERSION = "2";
+const SETTINGS_VAL_VERSION = "1";
 
 export const STORAGE_KEY_PREFIX = 'piped::settings::';
 export const STORAGE_KEY_DO_BACKGROUND_SYNC = STORAGE_KEY_PREFIX + 'doBackgroundSync';
@@ -28,12 +28,10 @@ export enum SyncResult {
 
 type LastSyncTimes = Record<string, number>;
 type PipedSettings = Record<string, string>;
-type ChannelGroups = object[];
 
 interface AllSettings {
     version: string,
-    settings: PipedSettings,
-    channelGroups: ChannelGroups
+    settings: PipedSettings
 }
 
 export class PipedDataSync {
@@ -104,27 +102,9 @@ export class PipedDataSync {
             return SyncResult.NONE;
 
         if(data.version !== SETTINGS_VAL_VERSION) {
-            switch(data.version) {
-                case undefined: {
-                    data = {
-                        version: SETTINGS_VAL_VERSION,
-                        settings: data as unknown as PipedSettings,
-                        channelGroups: []
-                    };
-
-                    if(data.settings != undefined) {
-                        console.warn(`PipedDataSync::importData() importing old settings-version (version: 0)`);
-                    } else {
-                        console.warn(`PipedDataSync::importData() unable to import old settings-version (version: ${data.version})`);
-                        return SyncResult.NONE;
-                    }
-
-                    break;
-                }
-                default:
-                    console.warn(`PipedDataSync::importData() unable to import old settings-version (version: ${data.version})`);
-                    return SyncResult.NONE;
-            }
+            data = this.upgradeSettingsData(data);
+            if(data === null)
+                return SyncResult.NONE;
         }
 
         await this.applySettings(data);
@@ -190,8 +170,7 @@ export class PipedDataSync {
     private async loadSettings(): Promise<AllSettings> {
         return {
             version: SETTINGS_VAL_VERSION,
-            settings: await this.loadPipedSettings(),
-            channelGroups: await this.loadChannelGroups()
+            settings: await this.loadPipedSettings()
         }
     }
 
@@ -213,41 +192,11 @@ export class PipedDataSync {
         return filtered;
     }
 
-    private async loadChannelGroups(): Promise<ChannelGroups> {
-        return new Promise((resolve, reject) => {
-            const channelGroups: ChannelGroups = [];
-            const db: IDBDatabase = (unsafeWindow as any).db;
-
-            const tx = db.transaction("channel_groups", "readonly");
-            const store = tx.objectStore("channel_groups");
-            const cursorReq = store.index("groupName").openCursor();
-
-            cursorReq.onsuccess = e => {
-                const cursor = cursorReq.result;
-                if (cursor != null) {
-                    const group = cursor.value;
-                    channelGroups.push({
-                        groupName: group.groupName,
-                        channels: JSON.parse(group.channels),
-                    });
-
-                    cursor.continue();
-                } else {
-                    resolve(channelGroups);
-                }
-            };
-            cursorReq.onerror = (e) => {
-                reject(new Error("loadChannelGroups(): error while reading from IndexDB", { cause: e }));
-            };
-        });
-    }
-
     /**
      * call locationController.reload() after applying settings
      */
     private async applySettings(data: AllSettings) {
         await this.applyPipedSettings(data.settings);
-        await this.applyChannelGroups(data.channelGroups)
     }
 
     private async applyPipedSettings(settings: PipedSettings) {
@@ -256,33 +205,38 @@ export class PipedDataSync {
         });
     }
 
-    private async applyChannelGroups(groups: ChannelGroups) {
-        // just add/update groups, but do not delete excess
-        for(let group of groups) {
-            await this.createOrUpdateChannelGroup(group)
-        }
-    }
-
-    private async createOrUpdateChannelGroup(group: any) {
-        return new Promise<void>((resolve, reject) => {
-            const db: IDBDatabase = (unsafeWindow as any).db;
-            const tx = db.transaction("channel_groups", "readwrite");
-            const store = tx.objectStore("channel_groups");
-
-            const req = store.put({
-                groupName: group.groupName,
-                channels: JSON.stringify(group.channels),
-            });
-
-            req.onsuccess = () => resolve();
-            req.onerror = (e) => {
-                reject(new Error("createOrUpdateChannelGroup(): error while writing to IndexDB", { cause: e }));
-            };
-        });
-    }
-
     private async computeFingerprint(data: AllSettings): Promise<string> {
         return await hashObject(data);
+    }
+    
+    private upgradeSettingsData(data: any): AllSettings | null {
+        switch(data.version) {
+            case undefined: {
+                const newData: AllSettings = {
+                    version: SETTINGS_VAL_VERSION,
+                    settings: data as PipedSettings
+                };
+
+                if(newData.settings != undefined) {
+                    console.warn(`PipedDataSync::upgradeSettingsData() importing old settings-version (version: 0)`);
+                } else {
+                    console.warn(`PipedDataSync::upgradeSettingsData() unable to import old settings-version (version: ${data.version})`);
+                    return null;
+                }
+
+                return newData;
+            }
+            case 2: {
+                // ver 2 contained channelGroups; we can just ignore it and downgrade to current ver 1
+                return {
+                    version: SETTINGS_VAL_VERSION,
+                    settings: data.settings
+                };
+            }
+            default:
+                console.warn(`PipedDataSync::upgradeSettingsData() unable to import old settings-version (version: ${data.version})`);
+                return null;
+        }
     }
 }
 
