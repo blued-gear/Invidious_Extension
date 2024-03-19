@@ -186,8 +186,7 @@ export class PlayerManager {
     }
 
     private async openStackPl(item: PlaylistVideoStackItem): Promise<boolean> {
-        const plId = await playlistsManager.plIdForId(item.playlistId, false) //TODO maybe fast=true
-            ?? item.playlistId;
+        const plId = await playlistsManager.plIdForIdForeign(item.playlistId) ?? item.playlistId;
         return this.openPlaylist(plId, item.playlistIdx, item.id, item.timeCurrent, item.listenMode ? 'aud' : 'vid');
     }
 

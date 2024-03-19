@@ -212,7 +212,7 @@ export class PlaylistsManager {
      * get the internal id for the playlist-id of this domain or any other domain, or null if not stored
      * @param plId the playlist id
      */
-    private async idForPlIdForeign(plId: string): Promise<string | null> {
+    async idForPlIdForeign(plId: string): Promise<string | null> {
         const forLocal = await this.idForPlId(plId);
         if(forLocal !== null)
             return forLocal;
@@ -228,6 +228,23 @@ export class PlaylistsManager {
         }
 
         return null;
+    }
+
+    /**
+     * get the playlist-id for the internal-id of this domain or any other domain, or null if not stored
+     * @param id the internal id
+     */
+    async plIdForIdForeign(id: string): Promise<string | null> {
+        const forLocal = await this.plIdForId(id);
+        if(forLocal !== null)
+            return forLocal;
+
+        if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_ID_MAPPING))
+            return null;
+
+        const data = await extensionDataSync.getEntry<StoredPlIds>(STORAGE_KEY_PL_ID_MAPPING);
+        const domains = data[id];
+        return Object.values(domains).filter(plId => plId != null && plId !== '').at(0) ?? null;
     }
 
     /**
