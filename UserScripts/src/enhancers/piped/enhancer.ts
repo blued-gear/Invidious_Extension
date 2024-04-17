@@ -65,10 +65,13 @@ class PipedEnhancer {
         if(uploadDate == null || uploadDate.length === 0)
             return;
 
-        const dateElm = elm.querySelector(':scope > div > div > div > span.pl-0\\.5');
-        if(dateElm == null)
+        const chanElm = elm.querySelector(':scope > div > div');
+        if(chanElm == null)
             return;
+        const dateElm = document.createElement('div');
+        dateElm.className = 'text-sm';
         dateElm.textContent = uploadDate;
+        chanElm.insertAdjacentElement('beforeend', dateElm);
     }
 
     private async loadVideoUploadDate(id: string): Promise<string | null> {
