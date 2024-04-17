@@ -3,7 +3,18 @@
 import {unsafeWindow} from "../../monkey";
 
 export function currentComponent(): any | null {
-    return (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route.matched[0]?.instances?.default;
+    const appElm = document.getElementById('app')!!;
+    const vnode = (appElm as any)._vnode;
+    const component = vnode.component?.subTree.children?.[0]?.children?.[1]?.component?.subTree.children?.[0]?.component?.subTree.children?.[1]?.component?.subTree.children?.[0]?.children?.[2]?.ctx;
+
+    // ensure that this component is part of a route
+    if(component == undefined)
+        return null;
+    const cKey = component.vnode.key;
+    if(cKey == null || !((cKey instanceof String) || typeof cKey === 'string') || !cKey.startsWith('/'))
+        return null;
+
+    return component;
 }
 
 /**
@@ -17,7 +28,7 @@ export function pipedApiHost(): string {
         if(func != undefined) {
             // noinspection JSUnresolvedReference
             const activeComponent: any = currentComponent();
-            return func.apply(activeComponent);
+            return func.apply(activeComponent.ctx);
         }
     }
 
@@ -31,7 +42,7 @@ export function pipedAuthToken(): string {
         const func: Function | undefined = mixin.methods.getAuthToken;
         if(func != undefined) {
             const activeComponent: any = currentComponent();
-            return func.apply(activeComponent);
+            return func.apply(activeComponent.ctx);
         }
     }
 
