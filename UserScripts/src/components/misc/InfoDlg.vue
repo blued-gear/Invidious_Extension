@@ -42,7 +42,7 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
                 <li>play a playlist backwards</li>
                 <li>sync extension-specific data between browsers (e2e encrypted)</li>
                 <li>sync Invidious / Piped settings between instances</li>
-                <li>sync Piped subscriptions between instances</li>
+                <li>sync Piped subscriptions and subscription-groups between instances</li>
               </ul>
             </div>
 
