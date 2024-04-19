@@ -54,3 +54,7 @@ Env-Vars:
 | INVIDIOUS_EXT_DB_USER     | user for database                                            |
 | INVIDIOUS_EXT_DB_PASSWORD | password for database-user                                   |
 | INVIDIOUS_EXT_SUBPATH     | subpath the Backend is reachable from (must be at least `/`) |
+
+## Repo
+The GitHub Repo is a mirror from my GitLab.\
+To get prebuild binaries, go [here](https://projects.chocolatecakecodes.goip.de/blued_gear/invidious_extension).
