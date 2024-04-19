@@ -1,8 +1,10 @@
 import urlExtractor from "../../controllers/url-extractor";
 import {linkRawHref, nodeListToArray, sleep} from "../../util/utils";
-import {ADDED_ELM_MARKER_ATTR} from "../../controllers/document-controller";
+import documentController, {ADDED_ELM_MARKER_ATTR} from "../../controllers/document-controller";
 import {formatDate} from "../../util/formatters";
 import {pipedApiHost} from "../../controllers/piped/special-functions";
+
+const TIME_ELM_MARKER_ATTR = "inv_ext-0pl-0time";
 
 /**
  * runs misc enhancements for the general Invidious UI
@@ -38,7 +40,7 @@ class PipedEnhancer {
         const vidContainers = await this.waitLoadVideoContainersOnPlaylist();
         const runners = vidContainers
             .filter((elm) => {
-                return (elm as HTMLElement).dataset[ADDED_ELM_MARKER_ATTR] === undefined;
+                return elm.dataset[ADDED_ELM_MARKER_ATTR] === undefined
             }).map(async (elm) => {
                 try {
                     await this.addUploadDateToVideoItem(elm as HTMLElement);
@@ -68,7 +70,11 @@ class PipedEnhancer {
         const chanElm = elm.querySelector(':scope > div > div');
         if(chanElm == null)
             return;
-        const dateElm = document.createElement('div');
+        if(chanElm.querySelector(`[data-${TIME_ELM_MARKER_ATTR}="1"]`) != null)
+            return;
+
+        const dateElm = documentController.createGeneralElement('div');
+        dateElm.dataset[TIME_ELM_MARKER_ATTR] = '1';
         dateElm.className = 'text-sm';
         dateElm.textContent = uploadDate;
         chanElm.insertAdjacentElement('beforeend', dateElm);
