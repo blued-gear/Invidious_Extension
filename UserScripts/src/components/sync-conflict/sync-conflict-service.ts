@@ -7,8 +7,7 @@ import {
     STORAGE_KEY_PL_ID_MAPPING as KEY_PL_ID_MAPPING,
     STORAGE_KEY_PL_SYNC_CREATED_DATA as KEY_PL_CREATED_DATA,
     STORAGE_KEY_PL_SYNC_CREATED_TIMES as KEY_PL_CREATED_TIMES,
-    STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA as KEY_PL_SUBSCRIBED_DATA,
-    STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES as KEY_PL_SUBSCRIBED_TIMES
+    STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA as KEY_PL_SUBSCRIBED_DATA
 } from "../../managers/playlists";
 import {STORAGE_KEY_STACKS_PREFIX as KEY_PREFIX_STACKS} from "../../managers/stacks";
 import {
@@ -17,6 +16,7 @@ import {
     STORAGE_KEY_LAST_SYNC_TIME as KEY_PIPED_SETTINGS_TIME,
     STORAGE_KEY_PREFIX as KEY_PREFIX_PIPED_SETTINGS
 } from "../../sync/piped-data";
+import {STORAGE_KEY_SUBS_SYNC_DATA as KEY_SUBS_DATA} from "../../managers/subscriptions";
 
 export type ConflictException = SyncConflictException;
 /**
@@ -137,12 +137,14 @@ class SyncConflictService {
             return "Playlist Group";
         if(key.startsWith(KEY_PREFIX_STACKS))
             return "Stack";
-        if(key === KEY_PL_SUBSCRIBED_DATA || key === KEY_PL_SUBSCRIBED_TIMES)
+        if(key === KEY_PL_SUBSCRIBED_DATA)
             return "Subscribed Playlists";
         if(key === KEY_PL_CREATED_DATA || key === KEY_PL_CREATED_TIMES)
             return "Created Playlists";
         if(key === KEY_PL_ID_MAPPING)
             return "Playlist metadata";
+        if(key === KEY_SUBS_DATA)
+            return "Subscribed Channels";
 
         if(key.startsWith(KEY_PREFIX_PIPED_SETTINGS)) {
             switch(key) {

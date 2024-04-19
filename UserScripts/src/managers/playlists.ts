@@ -8,13 +8,15 @@ import playlistController from "../controllers/playlist-controller";
 import SignalLatch from "../util/signal-latch";
 import ProgressController, {ProgressState} from "../util/progress-controller";
 import {isPiped} from "../controllers/platform-detection";
+import {STORAGE_PREFIX} from "../util/constants";
+import {unsafeWindow} from "../monkey";
 
 export const STORAGE_KEY_GROUPS_PREFIX = "playlists::groups::";
 export const STORAGE_KEY_PL_ID_MAPPING = "playlists::pl_id_mapping";
 export const STORAGE_KEY_PL_SYNC_CREATED_DATA = "playlists::created_sync::data";
 export const STORAGE_KEY_PL_SYNC_CREATED_TIMES = "playlists::created_sync::times";
 export const STORAGE_KEY_PL_SYNC_SUBSCRIBED_DATA = "playlists::subscribed_sync::data";
-export const STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES = "playlists::subscribed_sync::times";
+const STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES = STORAGE_PREFIX + "playlists::subscribed_sync::times";
 
 /** Record<internal-id, Record<domain, pl-id>> */
 type StoredPlIds = Record<string, Record<string, string>>;
@@ -740,26 +742,15 @@ export class PlaylistsManager {
     }
 
     private async getSubscribedPlsSyncTime(): Promise<number> {
-        if(!await extensionDataSync.hasKey(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES))
+        const timeSer = unsafeWindow.localStorage.getItem(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES);
+        if(timeSer == null)
             return -1;
 
-        const times = await extensionDataSync.getEntry<SubscribedPlsSycTimes>(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES);
-        const domain = location.hostname;
-        return times[domain] ?? -1;
+        return JSON.parse(timeSer);
     }
 
     private async setSubscribedPlsSyncTime(time: number) {
-        let times: SubscribedPlsSycTimes;
-        if(await extensionDataSync.hasKey(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES)){
-            times = await extensionDataSync.getEntry<SubscribedPlsSycTimes>(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES);
-        } else {
-            times = {};
-        }
-
-        const domain = location.hostname;
-        times[domain] = time;
-
-        await extensionDataSync.setEntry(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES, times);
+        unsafeWindow.localStorage.setItem(STORAGE_KEY_PL_SYNC_SUBSCRIBED_TIMES, JSON.stringify(time));
     }
 
     private async syncSubscribedPlsToRemote(prog: ProgressController) {

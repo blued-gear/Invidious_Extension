@@ -92,7 +92,8 @@ watch(show, (newVal) => {
       <div class="mb-6">
         It will sync from the source with the most recent changes
         (there is no conflict-resolution).<br/>
-        So you should run this sync everywhere after you changed something.
+        So you should run this sync everywhere <span class="font-bold">before and after</span> you change something
+        (and on Piped reload this page until you see all expected playlist before sync).
       </div>
 
       <MultiProgress ref="progView" v-show="started"></MultiProgress>

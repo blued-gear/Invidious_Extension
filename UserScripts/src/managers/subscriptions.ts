@@ -3,9 +3,11 @@ import extensionDataSync from "../sync/extension-data";
 import ProgressController, {ProgressState} from "../util/progress-controller";
 import {isPiped} from "../controllers/platform-detection";
 import subsController, {ChannelGroups, Subscription} from "../controllers/subscription-controller";
+import {STORAGE_PREFIX} from "../util/constants";
+import {unsafeWindow} from "../monkey";
 
 export const STORAGE_KEY_SUBS_SYNC_DATA = "subscriptions::sync::data";
-export const STORAGE_KEY_SUBS_SYNC_TIMES = "subscriptions::sync::times";
+const STORAGE_KEY_SUBS_SYNC_TIMES = STORAGE_PREFIX + "subscriptions::sync::times";
 
 interface SubsSyncData {
     /** Unix-time of last update */
@@ -79,26 +81,15 @@ export class SubscriptionManager {
     }
 
     private async getSyncTime(): Promise<number> {
-        if(!await extensionDataSync.hasKey(STORAGE_KEY_SUBS_SYNC_TIMES))
+        const timeSer = unsafeWindow.localStorage.getItem(STORAGE_KEY_SUBS_SYNC_TIMES);
+        if(timeSer == null)
             return -1;
 
-        const times = await extensionDataSync.getEntry<SubsSyncTimes>(STORAGE_KEY_SUBS_SYNC_TIMES);
-        const domain = location.hostname;
-        return times[domain] ?? -1;
+        return JSON.parse(timeSer);
     }
 
     private async setSyncTime(time: number) {
-        let times: SubsSyncTimes;
-        if(await extensionDataSync.hasKey(STORAGE_KEY_SUBS_SYNC_TIMES)){
-            times = await extensionDataSync.getEntry<SubsSyncTimes>(STORAGE_KEY_SUBS_SYNC_TIMES);
-        } else {
-            times = {};
-        }
-
-        const domain = location.hostname;
-        times[domain] = time;
-
-        await extensionDataSync.setEntry(STORAGE_KEY_SUBS_SYNC_TIMES, times);
+        unsafeWindow.localStorage.setItem(STORAGE_KEY_SUBS_SYNC_TIMES, JSON.stringify(time));
     }
 
     private async syncToRemote(prog: ProgressController) {
