@@ -72,11 +72,11 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     getThumbUrl(): string | null {
-        return currentComponent().data.video?.thumbnailUrl ?? null;
+        return this.playerComponent().data.video?.thumbnailUrl ?? null;
     }
 
     getPublisher(): PublisherInfo | null {
-        const vidInfo = currentComponent().data.video;
+        const vidInfo = this.playerComponent().data.video;
         if(vidInfo == null)
             return null;
 
@@ -93,11 +93,11 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     getTitle(): string | null {
-        return currentComponent().data.video?.title ?? null;
+        return this.playerComponent().data.video?.title ?? null;
     }
 
     getPlaylistName(): PlaylistName | null {
-        const name = currentComponent().data.playlist?.name;
+        const name = this.playerComponent().data.playlist?.name;
         if(name == null)
             return null;
 
@@ -110,7 +110,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
         if(!urlExtractor.isPlayingPlaylist())
             return null;
 
-        const listSegment: any[] = currentComponent().data.playlist.relatedStreams;
+        const listSegment: any[] = this.playerComponent().data.playlist.relatedStreams;
         const curVidId = urlExtractor.videoId(undefined);
         const curIdx = listSegment.findIndex((pl: any) => pl.url.endsWith(curVidId));
         if(curIdx === -1)
@@ -130,7 +130,7 @@ export default class PipedPlayerControllerImpl implements PlayerController {
         if(!urlExtractor.isPlayingPlaylist())
             return null;
 
-        const listSegment: any[] = currentComponent().data.playlist.relatedStreams;
+        const listSegment: any[] = this.playerComponent().data.playlist.relatedStreams;
         const curVidId = urlExtractor.videoId(undefined);
         const curIdx = listSegment.findIndex((pl: any) => pl.url.endsWith(curVidId));
         if(curIdx === -1)
@@ -247,15 +247,15 @@ export default class PipedPlayerControllerImpl implements PlayerController {
     }
 
     private videoId(): string | null {
-        return currentComponent().data.video?.id ?? urlExtractor.videoId(undefined);
+        return this.playerComponent().data.video?.id ?? urlExtractor.videoId(undefined);
     }
 
     private playlistId(): string | null {
-        return currentComponent().data.playlistId ?? urlExtractor.playlistId(undefined);
+        return this.playerComponent().data.playlistId ?? urlExtractor.playlistId(undefined);
     }
 
     private playlistIndex(): number | null {
-        const idx = currentComponent().data.index;
+        const idx = this.playerComponent().data.index;
         if(idx != null)
             return idx - 1;// Piped indexes are 1-based
 
@@ -276,8 +276,12 @@ export default class PipedPlayerControllerImpl implements PlayerController {
         }
     }
 
+    private playerComponent(): any {
+        return currentComponent()._;
+    }
+
     private videoPlayer(): any {
-        return currentComponent().refs.videoPlayer?.$player;
+        return this.playerComponent().refs.videoPlayer?.$player;
     }
 
     private listenModeParam(mode: ListenMode): string {

@@ -60,7 +60,7 @@ export default abstract class PipedPlaylistController implements PlaylistControl
 
         const expectedPlaylists = await this.loadCreatedPlaylists();
         const expectedPlaylistsCount = expectedPlaylists.length;
-        const componentData = currentComponent().data;
+        const componentData = currentComponent()._.data;
 
         while (componentData.playlists == null || componentData.playlists.length < expectedPlaylistsCount) {
             await sleep(10);
