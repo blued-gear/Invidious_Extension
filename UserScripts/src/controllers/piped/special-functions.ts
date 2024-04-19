@@ -3,7 +3,18 @@
 import {unsafeWindow} from "../../monkey";
 
 export function currentComponent(): any | null {
-    return (unsafeWindow as any).app._vnode.appContext.config.globalProperties.$route.matched[0]?.instances?.default;
+    const appElm = document.getElementById('app')!!;
+    const vnode = (appElm as any)._vnode;
+    const component = vnode.component?.subTree.children?.[0]?.children?.[1]?.component?.subTree.children?.[0]?.component;
+
+    // ensure that this component is part of a route
+    if(component == undefined)
+        return null;
+    const cKey = component.vnode?.key;
+    if(cKey == null || !((cKey instanceof String) || typeof cKey === 'string') || !cKey.startsWith('/'))
+        return null;
+
+    return component.ctx;
 }
 
 /**
