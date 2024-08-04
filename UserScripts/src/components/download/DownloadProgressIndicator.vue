@@ -166,15 +166,6 @@ onBeforeMount(() => {
       ...job,
       fileExtension: (job.state !== 'DONE') ? null : "unknown"
     }));
-
-
-    jobs.value.push({
-      id: "mock",
-      fileExtension: "mp3",
-      progress: 0.4,
-      filename: "mock",
-      state: "STARTED"
-    });
   };
 
   exec().catch((err: Error) => {
