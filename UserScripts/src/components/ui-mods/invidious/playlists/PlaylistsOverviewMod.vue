@@ -4,7 +4,9 @@ import {logException, nodeListToArray} from "../../../../util/utils";
 import playlistsMng from "../../../../managers/playlists";
 import PlaylistsGroup, {ID_UNGROUPED} from "../../../../model/PlaylistsGroup";
 import Accordion from "primevue/accordion";
-import AccordionTab from 'primevue/accordiontab';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import playlistController, {Playlists, PlaylistUiElm} from "../../../../controllers/playlist-controller";
@@ -222,28 +224,29 @@ function createUngroupedGroup(playlists: Playlists): PlGroup {
 <template>
   <Teleport v-if="uiTarget != null" :to="uiTarget">
     <Accordion :multiple="true" :active-index="expandedGroups" class="invExt">
-      <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id">
-        <template #header>
+      <AccordionPanel v-for="(group, idx) in groupedPlaylists" :key="group.group.id" :value="idx.toString()">
+        <AccordionHeader>
           <div class="flex align-items-center w-full">
             <div class="flex-grow-1">{{group.group.name}}</div>
             <div v-if="group.group.id !== ID_UNGROUPED"
-                class="flex-none pi pi-trash"
-                @click.stop="onDeleteGroup(group)"></div>
+                 class="flex-none pi pi-trash"
+                 @click.stop="onDeleteGroup(group)"></div>
           </div>
-        </template>
+        </AccordionHeader>
+        <AccordionContent>
+          <h4>Created Playlists</h4>
+          <div class="flex flex-wrap">
+            <div v-for="pl in group.createdPlaylists" v-html="pl.element.innerHTML"
+                 class="w-20rem"></div>
+          </div>
 
-        <h4>Created Playlists</h4>
-        <div class="flex flex-wrap">
-          <div v-for="pl in group.createdPlaylists" v-html="pl.element.innerHTML"
-               class="w-20rem"></div>
-        </div>
-
-        <h4>Saved Playlists</h4>
-        <div class="flex flex-wrap">
-          <div v-for="pl in group.savedPlaylists" v-html="pl.element.innerHTML"
-               class="w-20rem"></div>
-        </div>
-      </AccordionTab>
+          <h4>Saved Playlists</h4>
+          <div class="flex flex-wrap">
+            <div v-for="pl in group.savedPlaylists" v-html="pl.element.innerHTML"
+                 class="w-20rem"></div>
+          </div>
+        </AccordionContent>
+      </AccordionPanel>
     </Accordion>
   </Teleport>
 </template>

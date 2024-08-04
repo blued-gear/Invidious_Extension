@@ -4,7 +4,9 @@ import {logException, nodeListToArray} from "../../../../util/utils";
 import playlistsMng from "../../../../managers/playlists";
 import PlaylistsGroup, {ID_UNGROUPED} from "../../../../model/PlaylistsGroup";
 import Accordion from "primevue/accordion";
-import AccordionTab from 'primevue/accordiontab';
+import AccordionPanel from 'primevue/accordionpanel';
+import AccordionHeader from 'primevue/accordionheader';
+import AccordionContent from 'primevue/accordioncontent';
 import {useToast} from "primevue/usetoast";
 import {TOAST_LIFE_ERROR} from "../../../../util/constants";
 import playlistController, {Playlists, PlaylistUiElm} from "../../../../controllers/playlist-controller";
@@ -198,29 +200,31 @@ function createUngroupedGroup(playlists: Playlists): PlGroup {
 <template>
   <TeleportHelper element-id="invExt-playlistsOverviewMod" insert-position="afterend"
                   :anchor="findAnchor">
-    <Accordion :multiple="true" :active-index="expandedGroups" class="invExt">
-      <AccordionTab v-for="group in groupedPlaylists" :key="group.group.id">
-        <template #header>
+    <Accordion :multiple="true" :active-index="expandedGroups">
+      <AccordionPanel v-for="(group, idx) in groupedPlaylists" :key="group.group.id" :value="idx.toString()">
+        <AccordionHeader>
           <div class="flex align-items-center w-full">
             <div class="flex-grow-1">{{group.group.name}}</div>
             <div v-if="group.group.id !== ID_UNGROUPED"
-                class="flex-none pi pi-trash"
-                @click.stop="onDeleteGroup(group)"></div>
+                 class="flex-none pi pi-trash"
+                 @click.stop="onDeleteGroup(group)"></div>
           </div>
-        </template>
+        </AccordionHeader>
 
-        <h4 class="font-bold text-2xl">Created Playlists</h4>
-        <div class="flex flex-wrap gap-3">
-          <div v-for="pl in group.createdPlaylists" class="w-20rem"
-               :ref="function(elm){ bindPlElements(elm as Element | undefined, pl) }"></div>
-        </div>
+        <AccordionContent>
+          <h4 class="font-bold text-2xl">Created Playlists</h4>
+          <div class="flex flex-wrap gap-3">
+            <div v-for="pl in group.createdPlaylists" class="w-20rem"
+                 :ref="function(elm){ bindPlElements(elm as Element | undefined, pl) }"></div>
+          </div>
 
-        <h4 class="mt-6 font-bold text-2xl">Saved Playlists</h4>
-        <div class="flex flex-wrap gap-3">
-          <div v-for="pl in group.savedPlaylists"
-               :ref="function(elm){ bindPlElements(elm as Element | undefined, pl) }"></div>
-        </div>
-      </AccordionTab>
+          <h4 class="mt-6 font-bold text-2xl">Saved Playlists</h4>
+          <div class="flex flex-wrap gap-3">
+            <div v-for="pl in group.savedPlaylists"
+                 :ref="function(elm){ bindPlElements(elm as Element | undefined, pl) }"></div>
+          </div>
+        </AccordionContent>
+      </AccordionPanel>
     </Accordion>
   </TeleportHelper>
 </template>

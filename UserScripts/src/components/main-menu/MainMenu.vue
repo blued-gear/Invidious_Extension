@@ -33,7 +33,7 @@ const btnTarget = DocumentController.getOrCreateElmForMainMenu();
 
 const downloadDlgRef = ref<typeof DownloadDlg>();
 
-const vidMnu = ref<Menu>();
+const vidMnu = ref<typeof Menu>();
 const vidMnuContent = computed<MenuItem[]>(() => [
     ...mnuDownload({ downloadDlgRef: downloadDlgRef }),
     ...mnuStacks(),

@@ -4,7 +4,6 @@ import Button from "primevue/button";
 import Checkbox from 'primevue/checkbox';
 import ProgressSpinner from "primevue/progressspinner";
 import Toast from "primevue/toast";
-import TimesCircleIcon from "primevue/icons/timescircle";
 import {useToast} from "primevue/usetoast";
 import invidiousDataSync, {SyncResult} from "../../../sync/invidious-data";
 import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "../../../util/constants";
@@ -186,10 +185,11 @@ onBeforeMount(async () => {
     <Toast group="export_page_mod-iv-err_export_conflict">
       <template #message="slotProps">
         <div class="invExt">
-          <TimesCircleIcon class="p-toast-message-icon"></TimesCircleIcon>
-
           <div class="p-toast-message-text flex flex-column">
-            <span class="p-toast-summary">{{slotProps.message.summary}}</span>
+            <div class="p-toast-summary flex align-items-center">
+              <i class="p-toast-message-icon pi pi-times-circle mr-2"></i>
+              <span>{{slotProps.message.summary}}</span>
+            </div>
             <div class="p-toast-detail">{{slotProps.message.detail}}</div>
 
             <Button @click="() => onExport(true)" class="align-self-end mt-2">Force Export</Button>

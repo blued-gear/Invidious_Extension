@@ -1,6 +1,7 @@
 import {createApp} from 'vue';
 
 import PrimeVue from 'primevue/config';
+import Lara from "@primevue/themes/lara";
 import DialogService from 'primevue/dialogservice';
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
@@ -16,7 +17,7 @@ import playerMgr from "./managers/player";
 import {restoreLogin, setLoginWhereNeeded} from "./sync/login";
 import {logException} from "./util/utils";
 import useSyncConflictService from "./components/sync-conflict/sync-conflict-service";
-import {TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
+import {APP_ELM_ID, TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
 import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
 import invidiousDataSync, {SyncResult as IvSyncResult} from "./sync/invidious-data";
@@ -26,8 +27,8 @@ import runEnhancers from "./enhancers/enhancers";
 import documentController from "./controllers/document-controller";
 import locationController from "./controllers/location-controller";
 import {isInvidious, isPiped} from "./controllers/platform-detection";
-import {setupTheme, updateTheme} from "./theme-switcher";
-import fixPrimeVueCss from "./workarounds/primevue-css-fix";
+import {DARKMODE_SELECTOR_CLASS, updateTheme} from "./theme-switcher";
+import {definePreset} from "@primevue/themes";
 
 async function runRestoreLogin() {
     const login = await restoreLogin();
@@ -101,14 +102,26 @@ async function syncPipedData() {
 }
 
 async function setupUi() {
-    setupTheme();
+    const theme = definePreset(Lara, {
+        semantic: {
+            //@ts-ignore
+            primary: Lara.primitive.blue
+        }
+    });
 
     createApp(App)
-        .use(PrimeVue).use(DialogService).use(ToastService).use(ConfirmationService)
+        .use(PrimeVue, {
+            theme: {
+                preset: theme,
+                options: {
+                    darkModeSelector: '.' + DARKMODE_SELECTOR_CLASS,
+                    prefix: 'invext_p',
+                    cssLayer: false
+                }
+            }
+        }).use(DialogService).use(ToastService).use(ConfirmationService)
         .directive('tooltip', Tooltip)
-        .mount(GM_addElement(document.body, 'div', { id: 'invExt-app' }));
-
-    fixPrimeVueCss();
+        .mount(GM_addElement(document.body, 'div', { id: APP_ELM_ID }));
 }
 
 async function main() {

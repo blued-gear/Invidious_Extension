@@ -1,4 +1,5 @@
 import {ADDED_ELM_MARKER_ATTR, DocumentController} from "../document-controller";
+import {APP_ELM_CLASS} from "../../util/constants";
 
 export default class InvidiousDocumentControllerImpl implements DocumentController {
 
@@ -10,7 +11,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
-        elm.classList.add('invExt');
+        elm.classList.add(APP_ELM_CLASS);
 
         let anchor = document.querySelector('html body div#contents')?.parentElement?.parentElement;
         if(anchor == null)
@@ -29,7 +30,7 @@ export default class InvidiousDocumentControllerImpl implements DocumentControll
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
-        elm.classList.add('invExt');
+        elm.classList.add(APP_ELM_CLASS);
 
         let anchor = document.querySelector('html body div#contents div.navbar.h-box div.user-field div a.pure-menu-heading i.icon.ion-ios-cog')?.parentElement?.parentElement;
         if(anchor == null)

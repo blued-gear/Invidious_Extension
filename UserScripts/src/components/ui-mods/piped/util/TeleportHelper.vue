@@ -2,6 +2,7 @@
 import {onBeforeMount, PropType, ref, Teleport, watch} from "vue";
 import documentController from "../../../../controllers/document-controller";
 import {sleep} from "../../../../util/utils";
+import {APP_ELM_CLASS} from "../../../../util/constants";
 
 const props = defineProps({
   anchor: { type: Function as PropType<(() => HTMLElement | null)>, required: true },
@@ -27,8 +28,8 @@ async function createUiTarget(): Promise<HTMLElement | null> {
     elm = documentController.createGeneralElement('div', props.elementId);
 
     let classStr = props.elementClass;
-    if(!classStr.includes('invExt'))
-      classStr = 'invExt ' + classStr;
+    if(!classStr.includes(APP_ELM_CLASS))
+      classStr = `${APP_ELM_CLASS} ${classStr}`;
     elm.className = classStr;
   }
 

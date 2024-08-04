@@ -1,6 +1,7 @@
 import {ADDED_ELM_MARKER_ATTR, DocumentController} from "../document-controller";
 import {linkRawHref, sleep} from "../../util/utils";
 import {currentComponent} from "./special-functions";
+import {APP_ELM_CLASS} from "../../util/constants";
 
 export default class PipedDocumentControllerImpl implements DocumentController {
 
@@ -12,7 +13,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
             return elm;
 
         elm = this.createGeneralElement('div', elmId);
-        elm.classList.add('invExt');
+        elm.classList.add(APP_ELM_CLASS);
 
         let anchor = document.querySelector('html');
         if(anchor == null)
@@ -34,7 +35,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
         elm.classList.add('pipedMainMnuElm');
 
         const container = this.createGeneralElement('div');
-        container.classList.add('invExt');
+        container.classList.add(APP_ELM_CLASS);
         container.appendChild(elm);
 
         let insertPoint: InsertPosition = 'afterbegin';

@@ -1,5 +1,8 @@
 export const STORAGE_PREFIX = "apps.chocolatecakecodes.invidious_ext.invidious-extension::storage:";
 
+export const APP_ELM_ID = "invExt-app";
+export const APP_ELM_CLASS = "invExt";
+
 export const TOAST_LIFE_INFO = 3000;
 export const TOAST_LIFE_ERROR = 10000;
 

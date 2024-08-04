@@ -2,7 +2,7 @@
 import InputText from "primevue/inputtext";
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
-import OverlayPanel from "primevue/overlaypanel";
+import Popover from "primevue/popover";
 import {computed, ref} from "vue";
 
 type OptionsType = Record<string, boolean>;
@@ -18,7 +18,7 @@ const emit = defineEmits<{
   'newOption': [value: string]
 }>();
 
-const optionsPanel = ref<OverlayPanel>();
+const optionsPanel = ref<typeof Popover>();
 const inputContainerElm = ref<HTMLElement>();
 const optionsPanelShown = ref(false);
 const inputUserText = ref("");
@@ -66,8 +66,8 @@ function onSelectionChanged(optionName: string, newVal: boolean) {
       <Button icon="pi pi-chevron-down" @click="onBtnClick"></Button>
     </span>
 
-    <OverlayPanel ref="optionsPanel"
-                  @show="optionsPanelShown = true" @hide="optionsPanelShown = false">
+    <Popover ref="optionsPanel"
+             @show="optionsPanelShown = true" @hide="optionsPanelShown = false">
       <div class="optionsContainer" :style="{width: (inputContainerElm?.offsetWidth ?? 1) + 'px'}">
         <div v-for="(optionVal, optionName, idx) in props.model"
              class="flex gap-1">
@@ -78,7 +78,7 @@ function onSelectionChanged(optionName: string, newVal: boolean) {
           <label :for="'multiSelectWithAdd-option-' + idx">{{optionName}}</label>
         </div>
       </div>
-    </OverlayPanel>
+    </Popover>
   </span>
 </template>
 

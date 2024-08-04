@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import {computed, ref} from "vue";
 import Dialog from "primevue/dialog";
-import TabView from 'primevue/tabview';
+import Tabs from "primevue/tabs";
+import TabList from "primevue/tablist";
+import Tab from "primevue/tab";
 import TabPanel from 'primevue/tabpanel';
 
 import contentLicensesBackend from "../../assets/licenses/backend.html?raw";
@@ -19,8 +21,15 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
           class="invExt" content-class="h-full"
           style="width: 90vw; height: 80vh;">
     <div ref="contentRef" class="w-full h-full">
-      <TabView class="h-full">
-        <TabPanel header="Info">
+      <Tabs value="1" class="h-full">
+        <TabList>
+          <Tab value="1">Info</Tab>
+          <Tab value="2">Backend Licenses</Tab>
+          <Tab value="3">Frontend Licenses</Tab>
+          <Tab value="4">Other Licenses</Tab>
+        </TabList>
+
+        <TabPanel value="1">
           <div class="w-full" :style="`height: ${contentHeight}px;`">
             <div>
               A Userscript with Backend to extend the functionality of Piped &amp; Invidious
@@ -51,13 +60,16 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
             </div>
           </div>
         </TabPanel>
-        <TabPanel header="Backend Licenses">
+
+        <TabPanel value="2">
           <iframe :srcdoc="contentLicensesBackend" class="border-none w-full" :style="`height: ${contentHeight}px;`"></iframe>
         </TabPanel>
-        <TabPanel header="Frontend Licenses" :style="{ height: `${contentHeight}px` }">
+
+        <TabPanel value="3" :style="{ height: `${contentHeight}px` }">
           <iframe :srcdoc="contentLicensesFrontend" class="border-none w-full" :style="`height: ${contentHeight}px;`"></iframe>
         </TabPanel>
-        <TabPanel header="Other Licenses" :style="{ height: `${contentHeight}px` }">
+
+        <TabPanel value="4" :style="{ height: `${contentHeight}px` }">
           <ul>
             <li>
               <a href="https://github.com/TeamPiped/Piped">Piped:&nbsp;</a>
@@ -65,7 +77,7 @@ const contentHeight = computed(() => contentRef.value?.clientHeight ?? 0);
             </li>
           </ul>
         </TabPanel>
-      </TabView>
+      </Tabs>
     </div>
   </Dialog>
 </template>

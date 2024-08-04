@@ -1,28 +1,13 @@
-import {GM_getResourceText} from './monkey';
 import documentController from "./controllers/document-controller";
 import {logException} from "./util/utils";
-import {removeCssLayers} from "./workarounds/primevue-css-fix";
 
-const styleElmId = 'invExt-style-theme';
-
-let current: 'light' | 'dark' | null = null;
-
-export function setupTheme() {//return;
-    const elm = documentController.createGeneralElement('style', styleElmId) as HTMLStyleElement;
-    document.head.append(elm);
-
-    const autodetected = updateTheme();
-    if(!autodetected) {
-        elm.textContent = loadCss('themeLight');
-        current = 'light';
-    }
-}
+export const DARKMODE_SELECTOR_CLASS = 'invext-theme-dark';
 
 /**
  * updates the theme to match the one of the page
  * @return {boolean} true if the theme was changed
  */
-export function updateTheme(): boolean {//return false;
+export function updateTheme(): boolean {
     try {
         const pageDarkTheme = documentController.isDarkMode();
         if (pageDarkTheme === null) {
@@ -30,29 +15,24 @@ export function updateTheme(): boolean {//return false;
             return false;
         }
 
-        if (pageDarkTheme) {
-            if (current === 'dark')
+        const bodyClasses = document.body.classList;
+        if(pageDarkTheme) {
+            if(!bodyClasses.contains(DARKMODE_SELECTOR_CLASS)) {
+                bodyClasses.add(DARKMODE_SELECTOR_CLASS);
+                return true;
+            } else {
                 return false;
-
-            document.getElementById(styleElmId)!!.textContent = loadCss('themeDark');
-            current = 'dark';
-            return true;
+            }
         } else {
-            if (current === 'light')
+            if(bodyClasses.contains(DARKMODE_SELECTOR_CLASS)) {
+                bodyClasses.remove(DARKMODE_SELECTOR_CLASS);
+                return true;
+            } else {
                 return false;
-
-            document.getElementById(styleElmId)!!.textContent = loadCss('themeLight');
-            current = 'light';
-            return true;
+            }
         }
     } catch(e) {
         logException(e as Error, "updateTheme(): error while detecting or switching theme");
         return false;
     }
-}
-
-function loadCss(name: string): string {
-    let css = GM_getResourceText(name);
-    css = removeCssLayers(css);
-    return css;
 }

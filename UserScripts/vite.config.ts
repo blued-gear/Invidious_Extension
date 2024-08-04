@@ -20,10 +20,7 @@ export default defineConfig({
         "run-at": "document-idle",
         sandbox: "JavaScript",
         "inject-into": "auto",
-        resource: {
-          'themeLight': 'https://unpkg.com/primevue/resources/themes/lara-light-blue/theme.css',
-          'themeDark': 'https://unpkg.com/primevue/resources/themes/lara-dark-blue/theme.css'
-        },
+        resource: {},
         connect: [
           "chocolatecakecodes.goip.de",
           "localhost"

@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"
-version = "2.3.0"
+version = "2.3.1"
 
 repositories {
     mavenCentral()

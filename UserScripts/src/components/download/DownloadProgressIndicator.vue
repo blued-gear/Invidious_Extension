@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {computed, onBeforeMount, ref, Teleport} from "vue";
 import {VeProgress} from "vue-ellipse-progress";
-import OverlayPanel from "primevue/overlaypanel";
 import Button from "primevue/button";
 import ProgressBar from 'primevue/progressbar';
 import downloadQueue, {DownloadJob, jobIsRunning} from "../../download/download-queue";
@@ -9,6 +8,7 @@ import {useToast} from "primevue/usetoast";
 import {logException, roundToDecimal} from "../../util/utils";
 import {SERVER_DOWNLOAD_URL, TOAST_LIFE_ERROR} from "../../util/constants";
 import documentController from "../../controllers/document-controller";
+import Popover from "primevue/popover";
 
 interface DownloadJobEx extends DownloadJob {
   readonly fileExtension: string | null
@@ -18,7 +18,7 @@ const toast = useToast();
 
 const elmTarget = documentController.getOrCreateElmForDownloadIndicator();
 
-const jobsPanel = ref<OverlayPanel>();
+const jobsPanel = ref<typeof Popover>();
 const indicatorContainer = ref<HTMLElement>();
 
 const jobs = ref<DownloadJobEx[]>([]);
@@ -190,7 +190,7 @@ onBeforeMount(() => {
         </template>
       </VeProgress>
 
-      <OverlayPanel ref="jobsPanel" append-to="#invExt-downloadProgressIndicator"
+      <Popover ref="jobsPanel" append-to="#invExt-downloadProgressIndicator"
                     class="fixed top-auto bottom-0 mb-2 h-6rem w-10 min-w-min">
         <div class="flex flex-column gap-2 p-1 overflow-auto h-4rem">
           <div v-for="job of jobs" :key="job.id" class="flex gap-1 align-items-center">
@@ -207,7 +207,7 @@ onBeforeMount(() => {
                          }"></ProgressBar>
           </div>
         </div>
-      </OverlayPanel>
+      </Popover>
     </div>
   </Teleport>
 </template>
