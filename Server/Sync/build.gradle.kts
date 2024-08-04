@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "1.9.22"
+    val kotlinVersion = "2.0.0"
 
     id("org.jetbrains.kotlin.jvm") version kotlinVersion
     id("org.jetbrains.kotlin.kapt") version kotlinVersion
@@ -38,7 +38,7 @@ dependencies {
     implementation("jakarta.validation:jakarta.validation-api")
     implementation("io.micronaut.reactor:micronaut-reactor")
 
-    implementation("org.bouncycastle:bcprov-jdk18on:1.76")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
 
     kapt("io.micronaut.security:micronaut-security-annotations")
     kapt("io.micronaut.serde:micronaut-serde-processor")
@@ -51,7 +51,7 @@ dependencies {
 
     testImplementation("io.micronaut:micronaut-http-server-netty")
     testImplementation("io.micronaut:micronaut-http-client")
-    testImplementation("io.mockk:mockk:1.13.5")
+    testImplementation("io.mockk:mockk:1.13.12")
 }
 
 java {

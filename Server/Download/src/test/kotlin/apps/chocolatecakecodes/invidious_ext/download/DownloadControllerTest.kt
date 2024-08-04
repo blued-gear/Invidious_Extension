@@ -17,12 +17,7 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.BlockingHttpClient
 import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
-import io.micronaut.http.filter.HttpClientFilter
-import io.micronaut.security.authentication.AuthenticationProvider
-import io.micronaut.security.authentication.AuthenticationResponse
-import io.micronaut.test.annotation.MockBean
 import io.micronaut.test.extensions.kotest5.annotation.MicronautTest
-import reactor.core.publisher.Flux
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -33,17 +28,6 @@ import java.nio.charset.StandardCharsets
 class DownloadControllerTest(
     @Client("/download") private val http: HttpClient
 ) : AnnotationSpec() {
-
-    // DownloadController requires auth, so mock it
-    @MockBean
-    fun securityAllowAllChain() = HttpClientFilter { request, chain ->
-        request.basicAuth("dummy", "dummy")
-        chain.proceed(request)
-    }
-    @MockBean
-    fun securityAllowAllAuth() = AuthenticationProvider<Any> { _, _ ->
-        Flux.just(AuthenticationResponse.success("dummy"))
-    }
 
     @Test
     fun canDownloadVideo() {

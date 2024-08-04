@@ -1,21 +1,21 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    val kotlinVersion = "1.9.22"
-    val micronautVersion = "4.3.3"
+    val kotlinVersion = "2.0.0"
+    val micronautPluginVersion = "4.4.2"
 
     id("org.jetbrains.kotlin.jvm") version kotlinVersion
     id("org.jetbrains.kotlin.kapt") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.allopen") version kotlinVersion
     id("org.jetbrains.kotlin.plugin.jpa") version kotlinVersion
 
-    id("io.micronaut.application") version micronautVersion
-    id("io.micronaut.test-resources") version micronautVersion
-    id("io.micronaut.aot") version micronautVersion
+    id("io.micronaut.application") version micronautPluginVersion
+    id("io.micronaut.test-resources") version micronautPluginVersion
+    id("io.micronaut.aot") version micronautPluginVersion
 
     id("com.github.johnrengelman.shadow") version "8.1.1"
 
-    id("com.jaredsburrows.license") version "0.9.7"
+    id("com.jaredsburrows.license") version "0.9.8"
 }
 
 group = "apps.chocolatecakecodes.invidious_ext"
@@ -58,7 +58,7 @@ dependencies {
     runtimeOnly("org.slf4j:slf4j-simple")
 
     testImplementation("io.micronaut:micronaut-http-client")
-    testImplementation("io.mockk:mockk:1.13.8")
+    testImplementation("io.mockk:mockk:1.13.12")
 }
 
 application {
