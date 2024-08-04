@@ -17,7 +17,7 @@ import playerMgr from "./managers/player";
 import {restoreLogin, setLoginWhereNeeded} from "./sync/login";
 import {logException} from "./util/utils";
 import useSyncConflictService from "./components/sync-conflict/sync-conflict-service";
-import {APP_ELM_ID, TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
+import {APP_CSS_VAR_PREFIX, APP_ELM_ID, TOAST_LIFE_ERROR, TOAST_LIFE_INFO} from "./util/constants";
 import toast from "./workarounds/toast";
 import sharedStates from "./util/shared-states";
 import invidiousDataSync, {SyncResult as IvSyncResult} from "./sync/invidious-data";
@@ -115,7 +115,7 @@ async function setupUi() {
                 preset: theme,
                 options: {
                     darkModeSelector: '.' + DARKMODE_SELECTOR_CLASS,
-                    prefix: 'invext_p',
+                    prefix: APP_CSS_VAR_PREFIX,
                     cssLayer: false
                 }
             }

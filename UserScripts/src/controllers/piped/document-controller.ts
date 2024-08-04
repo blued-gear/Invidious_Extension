@@ -15,7 +15,7 @@ export default class PipedDocumentControllerImpl implements DocumentController {
         elm = this.createGeneralElement('div', elmId);
         elm.classList.add(APP_ELM_CLASS);
 
-        let anchor = document.querySelector('html');
+        let anchor = document.querySelector('body');
         if(anchor == null)
             throw new Error("unable to find view root to insert download_indicator");
 

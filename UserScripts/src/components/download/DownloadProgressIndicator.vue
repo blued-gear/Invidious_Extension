@@ -6,7 +6,7 @@ import ProgressBar from 'primevue/progressbar';
 import downloadQueue, {DownloadJob, jobIsRunning} from "../../download/download-queue";
 import {useToast} from "primevue/usetoast";
 import {logException, roundToDecimal} from "../../util/utils";
-import {SERVER_DOWNLOAD_URL, TOAST_LIFE_ERROR} from "../../util/constants";
+import {APP_CSS_VAR_PREFIX, SERVER_DOWNLOAD_URL, TOAST_LIFE_ERROR} from "../../util/constants";
 import documentController from "../../controllers/document-controller";
 import Popover from "primevue/popover";
 
@@ -22,6 +22,10 @@ const jobsPanel = ref<typeof Popover>();
 const indicatorContainer = ref<HTMLElement>();
 
 const jobs = ref<DownloadJobEx[]>([]);
+
+function cssColorVal(color: string): string {
+  return `var(--${APP_CSS_VAR_PREFIX}-${color})`;
+}
 
 const indicatorVisible = computed(() => {
   return jobs.value.length !== 0;
@@ -42,16 +46,16 @@ const indicatorProgress = computed(() => {
 });
 const indicatorColor = computed(() => {
   if(jobs.value.some(job => job.state === 'FAILED'))
-    return "var(--red-600)";
+    return cssColorVal("red-600");
   if(jobs.value.every(job => job.state === 'DONE'))
-    return "var(--green-500)";
+    return cssColorVal("green-500");
   if(jobs.value.every(job => job.state === 'CANCELLED'))
-    return "var(--yellow-400)";
-  return "var(--blue-500)";
+    return cssColorVal("yellow-400");
+  return cssColorVal("blue-500");
 });
 
 function onIndicatorClick(event: Event) {
-  jobsPanel.value!!.show(event, indicatorContainer.value);
+  jobsPanel.value!.show(event, indicatorContainer.value);
 }
 
 function onRmJob(job: DownloadJobEx) {
@@ -130,13 +134,13 @@ function jobProgressColor(job: DownloadJobEx): string {
   switch(job.state) {
     case 'INIT':
     case 'STARTED':
-      return "var(--blue-500)";
+      return cssColorVal("blue-500");
     case 'DONE':
-      return "var(--green-500)";
+      return cssColorVal("green-500");
     case 'FAILED':
-      return "var(--red-600)";
+      return cssColorVal("red-600");
     case 'CANCELLED':
-      return "var(--yellow-400)";
+      return cssColorVal("yellow-400");
   }
 }
 
@@ -162,6 +166,15 @@ onBeforeMount(() => {
       ...job,
       fileExtension: (job.state !== 'DONE') ? null : "unknown"
     }));
+
+
+    jobs.value.push({
+      id: "mock",
+      fileExtension: "mp3",
+      progress: 0.4,
+      filename: "mock",
+      state: "STARTED"
+    });
   };
 
   exec().catch((err: Error) => {
@@ -182,8 +195,8 @@ onBeforeMount(() => {
     <div ref="indicatorContainer" v-show="indicatorVisible"
          class="fixed bottom-0 left-0 ml-1 w-fit h-fit"
          @click.stop="onIndicatorClick">
-      <VeProgress :progress="indicatorProgress" :color="indicatorColor"
-                  :hideLegend="false" :legend="true" :size="50"
+      <VeProgress :progress="indicatorProgress" :legend="indicatorProgress" :color="indicatorColor"
+                  :hideLegend="false" :size="50"
                   class="cursor-pointer">
         <template #default>
           <span class="pi pi-download"></span>

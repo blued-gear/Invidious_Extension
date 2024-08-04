@@ -2,6 +2,7 @@ export const STORAGE_PREFIX = "apps.chocolatecakecodes.invidious_ext.invidious-e
 
 export const APP_ELM_ID = "invExt-app";
 export const APP_ELM_CLASS = "invExt";
+export const APP_CSS_VAR_PREFIX = "invext_p";
 
 export const TOAST_LIFE_INFO = 3000;
 export const TOAST_LIFE_ERROR = 10000;
