@@ -20,7 +20,7 @@ Please note that this application is (and most certainly will ever be) in an exp
 
 ## Installation and Usage
 
-1. install a UserScript Plugin (like [Violentmonkey](https://violentmonkey.github.io/) or [Tampermonkey](https://www.tampermonkey.net/))
+1. install the UserScript Plugin [Violentmonkey](https://violentmonkey.github.io/)
 2. open [https://chocolatecakecodes.goip.de/InvidiousExt/invidious-extension.user.js](https://chocolatecakecodes.goip.de/InvidiousExt/invidious-extension.user.js) (the Plugin should open the installation-dialog)
 
 You should now see a blue icon in the top-bar of supported Piped and Invidious instances.
