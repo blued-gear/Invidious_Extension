@@ -20,6 +20,7 @@ const dlgOpen = ref(false);
 const destFormat = ref<FileType>('MP3');
 const videoId = ref("");
 const nameSuggestions = ref<string[]>([]);
+const enqueueing = ref(false);
 
 const valueSuggestions = ref<Record<InputType, string[]>>({
   FILENAME: [],
@@ -164,11 +165,15 @@ function onConvert() {
   if(!inputValid.value)
     return;
 
+  enqueueing.value = true;
   const tags = collectTags();
 
   downloadQueue.requestDownload(videoId.value, destFormat.value,selectedValues.value.FILENAME, tags).then(() => {
+    enqueueing.value = false;
     dlgOpen.value = false;
   }).catch((e) => {
+    enqueueing.value = false;
+
     const err = e as Error;
     logException(err, "DownloadDlg: unable to request new download-job");
 
@@ -217,7 +222,7 @@ defineExpose({
       </div>
 
       <div>
-        <Button label="Convert" :disabled="!inputValid" @click="onConvert"></Button>
+        <Button label="Convert" :disabled="!inputValid || enqueueing" @click="onConvert"></Button>
       </div>
     </div>
   </Dialog>
