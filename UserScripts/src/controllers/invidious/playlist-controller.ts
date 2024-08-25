@@ -8,7 +8,7 @@ import {
     Playlists,
     PlaylistUiElm
 } from "../playlist-controller";
-import {elementListToArray, logException} from "../../util/utils";
+import {elementListToArray, logException, sleep} from "../../util/utils";
 import urlExtractor from "../url-extractor";
 import InvidiousUrlExtractorImpl from "./url-extractor";
 import ProgressController, {ProgressState} from "../../util/progress-controller";
@@ -264,6 +264,8 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
 
                     throw new Error("failed to recreate playlist (unable to add all expected items)", {cause: e});
                 }
+
+                await sleep(2000);// too many add-request can crash Invidious
             }
 
             prog.setProgress(0.9 * ((i + 1) / expectedVids.length));
@@ -299,18 +301,16 @@ export default class InvidiousPlaylistControllerImpl implements PlaylistControll
     }
 
     async getPlDetails(plId: string): Promise<InvidiousPlaylistDetails> {
-        const resp = await fetch(`${location.origin}/playlist?list=${plId}`);
+        const resp = await fetch(`${location.origin}/edit_playlist?list=${plId}`);
         if(!resp.ok)
             throw new Error(`Invidious-Server responded with ${resp.status} when loading playlist-details`);
 
         const docStr = await resp.text();
         const doc = new DOMParser().parseFromString(docStr, 'text/html');
 
-        const name = doc.querySelector<HTMLElement>('html body div.pure-g div#contents div.h-box.flexible.title div.flex-left h3')!!.innerText;
-        const description = doc.getElementById('descriptionWrapper')!!.innerText;
-
-        const privacyIcon = doc.querySelector<HTMLElement>('html body div.pure-g div#contents div.h-box div.pure-u-1-1 b i.icon')!!;
-        const privacy = privacyIcon.nextSibling!!.textContent!!.trim().toLowerCase();
+        const name = doc.querySelector<HTMLInputElement>('html body div div#contents form.pure-form div.h-box.flexible.title div h3 input.pure-input-1')!.value;
+        const description = doc.querySelector<HTMLTextAreaElement>('html body div div#contents form.pure-form div.h-box textarea.pure-input-1')!.value;
+        const privacy = doc.querySelector<HTMLSelectElement>('select[name="privacy"]')!.value;
 
         return {
             name: name,
