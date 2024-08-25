@@ -79,7 +79,7 @@ export function logException(e: Error, message: string) {
     else
         console.error(message, e);
 
-    console.log("stacktrace:\n", e.stack);
+    //console.log("stacktrace:\n", e.stack);
 
     if(e.cause != null) {
         console.group("cause:");
