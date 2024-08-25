@@ -54,11 +54,12 @@ export default defineConfig({
           'https://invidious.private.coffee/*',
           'https://yt.drgnz.club/*',
           'https://invidious.asir.dev/*',
-          'https://iv.datura.network/*',
           'https://invidious.fdn.fr/*',
           'https://anontube.lvkaszus.pl/*',
           'https://invidious.perennialte.ch/*',
           'https://yt.cdaut.de/*',
+          'https://iv.nowhere.moe/*',
+          'https://invidious.nerdvpn.de/*',
 
           'https://piped.adminforge.de/*',
           'https://piped.video/*',
