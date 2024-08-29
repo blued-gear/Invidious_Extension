@@ -198,11 +198,12 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
     }
 
     async openVideo(id: string, time: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
+        const timeParam = time != null ? `&t=${time}` : '';
         const listenParam = this.listenModeParam(listenMode);
+        const url = `/watch?v=${id}${timeParam}${listenParam}`;
 
         if(urlExtractor.videoId(undefined) !== id || !this.currentListenModeMatches(listenMode)) {
-            const timeParam = time != null ? `&t=${time}` : '';
-            locationController.navigate("/watch?v=" + id + timeParam + listenParam);
+            locationController.navigate(url);
             return true;
         } else {
             await this.waitForPlayerStartet();
@@ -210,7 +211,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(time != null) {
                 const currentTime = this.getTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - time) > 2) {// two seconds as acceptable delta
-                    locationController.navigate(`/watch?v=${id}&t=${time}${listenParam}`);
+                    locationController.navigate(url);
                     return true;
                 }
             }
@@ -221,7 +222,9 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
 
     async openPlaylist(plId: string, plIdx: number, vidId: string, vidTime: number | null, listenMode: ListenMode = 'keep'): Promise<boolean> {
         const plIdxParam = plIdx !== -1 ? `&index=${plIdx}` : '';
+        const timeParam = vidTime != null ? `&t=${vidTime}` : '';
         const listenParam = this.listenModeParam(listenMode);
+        const url = `/watch?v=${vidId}&list=${plId}${plIdxParam}${timeParam}${listenParam}`;
 
         if(urlExtractor.playlistId(undefined) === plId
             && urlExtractor.videoId(undefined) === vidId
@@ -233,7 +236,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             if(vidTime != null) {
                 const currentTime = this.getTimeCurrent();
                 if(currentTime == null || Math.abs(currentTime - vidTime) > 2) {// two seconds as acceptable delta
-                    locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}&t=${vidTime}${listenParam}`);
+                    locationController.navigate(url);
                     return true;
                 }
             }
@@ -241,8 +244,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
             return false;
         }
 
-        const timeParam = vidTime != null ? `&t=${vidTime}` : '';
-        locationController.navigate(`/watch?v=${vidId}&list=${plId}${plIdxParam}${timeParam}`);
+        locationController.navigate(url);
         return true;
     }
 
