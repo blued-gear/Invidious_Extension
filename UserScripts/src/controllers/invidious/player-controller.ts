@@ -235,7 +235,7 @@ export default class InvidiousPlayerControllerImpl implements PlayerController {
 
             if(vidTime != null) {
                 const currentTime = this.getTimeCurrent();
-                if(currentTime == null || Math.abs(currentTime - vidTime) > 2) {// two seconds as acceptable delta
+                if(currentTime == null || Math.abs(currentTime - vidTime) > 5) {// two seconds as acceptable delta
                     locationController.navigate(url);
                     return true;
                 }
